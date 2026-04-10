@@ -215,7 +215,7 @@ const VueTable = () => {
             route={APIURL.VUES}
             Id={selectedId}
             type="Vue"
-            message={'Etes-vous sûr de vouloir supprimer ce Vue ?'}
+            message={'Etes-vous sûr de vouloir supprimer cette Vue ?'}
             accessToken={accesstoken}
             onClose={async () => {
               setShowDeleteModal(false);

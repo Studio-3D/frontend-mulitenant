@@ -27,7 +27,7 @@ const FreinForm = ({ id = null, onComplete }) => {
   useEffect(() => {
     // Set project ID when project is selected
     if (selectedProjet) {
-      setFormData((prev) => ({ ...prev, projet_id: selectedProjet.id }));
+      setFormData((prev) => ({ ...prev, projet_id: selectedProjet?.id }));
     }
 
     // Load frein data if editing
@@ -96,11 +96,11 @@ const FreinForm = ({ id = null, onComplete }) => {
 
     if (!validateForm()) return;
 
-    // Check if project is selected
+    /* Check if project is selected
     if (!selectedProjet) {
       toast.error("Veuillez d'abord sélectionner un projet");
       return;
-    }
+    }*/
 
     setSubmitting(true);
 
@@ -111,7 +111,7 @@ const FreinForm = ({ id = null, onComplete }) => {
 
       // Add projet_id as a query parameter
       const params = new URLSearchParams();
-      params.append("projet_id", selectedProjet.id);
+      params.append("projet_id", selectedProjet?.id);
 
       if (id) {
         url = `${url}/${id}`;

@@ -249,7 +249,7 @@ const VisiteTable = ({ user_id, dataProspect, dataClient ,searchParams}) => {
 
   const data_to_export = () => {
     return visites.map((data) => ({
-      cc: data.nom_cc+' '+data.prenom_cc,
+      cc:data.nom_cc+' '+data.prenom_cc,
       date: data.date != null ? formatDate(data.date) : null,
       nomComplet: `${data.nom || ''} ${data.prenom || ''}`.trim(),
       prospect_id: data.prospect_id,

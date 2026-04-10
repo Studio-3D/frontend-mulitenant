@@ -216,7 +216,7 @@ const TypologieTable = () => {
             route={APIURL.TYPOLOGIES}
             Id={selectedId}
             type="Typologie"
-            message={'Etes-vous sûr de vouloir supprimer ce Typologie ?'}
+            message={'Etes-vous sûr de vouloir supprimer cette Typologie ?'}
             accessToken={accesstoken}
              onClose={async () => {
               setShowDeleteModal(false);

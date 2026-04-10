@@ -67,55 +67,14 @@ export const GeneralParametersStep = ({
   }, [users]);
 
   const handleUserSelection = (selectedValues) => {
-  // Check if "Tous" was selected
-  const hasTous = selectedValues.includes('tous');
-  
-  if (hasTous) {
-    // "Tous" was selected - select all actual user IDs
-    const allUserIds = users.map(user => user.id.toString());
-    setSelectedUserIds(allUserIds); // Ne pas inclure 'tous'
-    updateFormData(`parameters.utilisateursAcces`, allUserIds);
-  } else {
-    // Normal user selection
-    setSelectedUserIds(selectedValues || []);
-    updateFormData(`parameters.utilisateursAcces`, selectedValues || []);
-  }
-  
-  if (display_errors_users) {
-    setDisplay_Errors_users(false);
-  }
-};
-
-// Et simplifiez getSelectedUsers
-const getSelectedUsers = () => {
-  return selectedUserIds
-    .map((id) => users.find((user) => user.id.toString() === id.toString()))
-    .filter(Boolean);
-};
-  /*Handle user selection from dropdown
-  const handleUserSelection = (selectedValues) => {
-    // Check if "Tous" was selected or deselected
+    // Check if "Tous" was selected
     const hasTous = selectedValues.includes('tous');
-    const previouslyHadTous = selectedUserIds.includes('tous');
     
-    if (hasTous && !previouslyHadTous) {
+    if (hasTous) {
       // "Tous" was selected - select all actual user IDs
       const allUserIds = users.map(user => user.id.toString());
-      setSelectedUserIds(['tous', ...allUserIds]);
+      setSelectedUserIds(allUserIds); // Ne pas inclure 'tous'
       updateFormData(`parameters.utilisateursAcces`, allUserIds);
-    } else if (!hasTous && previouslyHadTous) {
-      // "Tous" was deselected - clear all selections
-      setSelectedUserIds([]);
-      updateFormData(`parameters.utilisateursAcces`, []);
-    } else if (hasTous && selectedValues.length === 1) {
-      // Only "Tous" is selected
-      setSelectedUserIds(['tous']);
-      updateFormData(`parameters.utilisateursAcces`, []);
-    } else if (hasTous && selectedValues.length > 1) {
-      // "Tous" plus other users selected - remove "Tous" from the list
-      const filteredValues = selectedValues.filter(value => value !== 'tous');
-      setSelectedUserIds(filteredValues);
-      updateFormData(`parameters.utilisateursAcces`, filteredValues);
     } else {
       // Normal user selection
       setSelectedUserIds(selectedValues || []);
@@ -127,17 +86,15 @@ const getSelectedUsers = () => {
     }
   };
 
-  // Get the full user objects for display
   const getSelectedUsers = () => {
     return selectedUserIds
-      .filter(id => id !== 'tous')
       .map((id) => users.find((user) => user.id.toString() === id.toString()))
       .filter(Boolean);
-  };*/
+  };
 
   // Add new item to a parameter field
   const handleAddItem = (field) => {
-    if (inputValues[field].trim()) {
+    if (inputValues[field] && inputValues[field].trim()) {
       updateFormData(`parameters.${field}`, [
         ...(formData.parameters[field] || []),
         inputValues[field].trim(),
@@ -146,7 +103,7 @@ const getSelectedUsers = () => {
     }
   };
 
-  // Add new partner
+  // Add new partner with remise
   const handleAddPartenaire = () => {
     if (partenaireInputs.description.trim()) {
       const newPartenaire = {
@@ -176,7 +133,11 @@ const getSelectedUsers = () => {
       if (field === 'typesDeBien') return item.type || item;
       if (field === 'vues') return item.vue || item.type || item;
       if (field === 'typologies') return item.typologie || item.type || item;
-      if (field === 'partenaires') return item.description || item.nom || '';
+      if (field === 'partenaires') {
+        const description = item.description || item.nom || '';
+        const remise = item.remise ? ` (remise: ${item.remise}%)` : '';
+        return description + remise;
+      }
       return item;
     }
     // Otherwise return the string directly
@@ -186,6 +147,8 @@ const getSelectedUsers = () => {
   // Render parameter field with add/remove functionality
   const renderParameterField = (field, label, isOptional = true) => {
     const displayItems = formData.parameters[field] || [];
+    // Ensure inputValue is always a string to avoid uncontrolled/controlled error
+    const inputValue = inputValues[field] || '';
 
     return (
       <div className="space-y-3 mb-6">
@@ -196,11 +159,11 @@ const getSelectedUsers = () => {
           )}
         </label>
 
-        {/* Input to add new items */}
+        {/* Input to add new items - ALWAYS SHOW */}
         <div className="flex gap-2">
           <input
             type="text"
-            value={inputValues[field]}
+            value={inputValue}
             onChange={(e) =>
               setInputValues((prev) => ({ ...prev, [field]: e.target.value }))
             }
@@ -217,7 +180,7 @@ const getSelectedUsers = () => {
           </button>
         </div>
 
-        {/* Display all items */}
+        {/* Display all items - ALWAYS SHOW if there are items */}
         {displayItems.length > 0 && (
           <div className="mt-2">
             <h4 className="text-sm font-medium text-gray-700 mb-2">
@@ -245,6 +208,109 @@ const getSelectedUsers = () => {
               ))}
             </div>
           </div>
+        )}
+        
+        {/* Show empty state message in edit mode when no items exist */}
+        {editMode && displayItems.length === 0 && (
+          <p className="text-sm text-gray-400 italic mt-1">
+            Aucun {label.toLowerCase()} ajouté. Utilisez le champ ci-dessus pour en ajouter.
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  // Render partner field with separate description and remise inputs
+  const renderPartnerField = () => {
+    const displayItems = formData.parameters.partenaires || [];
+
+    return (
+      <div className="space-y-3 mb-6">
+        <label className="block text-sm font-medium text-gray-700">
+          Partenaires{' '}
+          <span className="text-gray-500 text-xs">(optionnel)</span>
+        </label>
+
+        {/* Inputs to add new partner */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={partenaireInputs.description}
+            onChange={(e) =>
+              setPartenaireInputs((prev) => ({
+                ...prev,
+                description: e.target.value,
+              }))
+            }
+            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
+            placeholder="Description du partenaire"
+          />
+          <input
+            type="number"
+            min="0"
+            max="100"
+            value={partenaireInputs.remise}
+            onChange={(e) =>
+              setPartenaireInputs((prev) => ({
+                ...prev,
+                remise: e.target.value,
+              }))
+            }
+            className="w-28 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
+            placeholder="Remise %"
+          />
+          <button
+            type="button"
+            onClick={handleAddPartenaire}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded-md"
+            aria-label="Ajouter partenaire"
+          >
+            <PlusIcon size={20} />
+          </button>
+        </div>
+
+        {/* Display all partners */}
+        {displayItems.length > 0 && (
+          <div className="mt-2">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">
+              {editMode ? 'Partenaires existants' : 'Partenaires ajoutés'} (
+              {displayItems.length})
+            </h4>
+            <div className="flex flex-col gap-2">
+              {displayItems.map((partenaire, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-gray-100 rounded-md px-3 py-2"
+                >
+                  <div>
+                    <span className="font-medium">
+                      {partenaire.description || partenaire.nom || ''}
+                    </span>
+                    {partenaire.remise && (
+                      <span className="ml-2 text-sm text-gray-500">
+                        Remise: {partenaire.remise}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveItem('partenaires', index)}
+                    className="text-gray-500 hover:text-gray-700"
+                    aria-label={`Retirer ${partenaire.description || partenaire.nom || ''}`}
+                  >
+                    <XIcon size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Show empty state message in edit mode when no partners exist */}
+        {editMode && displayItems.length === 0 && (
+          <p className="text-sm text-gray-400 italic mt-1">
+            Aucun partenaire ajouté. Utilisez les champs ci-dessus pour en ajouter.
+          </p>
         )}
       </div>
     );
@@ -293,8 +359,10 @@ const getSelectedUsers = () => {
         <h3 className="text-lg font-medium text-gray-800">
           Paramètres généraux
         </h3>
+        
+        {/* Always show two columns in non-edit mode, full width in edit mode */}
         {editMode ? (
-          // Edit mode layout - full width for users section
+          // Edit mode layout - full width with all parameter fields always visible
           <div className="space-y-6">
             {/* Users Access Section for Edit Mode */}
             <div className="space-y-3 mb-6">
@@ -308,7 +376,7 @@ const getSelectedUsers = () => {
                 label=""
                 placeholder="Sélectionnez des utilisateurs"
                 options={userOptions}
-                value={selectedUserIds.filter(id => id !== 'tous')} // FILTRE ICI
+                value={selectedUserIds.filter(id => id !== 'tous')}
                 onChange={handleUserSelection}
                 error={errors.parameters?.utilisateursAcces}
                 submitted={touched.parameters?.utilisateursAcces}
@@ -359,55 +427,20 @@ const getSelectedUsers = () => {
               )}
             </div>
 
-            {/* Other parameters in edit mode (only if they exist) */}
-            {(formData.parameters.typesDeBien?.length > 0 ||
-              formData.parameters.vues?.length > 0 ||
-              formData.parameters.typologies?.length > 0 ||
-              formData.parameters.partenaires?.length > 0) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column */}
-                <div>
-                  {formData.parameters.typesDeBien?.length > 0 &&
-                    renderParameterField('typesDeBien', 'Types de bien')}
-                  {formData.parameters.vues?.length > 0 &&
-                    renderParameterField('vues', 'Vues')}
-                  {formData.parameters.typologies?.length > 0 &&
-                    renderParameterField('typologies', 'Typologies')}
-                </div>
-
-                {/* Right Column */}
-                <div>
-                  {formData.parameters.partenaires?.length > 0 && (
-                    <div className="space-y-3 mb-6">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Partenaires existants
-                      </label>
-                      <div className="flex flex-col gap-2">
-                        {formData.parameters.partenaires.map(
-                          (partenaire, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between bg-gray-100 rounded-md px-3 py-2"
-                            >
-                              <div>
-                                <span className="font-medium">
-                                  {getItemDisplayValue(partenaire, 'partenaires')}
-                                </span>
-                                {partenaire.remise && (
-                                  <span className="ml-2 text-sm text-gray-500">
-                                    Remise: {partenaire.remise}%
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+            {/* Other parameters in edit mode - ALWAYS SHOW ALL FIELDS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column */}
+              <div>
+                {renderParameterField('typesDeBien', 'Types de bien')}
+                {renderParameterField('vues', 'Vues')}
+                {renderParameterField('typologies', 'Typologies')}
               </div>
-            )}
+
+              {/* Right Column */}
+              <div>
+                {renderPartnerField()}
+              </div>
+            </div>
           </div>
         ) : (
           // Non-edit mode layout - two columns
@@ -422,95 +455,7 @@ const getSelectedUsers = () => {
             {/* Right Column */}
             <div>
               {/* Partners Section */}
-              <div className="space-y-3 mb-6">
-                <label className="block text-sm font-medium text-gray-700">
-                  Partenaires{' '}
-                  <span className="text-gray-500 text-xs">(optionnel)</span>
-                </label>
-
-                {/* Input to add new partners */}
-                <div className="flex gap-2">
-                  <div className="flex-1 flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Description du partenaire"
-                      value={partenaireInputs.description}
-                      onChange={(e) =>
-                        setPartenaireInputs((prev) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      placeholder="Remise %"
-                      value={partenaireInputs.remise}
-                      onChange={(e) =>
-                        setPartenaireInputs((prev) => ({
-                          ...prev,
-                          remise: e.target.value,
-                        }))
-                      }
-                      className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAddPartenaire}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded-md"
-                    aria-label="Ajouter partenaire"
-                  >
-                    <PlusIcon size={20} />
-                  </button>
-                </div>
-
-                {/* Display all partners */}
-                {(formData.parameters.partenaires || []).length > 0 && (
-                  <div className="mt-2">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">
-                      Partenaires ajoutés ({formData.parameters.partenaires.length})
-                    </h4>
-                    <div className="flex flex-col gap-2">
-                      {formData.parameters.partenaires.map(
-                        (partenaire, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between bg-gray-100 rounded-md px-3 py-2"
-                          >
-                            <div>
-                              <span className="font-medium">
-                                {getItemDisplayValue(partenaire, 'partenaires')}
-                              </span>
-                              {partenaire.remise && (
-                                <span className="ml-2 text-sm text-gray-500">
-                                  Remise: {partenaire.remise}%
-                                </span>
-                              )}
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleRemoveItem('partenaires', index)
-                              }
-                              className="text-gray-500 hover:text-gray-700"
-                              aria-label={`Retirer ${getItemDisplayValue(
-                                partenaire,
-                                'partenaires'
-                              )}`}
-                            >
-                              <XIcon size={14} />
-                            </button>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              {renderPartnerField()}
 
               {/* Users Access Section */}
               <div className="space-y-3 mb-6">

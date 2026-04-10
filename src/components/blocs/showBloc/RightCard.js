@@ -1832,6 +1832,9 @@ export const RightCard = ({
             hasTranches={nbre_tranches > 0}
             hasBlocs={true}
             hasImmeubles={nbre_immeubles > 0}
+             typeBiens={typeBiens}
+            vues_get={vues}
+            typologies_get={typologies}
           />
           {/* Delete Confirmation Modal */}
           {showDeleteModal && (

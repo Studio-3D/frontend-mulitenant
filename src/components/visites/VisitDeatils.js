@@ -232,11 +232,13 @@ export function VisitDetails({
                 } else if (res.mode_relance == 3) {
                   mode_rel = 'Email';
                 }
+                let user_id =  res.user_id;
+                let user_id_traite =  res.user_id_traite;
                 let user_traite = '';
                 let date_traite = ' ';
                 if (res.type_traitement != 0) {
                   user_traite =
-                    res.user_traite.name + ' ' + res.user_traite.name;
+                    res?.user_traite?.name + ' ' + res?.user_traite?.name;
                   if (res.date_traitement != null) {
                     date_traite = format(
                       new Date(res.date_traitement),
@@ -277,8 +279,8 @@ export function VisitDetails({
                     res.commentaire,
                     type_traite,
                     date_traite,
-                    res.user.name + ' ' + res.user.prenom,
-                    user_traite
+                    res?.user?.name + ' ' + res?.user?.prenom,
+                    user_traite,user_id,user_id_traite
                   ),
                 ]);
 
@@ -294,8 +296,8 @@ export function VisitDetails({
                       '',
                       'Ancien ' + type,
                       '',
-                      res.user.name + ' ' + res.user.prenom,
-                      ''
+                      res?.user?.name + ' ' + res?.user?.prenom,
+                      '',user_id,user_id_traite
                     ),
                   ]);
                 }
@@ -321,7 +323,7 @@ export function VisitDetails({
     type_traite,
     date_traite,
     responsable,
-    responsable_traite
+    responsable_traite,user_id,user_id_traite
   ) => {
     return {
       etape,
@@ -333,7 +335,7 @@ export function VisitDetails({
       type_traite,
       date_traite,
       responsable,
-      responsable_traite,
+      responsable_traite,user_id,user_id_traite
     };
   };
 
@@ -361,8 +363,9 @@ export function VisitDetails({
           ) {
             let historique_modification =
               response.data.historiques[k].historique_modification;
-            let username = response.data.historiques[k].user.name;
-            let userprenom = response.data.historiques[k].user.prenom;
+             let user_id = response.data.historiques[k]?.user_id;
+            let username = response.data.historiques[k]?.user?.name;
+            let userprenom = response.data.historiques[k]?.user?.prenom;
             let date = response.data.historiques[k].id;
             let interet = response.data.historiques[k].interet;
             let statut = null;
@@ -516,7 +519,7 @@ export function VisitDetails({
                   fr_tp,
                   fr_v,
                   fr_autre,
-                  historique_modification
+                  historique_modification,user_id
                 ),
               ]);
             }
@@ -544,7 +547,7 @@ export function VisitDetails({
                 fr_tp,
                 fr_v,
                 fr_autre,
-                historique_modification
+                historique_modification,user_id
               ),
             ]);
           }
@@ -579,7 +582,7 @@ export function VisitDetails({
     fr_typologies,
     fr_vues,
     fr_autre,
-    historique_modification
+    historique_modification,user_id
   ) => {
     return {
       action,
@@ -603,7 +606,7 @@ export function VisitDetails({
       fr_typologies,
       fr_vues,
       fr_autre,
-      historique_modification,
+      historique_modification,user_id
     };
   };
 
@@ -938,9 +941,9 @@ export function VisitDetails({
                             <div className="flex space-x-3">
                               {visite.relance_relation &&
                                 visite.relance_relation.type_traitement == 0 &&
-                                !visite.relance_relation.deleted_at &&
-                                visite.relance_relation.user.user_id_origin ==
-                                  user_id &&
+                                !visite.relance_relation.deleted_at &&(
+                                visite.relance_relation?.user?.user_id_origin ==
+                                  user_id||visite?.user_id==0 )  &&
                                 show_btn_relance && (
                                   <Button
                                     type="traite_relance"
@@ -957,9 +960,9 @@ export function VisitDetails({
 
                               {visite.rdv_relation &&
                                 visite.rdv_relation.type_traitement == 0 &&
-                                !visite.rdv_relation.deleted_at &&
-                                visite.rdv_relation.user.user_id_origin ==
-                                  user_id &&
+                                !visite.rdv_relation.deleted_at &&(
+                                visite.rdv_relation?.user?.user_id_origin ==
+                                  user_id || visite?.user_id==0 )&&
                                 visite.interet == 1 &&
                                 show_btn_rdv && (
                                   <Button
@@ -1021,8 +1024,8 @@ export function VisitDetails({
                                           visite.bien.superficie_architecte,
                                           visite.bien.orientation,
                                           visite.bien.prix,
-                                          visite.user.name,
-                                          visite.user.prenom,
+                                          visite?.user?.name,
+                                          visite?.user?.prenom,
                                         ]}
                                       />
                                     }
@@ -1052,9 +1055,10 @@ export function VisitDetails({
                           icon={<UserIcon className="h-5 w-5" />}
                           title="CC"
                           value={
-                            visite.user.name.toUpperCase() +
+                            
+                            visite?.user?.name.toUpperCase() +
                             ' ' +
-                            visite.user.prenom.toUpperCase()
+                            visite?.user?.prenom.toUpperCase()
                           }
                         />
 
@@ -1113,8 +1117,8 @@ export function VisitDetails({
                                         visite.bien.superficie_architecte,
                                         visite.bien.orientation,
                                         visite.bien.prix,
-                                        visite.user.name,
-                                        visite.user.prenom,
+                                        visite?.user?.name,
+                                        visite?.user?.prenom,
                                         JSON.parse(
                                           localStorage.getItem('authUser')
                                         ),
@@ -1396,8 +1400,8 @@ export function VisitDetails({
                                               visite.bien.superficie_architecte,
                                               visite.bien.orientation,
                                               visite.bien.prix,
-                                              visite.user.name,
-                                              visite.user.prenom,
+                                              visite?.user?.name,
+                                              visite?.user?.prenom,
                                             ]}
                                           />
                                         }

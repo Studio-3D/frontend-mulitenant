@@ -282,7 +282,7 @@ if (historique.reservation?.banque_id?.old) {
           )}
         </td>
         <td className="px-4 py-3 text-center font-medium">{row.action}</td>
-        <td className="px-4 py-3 text-center">{row.cc}</td>
+        <td className="px-4 py-3 text-center">{row.user_id==0?'SuperAdmin':row.cc}</td>
         <td className="px-4 py-3 text-center">{row.date}</td>
         <td className="px-4 py-3 text-center">
           {getInteretBadge(row?.interet)}

@@ -17,8 +17,9 @@ export default function BienImport({
   tranche_id_get,
   hasTranches,
   hasBlocs,
-  hasImmeubles
+  hasImmeubles,typologies_get,vues_get,typeBiens
 }) {
+  console.log('typologies===>'+JSON.stringify(typologies_get));
 
   const [file, setFile] = useState(null);
   const [backendErrors, setBackendErrors] = useState([]);
@@ -850,8 +851,8 @@ const validateEtage = (value) => {
               <p className="text-indigo-700 font-semibold mb-2">
                 Types des Biens:
               </p>
-              {Object.keys(selectedProjet?.types_bien).length > 0 ||
-              type_biens.length > 0 ? (
+             {(typeBiens && typeBiens.length > 0) || type_biens.length > 0 ? (
+
                 <table className="min-w-full bg-white rounded shadow text-sm text-left">
                   <thead className="bg-blue-500 text-white">
                     <tr>
@@ -861,22 +862,18 @@ const validateEtage = (value) => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-blue-100">
-                    {selectedProjet?.types_bien &&
-                      Object.keys(selectedProjet.types_bien).map((key) => (
-                        <tr key={key} className="border-b">
-                          <td className="px-4 py-2">
-                            {selectedProjet.types_bien[key].type}
-                          </td>
-                          <td className="px-4 py-2">
-                            {selectedProjet.types_bien[key].id}
-                          </td>
-                        </tr>
-                      ))}
-                    {type_biens.map((key) => (
-                      <tr key={key.id} className="border-b">
-                        <td className="px-4 py-2">{key.type}</td>
-                        <td className="px-4 py-2">{key.id}</td>
+                   <tbody className="bg-blue-100">
+                    {/* typeBiens is an array - use it directly */}
+                    {typeBiens && typeBiens.length > 0 && typeBiens.map((typeBien, index) => (
+                      <tr key={typeBien.id || index} className="border-b">
+                        <td className="px-4 py-2">{typeBien.type}</td>
+                        <td className="px-4 py-2">{typeBien.id}</td>
+                      </tr>
+                    ))}
+                    {type_biens.map((typeBien, index) => (
+                      <tr key={typeBien.id || index} className="border-b">
+                        <td className="px-4 py-2">{typeBien.type}</td>
+                        <td className="px-4 py-2">{typeBien.id}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -964,8 +961,8 @@ const validateEtage = (value) => {
               <p className="text-indigo-700 font-semibold mb-2">
                 Typologies:
               </p>
-              {Object.keys(selectedProjet?.typologies || {}).length > 0 ||
-              typologies.length > 0 ? (
+               {(typologies_get && typologies_get.length > 0) || typologies.length > 0 ? (
+
                 <table className="min-w-full bg-white rounded shadow text-sm text-left">
                   <thead className="bg-blue-500 text-white">
                     <tr>
@@ -975,25 +972,21 @@ const validateEtage = (value) => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-blue-100">
-                    {selectedProjet?.typologies &&
-                      Object.keys(selectedProjet.typologies).map((key) => (
-                        <tr key={key} className="border-b">
-                          <td className="px-4 py-2">
-                            {selectedProjet.typologies[key].typologie}
-                          </td>
-                          <td className="px-4 py-2">
-                            {selectedProjet.typologies[key].id}
-                          </td>
-                        </tr>
-                      ))}
-                    {typologies.map((key) => (
-                      <tr key={key.id} className="border-b">
-                        <td className="px-4 py-2">{key.typologie}</td>
-                        <td className="px-4 py-2">{key.id}</td>
-                      </tr>
-                    ))}
-                  </tbody>
+                    <tbody className="bg-blue-100">
+                  {/* typologies_get is an array - use it directly */}
+                  {typologies_get && typologies_get.length > 0 && typologies_get.map((typologie, index) => (
+                    <tr key={typologie.id || index} className="border-b">
+                      <td className="px-4 py-2">{typologie.typologie}</td>
+                      <td className="px-4 py-2">{typologie.id}</td>
+                    </tr>
+                  ))}
+                  {typologies.map((typologie, index) => (
+                    <tr key={typologie.id || index} className="border-b">
+                      <td className="px-4 py-2">{typologie.typologie}</td>
+                      <td className="px-4 py-2">{typologie.id}</td>
+                    </tr>
+                  ))}
+                </tbody>
                 </table>
               ) : (
                 <>
@@ -1010,7 +1003,7 @@ const validateEtage = (value) => {
                     >
                       <label className="text-blue-800 whitespace-nowrap">
                         Typologie : {index + 1}{' '}
-                        <span className="text-red-500 ml-1">*</span>
+                       
                       </label>
 
                       <TextField
@@ -1078,8 +1071,8 @@ const validateEtage = (value) => {
               <p className="text-indigo-700 font-semibold mb-2">
                 Vues:
               </p>
-              {Object.keys(selectedProjet?.vues || {}).length > 0 ||
-              vues.length > 0 ? (
+                {(vues_get && vues_get.length > 0) || vues.length > 0 ? (
+
                 <table className="min-w-full bg-white rounded shadow text-sm text-left">
                   <thead className="bg-blue-500 text-white">
                     <tr>
@@ -1089,25 +1082,21 @@ const validateEtage = (value) => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-blue-100">
-                    {selectedProjet?.vues &&
-                      Object.keys(selectedProjet.vues).map((key) => (
-                        <tr key={key} className="border-b">
-                          <td className="px-4 py-2">
-                            {selectedProjet.vues[key].vue}
-                          </td>
-                          <td className="px-4 py-2">
-                            {selectedProjet.vues[key].id}
-                          </td>
-                        </tr>
-                      ))}
-                    {vues.map((key) => (
-                      <tr key={key.id} className="border-b">
-                        <td className="px-4 py-2">{key.vue}</td>
-                        <td className="px-4 py-2">{key.id}</td>
-                      </tr>
-                    ))}
-                  </tbody>
+                 <tbody className="bg-blue-100">
+        {/* vues_get is an array - use it directly */}
+        {vues_get && vues_get.length > 0 && vues_get.map((vue, index) => (
+          <tr key={vue.id || index} className="border-b">
+            <td className="px-4 py-2">{vue.vue}</td>
+            <td className="px-4 py-2">{vue.id}</td>
+           </tr>
+        ))}
+        {vues.map((vue, index) => (
+          <tr key={vue.id || index} className="border-b">
+            <td className="px-4 py-2">{vue.vue}</td>
+            <td className="px-4 py-2">{vue.id}</td>
+           </tr>
+        ))}
+      </tbody>
                 </table>
               ) : (
                 <>
@@ -1124,7 +1113,7 @@ const validateEtage = (value) => {
                     >
                       <label className="text-blue-800 whitespace-nowrap">
                         Vue : {index + 1}{' '}
-                        <span className="text-red-500 ml-1">*</span>
+                        
                       </label>
 
                       <TextField

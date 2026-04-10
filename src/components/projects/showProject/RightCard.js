@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { StatusCard } from './StatusCard';
-import { Download, Eye, PencilLine, Trash2, X } from 'lucide-react';
+import { Download, Eye, PencilLine, Trash2, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 import { getOrientationLabel, isAdmin, isRespoLivraison, isSuperAdmin, ORIENTATIONS } from '@/configs/enum';
 import { useRouter } from 'next/navigation';
@@ -2115,370 +2115,366 @@ export const RightCard = ({
             hasTranches={nbre_tranches > 0}
             hasBlocs={nbre_blocs > 0}
             hasImmeubles={nbre_immeubles > 0}
+            typeBiens={typeBiens}
+            vues_get={vues}
+            typologies_get={typologies}
           />
 
           {/* Modal de modification en masse */}
 
           {showMassEditModal && (
-            <Modal
-              isVisible={true}
-              onClose={() => {
-                setShowMassEditModal(false);
-                setSelectedFile(null);
-                setImportErrors([]);
-                resetImportInterface();
+  <Modal
+    isVisible={true}
+                maxWidth='max-w-xl'
+
+    onClose={() => {
+      setShowMassEditModal(false);
+      setSelectedFile(null);
+      setImportErrors([]);
+      resetImportInterface();
+    }}
+  >
+    <div className="p-6 max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-10 pb-2">
+        <h2 className="text-xl font-semibold text-gray-800">
+          Modification en masse des biens
+        </h2>
+        <button
+          type="button"
+          onClick={() => {
+            setShowMassEditModal(false);
+            setSelectedFile(null);
+            setImportErrors([]);
+            resetImportInterface();
+          }}
+          className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+          title="Fermer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Messages d'information */}
+      <div className="space-y-4 mb-6">
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h3 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            Comment modifier vos biens en masse ?
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-blue-700 text-sm">
+            <li className="font-medium">
+              Exportez le fichier Excel contenant tous les biens (inclut ID)
+            </li>
+            <li className="font-medium">
+              Modifiez les données dans Excel en utilisant les IDs des référentiels ci-dessous
+            </li>
+            <li className="font-medium">
+              Importez le fichier modifié via la zone de dépôt
+            </li>
+          </ol>
+        </div>
+
+        {/* Section des référentiels - Tables stylisées */}
+       {/* Référentiels à utiliser */}
+  <div className="space-y-4">
+    <h3 className="text-md font-semibold text-gray-800 flex items-center gap-2">
+      <span className="text-blue-600">📋</span> Référentiels à utiliser pour la modification
+    </h3>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Types de Biens Table */}
+      {typeBiens && typeBiens.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-3 py-2">
+            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+              <HomeIcon size={16} />
+              Types de Biens
+            </h4>
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {typeBiens.map((type, idx) => (
+                  <tr key={type.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="px-3 py-2 text-sm font-mono text-blue-600">{type.id}</td>
+                    <td className="px-3 py-2 text-sm text-gray-700">{type.type}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
+            <p className="text-xs text-gray-500">{typeBiens.length} type(s) de bien</p>
+          </div>
+        </div>
+      )}
+
+      {/* Typologies Table */}
+      {typologies && typologies.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+          <div className="bg-gradient-to-r from-green-500 to-green-600 px-3 py-2">
+            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+              <LayersIcon size={16} />
+              Typologies
+            </h4>
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Typologie</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {typologies.map((typologie, idx) => (
+                  <tr key={typologie.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="px-3 py-2 text-sm font-mono text-green-600">{typologie.id}</td>
+                    <td className="px-3 py-2 text-sm text-gray-700">{typologie.typologie}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
+            <p className="text-xs text-gray-500">{typologies.length} typologie(s)</p>
+          </div>
+        </div>
+      )}
+
+      {/* Vues Table */}
+      {vues && vues.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-2">
+            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+              <BuildingIcon size={16} />
+              Vues
+            </h4>
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vue</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {vues.map((vue, idx) => (
+                  <tr key={vue.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="px-3 py-2 text-sm font-mono text-purple-600">{vue.id}</td>
+                    <td className="px-3 py-2 text-sm text-gray-700">{vue.vue}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
+            <p className="text-xs text-gray-500">{vues.length} vue(s)</p>
+          </div>
+        </div>
+      )}
+    </div>
+</div>
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <svg className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <div className="text-yellow-700 text-sm">
+              <strong>Important :</strong>
+              <ul className="list-disc list-inside mt-1 ml-2 space-y-1">
+                <li>
+                  Ne modifiez pas la colonne <strong>ID</strong> dans le fichier Excel
+                </li>
+                <li>
+                  Les colonnes <strong>Projet, Tranche, Bloc et Immeuble</strong> sont ignorées lors de l {"'"} import
+                </li>
+                <li>
+                  Pour les colonnes <strong>Type, Typologie et Vue</strong>, utilisez les IDs numériques du tableau ci-dessus
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section d'export */}
+      <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border">
+        <h3 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+          <Download className="w-5 h-5 text-purple-600" />
+          Étape 1 : Exporter les données
+        </h3>
+        <p className="text-gray-600 text-sm mb-4">
+          Téléchargez le fichier Excel contenant tous vos biens avec leurs identifiants.
+        </p>
+        <button
+          onClick={handleMassEditExport}
+          className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"
+        >
+          <Download className="w-5 h-5" />
+          <span className="font-medium">Exporter pour modification en masse</span>
+        </button>
+        <p className="text-xs text-gray-500 mt-2 text-center">
+          Fichier : {exportConfig?.name_file_export || 'export_biens_a_modifier'}.xlsx
+        </p>
+      </div>
+
+      {/* Section d'import intégrée */}
+      <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+        <h3 className="font-medium text-green-700 mb-3 flex items-center gap-2">
+          <Upload className="w-5 h-5" />
+          Étape 2 : Importer les modifications
+        </h3>
+        <p className="text-green-600 text-sm mb-4">
+          Une fois vos modifications terminées dans Excel, importez le fichier pour mettre à jour vos biens.
+        </p>
+
+        {/* Zone de dépôt de fichier */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Sélectionnez votre fichier Excel modifié
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="file"
+              id="mass-edit-file"
+              accept=".xlsx, .xls"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setImportErrors([]);
+                  setSelectedFile(file);
+                  updateFileDisplay(file);
+                }
               }}
-            >
-               <div className="p-6 max-w-2xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-800">
-                    Modification en masse des biens
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowMassEditModal(false);
-                      setSelectedFile(null);
-                      setImportErrors([]);
-                      resetImportInterface();
-                    }}
-                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-                    title="Fermer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Messages d'information */}
-                <div className="space-y-4 mb-6">
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h3 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
-                      <svg
-                        className="w-5 h-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Comment modifier vos biens en masse ?
-                    </h3>
-                    <ol className="list-decimal list-inside space-y-2 text-blue-700 text-sm">
-                      <li className="font-medium">
-                        Exportez le fichier Excel contenant tous les biens
-                        (inclut ID)
-                      </li>
-                      <li className="font-medium">
-                        Modifiez les données dans Excel
-                      </li>
-                      <li className="font-medium">
-                        Importez le fichier modifié via la zone de dépôt
-                        ci-dessous
-                      </li>
-                    </ol>
-                  </div>
-
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <div className="text-yellow-700 text-sm">
-                        <strong>Important :</strong>
-                        <ul className="list-disc list-inside mt-1 ml-2 space-y-1">
-                          <li>
-                            Ne modifiez pas la colonne <strong>ID</strong> dans
-                            le fichier Excel, elle est essentielle pour
-                            identifier les biens.
-                          </li>
-                          <li>
-                            Les colonnes{' '}
-                            <strong>Projet ,Tranche, Bloc et Immeuble</strong>{' '}
-                            ne sont pas prises en compte lors de {"l'import"}.
-                            Pour modifier ces informations, veuillez utiliser
-                            les formulaires individuels de chaque bien.
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section d'export */}
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
-                  <h3 className="font-medium text-gray-700 mb-3">
-                    Étape 1 : Exporter les données
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Téléchargez le fichier Excel contenant tous vos biens avec
-                    leurs identifiants.
-                  </p>
-                  <button
-                    onClick={handleMassEditExport}
-                    className="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2 transition-colors"
-                  >
-                    <Download className="w-5 h-5" />
-                    <span className="font-medium">
-                      Exporter pour modification en masse
-                    </span>
-                  </button>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Fichier :{' '}
-                    {exportConfig?.name_file_export || 'export_biens_a_modifier'}
-                    .xlsx
-                  </p>
-                </div>
-
-                {/* Section d'import intégrée */}
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                  <h3 className="font-medium text-green-700 mb-3">
-                    Étape 2 : Importer les modifications
-                  </h3>
-                  <p className="text-green-600 text-sm mb-4">
-                    Une fois vos modifications terminées dans Excel, importez le
-                    fichier pour mettre à jour vos biens.
-                  </p>
-
-                  {/* Zone de dépôt de fichier */}
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sélectionnez votre fichier Excel modifié
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="file"
-                        id="mass-edit-file"
-                        accept=".xlsx, .xls"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setImportErrors([]);
-                            // Store the file for later import
-                            setSelectedFile(file);
-                            // Update the file display
-                            updateFileDisplay(file);
-                          }
-                        }}
-                      />
-                      <label
-                        htmlFor="mass-edit-file"
-                        className="flex-1 cursor-pointer"
-                      >
-                        <div
-                          id="file-drop-zone"
-                          className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-green-400 hover:bg-green-25 transition-colors"
-                        >
-                          <svg
-                            className="w-8 h-8 text-gray-400 mx-auto mb-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                            />
-                          </svg>
-                          <p className="text-sm text-gray-600">
-                            <span className="text-green-600 font-medium">
-                              Cliquez pour sélectionner
-                            </span>{' '}
-                            ou glissez-déposez votre fichier
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Formats acceptés : .xlsx, .xls
-                          </p>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* File info and import button */}
-                  {selectedFile && (
-                    <div className="mb-4 p-3 bg-white rounded-lg border border-green-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                            <svg
-                              className="w-6 h-6 text-green-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-700">
-                              {selectedFile.name}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedFile(null);
-                            resetImportInterface();
-                          }}
-                          className="text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Import Button */}
-                  {selectedFile && (
-                    <div className="flex justify-center mt-4">
-                      <button
-                        onClick={handleImportClick}
-                        disabled={isImporting}
-                        className={`px-6 py-3 rounded-lg font-medium flex items-center gap-3 transition-all ${
-                          isImporting
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-                        } text-white`}
-                      >
-                        {isImporting ? (
-                          <>
-                            <svg
-                              className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
-                            </svg>
-                            Import en cours...
-                          </>
-                        ) : (
-                          <>
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                              />
-                            </svg>
-                            Importer les modifications
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Informations sur le format */}
-                  <div className="mt-3 p-3 bg-white rounded border">
-                    <h4 className="font-medium text-gray-700 text-sm mb-2">
-                      Format attendu :
-                    </h4>
-                    <ul className="text-xs text-gray-600 space-y-1">
-                      <li>
-                        • Fichier Excel (.xlsx, .xls) avec les mêmes colonnes
-                        que {"l'export"}
-                      </li>
-                      <li>
-                        • Conservez la colonne <strong>ID</strong> intacte
-                      </li>
-                       <li>• <strong>Type </strong> : ID numérique du type de bien (obligatoire)</li>
-                        <li>• <strong>Typologie </strong> : ID numérique de la typologie (optionnel)</li>
-                        <li>• <strong>Vue </strong> : ID numérique de la vue (optionnel)</li>
-                        <li>
-                        • Les colonnes{' '}
-                        <strong>Tranche, Bloc et Immeuble</strong> sont ignorées
-                        lors de {"l'import"}
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Affichage des erreurs */}
-                {importErrors.length > 0 && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <h4 className="font-medium text-red-700 mb-2">
-                      Erreurs détectées :
-                    </h4>
-                    <ul className="text-red-600 text-sm space-y-1 max-h-32 overflow-y-auto">
-                      {importErrors.map((error, index) => (
-                        <li key={index}>• {error.msg}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Indicateur de progression */}
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span
-                      className={`font-medium ${
-                        filteredItems.length > 0
-                          ? 'text-green-600'
-                          : 'text-gray-400'
-                      }`}
-                    >
-                      ✓ Données prêtes à {"l'export"}
-                    </span>
-                    <span className="text-gray-400">
-                      {filteredItems.length} biens 
-                    </span>
-                  </div>
-                </div>
+            />
+            <label htmlFor="mass-edit-file" className="flex-1 cursor-pointer">
+              <div
+                id="file-drop-zone"
+                className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-green-400 hover:bg-green-50 transition-all"
+              >
+                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-600">
+                  <span className="text-green-600 font-medium">Cliquez pour sélectionner</span> ou glissez-déposez votre fichier
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Formats acceptés : .xlsx, .xls
+                </p>
               </div>
-            </Modal>
-          )}
+            </label>
+          </div>
+        </div>
+
+        {/* File info and import button */}
+        {selectedFile && (
+          <>
+            <div className="mb-4 p-3 bg-white rounded-lg border border-green-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">{selectedFile.name}</p>
+                    <p className="text-xs text-gray-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedFile(null);
+                    resetImportInterface();
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <button
+                onClick={handleImportClick}
+                disabled={isImporting}
+                className={`px-6 py-3 rounded-lg font-medium flex items-center gap-3 transition-all ${
+                  isImporting
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                } text-white`}
+              >
+                {isImporting ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Import en cours...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-5 h-5" />
+                    Importer les modifications
+                  </>
+                )}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Informations sur le format */}
+        <div className="mt-4 p-3 bg-white rounded border text-sm">
+          <h4 className="font-medium text-gray-700 mb-2">Format attendu :</h4>
+          <ul className="text-xs text-gray-600 space-y-1">
+            <li>• Fichier Excel (.xlsx, .xls) avec les mêmes colonnes que l{"'"}export</li>
+            <li>• Conservez la colonne <strong className="text-purple-600">ID</strong> intacte</li>
+            <li>• <strong className="text-blue-600">Type</strong> : ID numérique du type de bien (obligatoire) - voir tableau ci-dessus</li>
+            <li>• <strong className="text-green-600">Typologie</strong> : ID numérique de la typologie (optionnel) - voir tableau ci-dessus</li>
+            <li>• <strong className="text-amber-600">Vue</strong> : ID numérique de la vue (optionnel) - voir tableau ci-dessus</li>
+            <li>• Les colonnes <strong>Tranche, Bloc et Immeuble</strong> sont ignorées lors de l{"'"}import</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Affichage des erreurs */}
+      {importErrors.length > 0 && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <h4 className="font-medium text-red-700 mb-2 flex items-center gap-2">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            Erreurs détectées :
+          </h4>
+          <ul className="text-red-600 text-sm space-y-1 max-h-32 overflow-y-auto">
+            {importErrors.map((error, index) => (
+              <li key={index}>• {error.msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Indicateur de progression */}
+      <div className="mt-6 pt-4 border-t border-gray-200">
+        <div className="flex items-center justify-between text-sm">
+          <span className={`font-medium ${filteredItems.length > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+            ✓ {filteredItems.length} biens prêts à être exportés
+          </span>
+        </div>
+      </div>
+    </div>
+  </Modal>
+)}
           {/**Modifie en mass titre foncier   9. Ajouter le modal pour le titre foncier dans le JSX*/}
           {showMassEditTitreModal && (
             <Modal

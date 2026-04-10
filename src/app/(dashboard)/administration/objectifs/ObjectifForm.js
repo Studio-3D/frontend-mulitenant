@@ -9,6 +9,7 @@ import Button from "@/components/Button";
 import BreadCrumb from "../../navigation/BreadCrumb";
 import LoadingSpin from "@/components/LoadingSpin";
 import { useSociete } from "@/context/SocieteContext";
+import SelectInput from "@/components/SelectInput";
 export default function ObjectifForm({ id = null }) {
   const router = useRouter();
       const { selectedProjet  } = useProjet();
@@ -192,46 +193,36 @@ export default function ObjectifForm({ id = null }) {
         <form onSubmit={handleSubmit}>
           {/* User selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium !text-gray-700 mb-1">
-              Commercial <span className="text-red-500">*</span>
-            </label>
             {id ? (
-              <input
-                type="text"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
-                value={
-                  user.name + " " + user.prenom || "Utilisateur non trouvé"
-                }
-                disabled
+              <>
+               <SelectInput
+                label="Commercial"
+                name="user_id"
+                value={user?.id}
+                disabled={true}
+                options={[{
+                  value: user?.id,
+                  label: `${user?.name || ''} ${user?.prenom || ''}`.trim() || "Utilisateur non trouvé"
+                }]}
               />
+              </>
             ) : (
-              <div>
-                <select
-                  className={`mt-1 block w-full px-3 py-2 border ${
-                    errors.user_id ? "border-red-500" : "border-gray-300"
-                  } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-                  value={formData.user_id}
-                  onChange={handleChange}
-                  name="user_id"
-                  disabled={fetchingUsers}
-                >
-                  <option value="">Sélectionner un commercial</option>
-                  {users.map((userItem) => (
-                    <option key={userItem.user_id} value={userItem.user_id}>
-                      {userItem.user?.name} {userItem.user?.prenom}
-                    </option>
-                  ))}
-                </select>
-                {errors.user_id && (
-                  <p className="mt-1 text-sm !text-red-600">{errors.user_id}</p>
-                )}
-                {fetchingUsers && (
-                  <p className="mt-1 text-sm !text-blue-500">
-                    Chargement des utilisateurs...
-                  </p>
-                )}
-              </div>
-            )}
+              <SelectInput
+                label="Commercial"
+                placeholder="Sélectionner un commercial"
+                name="user_id"
+                value={formData.user_id}
+                onChange={(value) => setFormData({ ...formData, user_id: value })}
+                error={errors.user_id}
+                required={true}
+                loading={fetchingUsers}
+                disabled={fetchingUsers}
+                options={users.map((userItem) => ({
+                  value: userItem.user_id,
+                  label: `${userItem.user?.name || ''} ${userItem.user?.prenom || ''}`.trim()
+                }))}
+              />
+)}
           </div>
 
           {/* Visites section */}

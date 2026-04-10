@@ -65,7 +65,7 @@ export default function Modal_Historique_rel_rdv({
           >
             {row.type}
           </td>
-          <td className="px-4 py-3 text-center">{row.responsable}</td>
+          <td className="px-4 py-3 text-center">{row.user_id==0?'SuperAdmin':row.responsable}</td>
           <td
             className={`px-4 py-3 text-center ${getTraitementBadgeStyle(
               row.type_traite
@@ -73,7 +73,7 @@ export default function Modal_Historique_rel_rdv({
           >
             {row.type_traite}
           </td>
-          <td className="px-4 py-3 text-center">{row.responsable_traite}</td>
+          <td className="px-4 py-3 text-center">{row.user_id_traite==0?'SuperAdmin':row.responsable_traite}</td>
           <td className="px-4 py-3 text-center font-medium">
             {row.date_traite}
           </td>

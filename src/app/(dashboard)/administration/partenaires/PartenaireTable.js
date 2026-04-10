@@ -82,7 +82,7 @@ const PartenaireTable = () => {
       description: item.description,
       remise: item.remise || '0',
       prospect_length: item.prospect.length,
-      client_length: item.client.lenght,
+      client_length: item.client.length,
     }));
   };
 
