@@ -164,6 +164,20 @@ const ClientFullPDF = ({ client, reservations, visites, user }) => {
     }
   };
 
+   // Safe NomBienComplet function
+  const NomBienComplet = (bien) => {
+    if (!bien || typeof bien === 'string') {
+      return '';
+    }
+    
+    const noms = [];
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+    if (bien.propriete_dite_bien) noms.push(bien.propriete_dite_bien);
+    
+    return noms.length > 0 ? noms.join(' - ') : '';
+  };
   const formatStatutReservation = (statut) => {
     switch (statut) {
       case "1":
@@ -187,6 +201,8 @@ const ClientFullPDF = ({ client, reservations, visites, user }) => {
         return { text: "Perdu", style: styles.perdu };
       case "4":
         return { text: "Injoignable", style: styles.injoignable };
+       case "5":
+        return { text: "Suivi Dossier", style: styles.injoignable };
       default:
         return { text: "Non spécifié", style: {} };
     }
@@ -214,7 +230,19 @@ const ClientFullPDF = ({ client, reservations, visites, user }) => {
         return { text: "Non spécifié", style: {} };
     }
   };
-
+// Add this function inside your component, before the return statement
+const formatCivilite = (civilite) => {
+  switch (civilite) {
+    case "1":
+      return "Mr";
+    case "2":
+      return "Mme";
+    case "3":
+      return "Mlle";
+    default:
+      return civilite || "";
+  }
+};
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -277,7 +305,7 @@ const ClientFullPDF = ({ client, reservations, visites, user }) => {
           </View>
           <View style={styles.clientInfo}>
             <Text style={styles.infoLabel}>Civilité:</Text>
-            <Text style={styles.infoValue}>{client.civilite || ""}</Text>
+            <Text style={styles.infoValue}>{formatCivilite(client.civilite)}</Text>
           </View>
         </View>
 
@@ -310,7 +338,7 @@ const ClientFullPDF = ({ client, reservations, visites, user }) => {
                       {formatDate(row.date_reservation)}
                     </Text>
                     <Text style={styles.tableCell}>
-                      {row.bien?.propriete_dite_bien || ""}
+                      {NomBienComplet(row.bien) || ""}
                     </Text>
                     <Text style={styles.tableCell}>
                       {row.bien?.projet?.nom || ""}
@@ -370,7 +398,7 @@ const ClientFullPDF = ({ client, reservations, visites, user }) => {
                       {statutVisite.text}
                     </Text>
                     <Text style={styles.tableCell}>
-                      {row.propriete_dite_bien || ""}
+                      {NomBienComplet(row.bien) || ""}
                     </Text>
                   </View>
                 );

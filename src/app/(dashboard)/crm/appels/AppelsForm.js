@@ -1408,7 +1408,9 @@ const handleChange_interet = useCallback((code) => {
                   name="interet"
                   value={watch('interet')}
                   required={true}
-                  options={Object.values(VISITE_INTERETS).map((interet) => ({
+                  options={Object.values(VISITE_INTERETS)
+                     .filter((interet) => interet.code !== 5) // Exclure "Injoignable"  
+                    .map((interet) => ({                   
                     value: interet.code,
                     label: interet.label,
                   }))}

@@ -109,7 +109,7 @@ const HistoriquesTable = ({ id, refreshTrigger = 0, type }) => {
       const statusLabel = getStatusLabelByType(pro.statut, pro.type_source);
 
       return {
-        id: pro.id,
+       id: pro.unique_key || pro.id, 
         type_source: pro.type_source, // Ajoutez cette colonne si vous voulez l'afficher
         date_traitement: pro.date_traitement,
         statut: statusLabel,
@@ -227,14 +227,15 @@ const columns = [
   render: (row) => (
     <div className="flex gap-3 items-center">
    
-           {isAdmin(user?.role) &&
-            isSuperAdmin(user?.role) &&
-            isCommercial(user?.role)&&
-            isRespoCommercial(user?.role)
+           {(isAdmin(user?.role) ||
+            isSuperAdmin(user?.role) ||
+            isCommercial(user?.role)||
+            isRespoCommercial(user?.role))
             && (
               <>
-              {row.type_source === 'prospect' ? (
+              {row.type_source == 'prospect' ? (
                       <>
+                     
                         {row.visite_id != null && (
                           <Link
                             href={`/crm/visites/${row.visite_id}`}
@@ -279,7 +280,9 @@ const columns = [
                     )}
 
               </>
+              
           )
+          
         }
      
     </div>
