@@ -357,7 +357,6 @@ const TAB_CONFIG = {
         ...(nbre_tranches > 0 ? [{ key: 'Tranche', label: 'Tranche' }] : []),
         ...(nbre_blocs > 0 ? [{ key: 'Bloc', label: 'Bloc' }] : []),
         { key: 'Immeuble', label: 'Immeuble' },
-        { key: 'Surface', label: 'Surface' },
         { key: 'Prix', label: 'Prix' },
         { key: 'Statut', label: 'Statut' },
         { key: 'Orientation', label: 'Orientation' },
@@ -422,7 +421,7 @@ const TAB_CONFIG = {
       );
 
       // Filtrer les données
-      const massEditData = items.map((item, index) => {
+       const massEditData = items.map((item, index) => {
         const baseData = baseConfig.data_to_export[index];
 
         // Créer un nouvel objet sans les colonnes problématiques
@@ -431,16 +430,20 @@ const TAB_CONFIG = {
         return {
           ID: item.id || '',
           'Type ID': item.type_id || '',
+          'Typologie ID': item.typologie_id || '',
+          'Vue ID': item.vue_id || '',
           ...cleanData,
         };
       });
 
-      // Filtrer les colonnes - supprimer complètement Tranche, Bloc, Immeuble
+       // Filtrer les colonnes - supprimer complètement Tranche, Bloc, Immeuble
       const massEditColumns = [
         { key: 'ID', label: 'ID' },
         { key: 'Type ID', label: 'Type' },
+        { key: 'Typologie ID', label: 'Typologie' },
+        { key: 'Vue ID', label: 'Vue' },
         ...baseConfig.columns_export.filter(
-          (column) => !['Type'].includes(column.key)
+        (column) => !['Type', 'Typologie', 'Vue'].includes(column.key)
         ),
       ];
 
@@ -1307,7 +1310,7 @@ export const RightCard = ({
             'numero',
             'nom',
             'prix unitaire',
-            'superficie totale',
+            'superficie architecte',
             'superficie habitable',
             'type',
           ];
@@ -1328,19 +1331,19 @@ export const RightCard = ({
               const row = rows[i];
 
               // Vérification des surfaces
-              if ('Superficie totale' in row && 'Superficie habitable' in row) {
+              if ('Superficie architecte' in row && 'Superficie habitable' in row) {
                 if (
-                  row['Superficie totale'] == 0 &&
+                  row['Superficie architecte'] == 0 &&
                   row['Superficie habitable'] == 0
                 ) {
                   msg_error.push({
                     id: i + 1,
-                    msg: `Ligne ${i + 1}: Aucune surface habitable ou totale`,
+                    msg: `Ligne ${i + 1}: Aucune surface habitable ou architecte`,
                   });
                   err = 1;
                 }
               } else if (
-                !('Superficie totale' in row) &&
+                !('Superficie architecte' in row) &&
                 'Superficie habitable' in row
               ) {
                 if (row['Superficie habitable'] == 0) {
@@ -1352,12 +1355,12 @@ export const RightCard = ({
                 }
               } else if (
                 !('Superficie habitable' in row) &&
-                'Superficie totale' in row
+                'Superficie architecte' in row
               ) {
-                if (row['Superficie totale'] == 0) {
+                if (row['Superficie architecte'] == 0) {
                   msg_error.push({
                     id: i + 1,
-                    msg: `Ligne ${i + 1}: Surface totale doit être > 0`,
+                    msg: `Ligne ${i + 1}: Surface architecte doit être > 0`,
                   });
                   err = 1;
                 }
@@ -1683,6 +1686,7 @@ export const RightCard = ({
 
           {showMassEditModal && (
             <Modal
+               maxWidth='max-w-xl'
               isVisible={true}
               onClose={() => {
                 setShowMassEditModal(false);
@@ -1983,25 +1987,17 @@ export const RightCard = ({
                   )}
 
                   {/* Informations sur le format */}
-                  <div className="mt-3 p-3 bg-white rounded border">
-                    <h4 className="font-medium text-gray-700 text-sm mb-2">
-                      Format attendu :
-                    </h4>
-                    <ul className="text-xs text-gray-600 space-y-1">
-                      <li>
-                        • Fichier Excel (.xlsx, .xls) avec les mêmes colonnes
-                        que {"l'export"}
-                      </li>
-                      <li>
-                        • Conservez la colonne <strong>ID</strong> intacte
-                      </li>
-                      <li>
-                        • Les colonnes{' '}
-                        <strong>Tranche, Bloc et Immeuble</strong> sont ignorées
-                        lors de {"l'import"}
-                      </li>
-                    </ul>
-                  </div>
+                  <div className="mt-4 p-3 bg-white rounded border text-sm">
+          <h4 className="font-medium text-gray-700 mb-2">Format attendu :</h4>
+          <ul className="text-xs text-gray-600 space-y-1">
+            <li>• Fichier Excel (.xlsx, .xls) avec les mêmes colonnes que l{"'"}export</li>
+            <li>• Conservez la colonne <strong className="text-purple-600">ID</strong> intacte</li>
+            <li>• <strong className="text-blue-600">Type</strong> : ID numérique du type de bien (obligatoire) - voir tableau ci-dessus</li>
+            <li>• <strong className="text-green-600">Typologie</strong> : ID numérique de la typologie (optionnel) - voir tableau ci-dessus</li>
+            <li>• <strong className="text-amber-600">Vue</strong> : ID numérique de la vue (optionnel) - voir tableau ci-dessus</li>
+            <li>• Les colonnes <strong>Tranche, Bloc et Immeuble</strong> sont ignorées lors de l{"'"}import</li>
+          </ul>
+        </div>
                 </div>
 
                 {/* Affichage des erreurs */}

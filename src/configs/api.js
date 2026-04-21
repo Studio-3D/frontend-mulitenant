@@ -8,6 +8,8 @@ const BASERESOURCEURL =
 export const RESOURCE_URL = {
   DOCS: `${BASERESOURCEURL}/docs`,
   BASE: BASERESOURCEURL,
+  FRONTEND_IMAGES: '/images', // Add this for frontend images
+
 };
 
 export const APIURL = {

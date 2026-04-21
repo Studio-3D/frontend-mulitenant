@@ -271,6 +271,8 @@ export const TrancheDetailsPage = () => {
           niveau: b?.niveau,
           typologie: b?.typologie?.typologie || '',
           vue: b?.vue?.vue || '',
+          typologie_id: b?.typologie?.id || '',
+          vue_id: b?.vue?.id || '',
           conventionne: b?.conventionne || '', // Modifier ici - valeur par défaut vide au lieu de 0
           prix_unitaire: b?.prix_unitaire || 0,
           prix: b?.prix || '',
@@ -280,7 +282,7 @@ export const TrancheDetailsPage = () => {
           prix_parking: b?.prix_parking || 0,
           avance_minimale: b?.avance_minimale || 0,
           superficie_architecte: b?.superficie_architecte || 0,
-          superficie_habitable: b?.habitable || 0,
+          superficie_habitable: b?.superficie_habitable || 0,
           nbre_facades: b?.nbre_facades || 0,
           superficie_parking: b?.superficie_parking || 0,
           superficie_box: b?.superficie_box || 0,

@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const MyDocument = ({ data, logoBase64 }) => {
+const MyDocument = ({ data }) => {
   const [
     visite_id,
     code_pre_reserve,
@@ -111,34 +111,17 @@ const MyDocument = ({ data, logoBase64 }) => {
 
   const user = userData || {};
   const societe = user?.societe || {};
-
+// In your PDF component, use the frontend image path
+const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos/${societe.logo}`;
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            {logoBase64 ? (  // Fixed condition - check logoBase64 instead of imageUrl
-              <Image
-                src={logoBase64}
-                style={styles.logo}  // Fixed: removed duplicate style prop
-              />
-            ) : (
-              <View
-                style={{
-                  width: 80,
-                  height: 80,
-                  backgroundColor: '#f0f0f0',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  border: '1px solid #ccc',
-                }}
-              >
-                <Text style={{ fontSize: 8, color: '#666' }}>LOGO</Text>
-                <Text style={{ fontSize: 6, color: '#999' }}>
-                  Non disponible
-                </Text>
-              </View>
-            )}
+            <Image
+              src={logoUrl}  // Use absolute path from public folder
+              style={styles.logo}
+            />
           </View>
           <View style={styles.companyDetails}>
             <Text style={[styles.bold, { marginBottom: 5 }]}>

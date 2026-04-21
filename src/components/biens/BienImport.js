@@ -62,6 +62,9 @@ export default function BienImport({
     setTypologiesBackendErrors(null);
     setVuesBackendErrors(null);
     setIsDragging(false);
+      if (fileInputRef.current) {
+    fileInputRef.current.value = '';
+  }
   };
 
   const onSubmit_file = (e) => {
@@ -97,31 +100,18 @@ export default function BienImport({
     setIsDragging(true);
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
+  // Update the handleDrop function to reset errors
+const handleDrop = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setIsDragging(false);
 
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && (droppedFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
-        droppedFile.type === 'application/vnd.ms-excel')) {
-      setFile(droppedFile);
-      if (
-        Object.keys(selectedProjet.types_bien).length === 0 &&
-        type_biens.length === 0
-      ) {
-        setDisabled_var(true);
-      } else {
-        setDisabled_var(false);
-      }
-    } else {
-      toast.error('Veuillez déposer un fichier Excel valide (.xlsx, .xls)');
-    }
-  };
-
-  const handleFileSelect = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
+  const droppedFile = e.dataTransfer.files[0];
+  if (droppedFile && (droppedFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+      droppedFile.type === 'application/vnd.ms-excel')) {
+    setFile(droppedFile);
+    setBackendErrors([]); // Clear previous errors
+    
     if (
       Object.keys(selectedProjet.types_bien).length === 0 &&
       type_biens.length === 0
@@ -130,7 +120,29 @@ export default function BienImport({
     } else {
       setDisabled_var(false);
     }
-  };
+  } else {
+    toast.error('Veuillez déposer un fichier Excel valide (.xlsx, .xls)');
+  }
+};
+
+ // Update the handleFileSelect function to reset errors when a new file is selected
+const handleFileSelect = (e) => {
+  const selectedFile = e.target.files[0];
+  if (selectedFile) {
+    setFile(selectedFile);
+    setBackendErrors([]); // Clear previous errors
+    setDisabled_var(false); // Enable import button
+    
+    if (
+      Object.keys(selectedProjet.types_bien).length === 0 &&
+      type_biens.length === 0
+    ) {
+      setDisabled_var(true);
+    } else {
+      setDisabled_var(false);
+    }
+  }
+};
 
   
 // Validation for Typologie (should be numeric ID)
@@ -174,6 +186,14 @@ const validateEtage = (value) => {
   
   return false;
 };
+const handleClearFile = () => {
+  setFile(null);
+  setBackendErrors([]);
+  setDisabled_var(false);
+  if (fileInputRef.current) {
+    fileInputRef.current.value = ''; // Reset the file input value
+  }
+};
 
   const handleImportClick = async (file) => {
     try {
@@ -213,8 +233,9 @@ const validateEtage = (value) => {
         let requiredHeaders = [
           'numero',
           'prix unitaire',
-          'superficie totale',
+          'superficie vendable',
           'superficie habitable',
+          'superficie architecte',
           'type bien',
         ];
         if (hasBlocs || hasTranches || hasImmeubles) {
@@ -269,21 +290,21 @@ const validateEtage = (value) => {
               hasError = true;
             }
 
-            if ('Superficie totale' in row && 'Superficie habitable' in row) {
+            if ('Superficie architecte' in row && 'Superficie habitable' in row) {
               if (
-                row['Superficie totale'] == 0 &&
+                row['Superficie architecte'] == 0 &&
                 row['Superficie habitable'] == 0
               ) {
                 msg_error.push({
                   id: i,
                   msg: `La ligne ${
                     i + 1
-                  } ne dispose d'aucune surface existante, qu'elle soit habitable ou totale.`,
+                  } ne dispose d'aucune surface existante, qu'elle soit habitable ou architecte.`,
                 });
                 hasError = true;
               }
             } else if (
-              !('Superficie totale' in row) &&
+              !('Superficie architecte' in row) &&
               'Superficie habitable' in row
             ) {
               if (row['Superficie habitable'] == 0) {
@@ -298,9 +319,9 @@ const validateEtage = (value) => {
               }
             } else if (
               !('Superficie habitable' in row) &&
-              'Superficie totale' in row
+              'Superficie architecte' in row
             ) {
-              if (row['Superficie totale'] == 0) {
+              if (row['Superficie architecte'] == 0) {
                 msg_error.push({
                   id: i,
                   msg: `La ligne ${
@@ -315,7 +336,7 @@ const validateEtage = (value) => {
                 id: i,
                 msg: `La ligne ${
                   i + 1
-                } ne dispose d'aucune surface existante, qu'elle soit habitable ou totale.`,
+                } ne dispose d'aucune surface existante, qu'elle soit habitable ou architecte.`,
               });
               
                hasError = true;
@@ -1252,52 +1273,67 @@ const validateEtage = (value) => {
             <hr className="w-full border-t border-gray-300 my-4" />
 
             {/* File Input Section with Drag & Drop */}
-            <div className="w-full">
-              <div
-                className={`border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer
-                  ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}
-                  ${file ? 'bg-green-50 border-green-500' : ''}`}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept=".xlsx,.xls"
-                  onChange={handleFileSelect}
-                />
-                
-                <div className="flex flex-col items-center justify-center gap-3">
-                  <Upload className={`w-12 h-12 ${isDragging ? 'text-blue-600' : 'text-gray-400'}`} />
-                  
-                  {file ? (
-                    <>
-                      <p className="text-lg font-medium text-green-700">Fichier sélectionné</p>
-                      <p className="text-sm text-gray-600">{file.name}</p>
-                      <p className="text-xs text-gray-500">
-                        Cliquez ou glissez-déposez pour changer de fichier
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-lg font-medium text-gray-700">
-                        {isDragging ? 'Déposez le fichier ici' : 'Glissez-déposez votre fichier Excel ici'}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        ou cliquez pour parcourir
-                      </p>
-                      <p className="text-xs text-gray-400 mt-2">
-                        Formats acceptés : .xlsx, .xls
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+          {/* File Input Section with Drag & Drop */}
+<div className="w-full">
+  <div
+    className={`border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer
+      ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}
+      ${file ? 'bg-green-50 border-green-500' : ''}`}
+    onDragEnter={handleDragEnter}
+    onDragLeave={handleDragLeave}
+    onDragOver={handleDragOver}
+    onDrop={handleDrop}
+    onClick={() => fileInputRef.current?.click()}
+  >
+    <input
+      type="file"
+      ref={fileInputRef}
+      className="hidden"
+      accept=".xlsx,.xls"
+      onChange={handleFileSelect}
+    />
+    
+    <div className="flex flex-col items-center justify-center gap-3">
+      <Upload className={`w-12 h-12 ${isDragging ? 'text-blue-600' : 'text-gray-400'}`} />
+      
+      {file ? (
+        <div className="relative w-full text-center">
+          <div className="flex items-center justify-center gap-2">
+            <p className="text-lg font-medium text-green-700">Fichier sélectionné</p>
+            {/* Add delete/close button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent triggering the parent div's onClick
+                handleClearFile();
+              }}
+              className="text-red-500 hover:text-red-700 transition-colors"
+              title="Supprimer le fichier"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          <p className="text-sm text-gray-600 mt-1">{file.name}</p>
+          <p className="text-xs text-gray-500">
+            Cliquez ou glissez-déposez pour changer de fichier
+          </p>
+        </div>
+      ) : (
+        <>
+          <p className="text-lg font-medium text-gray-700">
+            {isDragging ? 'Déposez le fichier ici' : 'Glissez-déposez votre fichier Excel ici'}
+          </p>
+          <p className="text-sm text-gray-500">
+            ou cliquez pour parcourir
+          </p>
+          <p className="text-xs text-gray-400 mt-2">
+            Formats acceptés : .xlsx, .xls
+          </p>
+        </>
+      )}
+    </div>
+  </div>
+</div>
 
             {backendErrors && backendErrors.length > 0 && (
               <div className="text-red-500 w-full bg-red-50 border border-red-200 rounded p-4">

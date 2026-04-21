@@ -60,58 +60,7 @@ const PreReservationTable = () => {
 
 
 // In PreReservationTable.js - Replace your logo fetch code
-const [logoBase64, setLogoBase64] = useState(null);
-const [isLogoLoading, setIsLogoLoading] = useState(true);
 
-useEffect(() => {
-  const fetchLogoAsBase64 = () => {
-    setIsLogoLoading(true);
-    try {
-      const authUser = JSON.parse(localStorage.getItem('authUser'));
-      const societe = authUser?.societe;
-      
-      if (societe?.logo && societe?.id && societe?.raison_sociale) {
-        const folderName = `${societe.raison_sociale}_${societe.id}`;
-        const logoUrl = `http://127.0.0.1:8000/docs/${folderName}/logos/${societe.logo}`;
-        
-        console.log('Fetching logo via XHR from:', logoUrl);
-        
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', logoUrl, true);
-        xhr.responseType = 'blob';
-        
-        xhr.onload = function() {
-          if (xhr.status === 200) {
-            const blob = xhr.response;
-            const reader = new FileReader();
-            reader.onloadend = function() {
-              setLogoBase64(reader.result);
-              setIsLogoLoading(false);
-            };
-            reader.readAsDataURL(blob);
-          } else {
-            console.error('XHR failed with status:', xhr.status);
-            setIsLogoLoading(false);
-          }
-        };
-        
-        xhr.onerror = function() {
-          console.error('XHR error');
-          setIsLogoLoading(false);
-        };
-        
-        xhr.send();
-      } else {
-        setIsLogoLoading(false);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setIsLogoLoading(false);
-    }
-  };
-  
-  fetchLogoAsBase64();
-}, []);
   useEffect(() => {
     localStorage.setItem('v_id_cadre', null);
     localStorage.setItem('v_id_org', null);
@@ -330,7 +279,6 @@ useEffect(() => {
           : null,
         JSON.parse(localStorage.getItem('authUser'))
       ]}
-      logoBase64={logoBase64}
     />
   }
   fileName={`bon_pre_reservation_${row.code}.pdf`}
@@ -338,12 +286,12 @@ useEffect(() => {
   {({ loading, error }) => (
     <button
       className={`text-indigo-500 hover:text-indigo-700 ${
-        loading || isLogoLoading ? 'opacity-50' : ''
+        loading ? 'opacity-50' : ''
       }`}
       title="Télécharger PDF"
-      disabled={loading || isLogoLoading}
+      disabled={loading }
     >
-      {loading || isLogoLoading ? '...' : <Download className="w-4 h-4" />}
+      {loading  ? '...' : <Download className="w-4 h-4" />}
     </button>
   )}
 </PDFDownloadLink>

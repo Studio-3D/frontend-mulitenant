@@ -752,7 +752,6 @@ const TAB_CONFIG = {
         ...(nbre_tranches > 0 ? [{ key: 'Tranche', label: 'Tranche' }] : []),
         ...(nbre_blocs > 0 ? [{ key: 'Bloc', label: 'Bloc' }] : []),
         ...(nbre_immeubles > 0 ? [{ key: 'Immeuble', label: 'Immeuble' }] : []),
-        { key: 'Surface', label: 'Surface' },
         { key: 'Prix', label: 'Prix' },
         { key: 'Statut', label: 'Statut' },
         { key: 'Orientation', label: 'Orientation' },
@@ -1739,7 +1738,7 @@ export const RightCard = ({
             'numero',
             'nom',
             'prix unitaire',
-            'superficie totale',
+            'superficie architecte',
             'superficie habitable',
             'type',
           ];
@@ -1760,19 +1759,19 @@ export const RightCard = ({
               const row = rows[i];
 
               // Vérification des surfaces
-              if ('Superficie totale' in row && 'Superficie habitable' in row) {
+              if ('Superficie architecte' in row && 'Superficie habitable' in row) {
                 if (
-                  row['Superficie totale'] == 0 &&
+                  row['Superficie architecte'] == 0 &&
                   row['Superficie habitable'] == 0
                 ) {
                   msg_error.push({
                     id: i + 1,
-                    msg: `Ligne ${i + 1}: Aucune surface habitable ou totale`,
+                    msg: `Ligne ${i + 1}: Aucune surface habitable ou architecte`,
                   });
                   err = 1;
                 }
               } else if (
-                !('Superficie totale' in row) &&
+                !('Superficie architecte' in row) &&
                 'Superficie habitable' in row
               ) {
                 if (row['Superficie habitable'] == 0) {
@@ -1784,12 +1783,12 @@ export const RightCard = ({
                 }
               } else if (
                 !('Superficie habitable' in row) &&
-                'Superficie totale' in row
+                'Superficie architecte' in row
               ) {
-                if (row['Superficie totale'] == 0) {
+                if (row['Superficie architecte'] == 0) {
                   msg_error.push({
                     id: i + 1,
-                    msg: `Ligne ${i + 1}: Surface totale doit être > 0`,
+                    msg: `Ligne ${i + 1}: Surface architecte doit être > 0`,
                   });
                   err = 1;
                 }
@@ -2168,7 +2167,7 @@ export const RightCard = ({
               Exportez le fichier Excel contenant tous les biens (inclut ID)
             </li>
             <li className="font-medium">
-              Modifiez les données dans Excel en utilisant les IDs des référentiels ci-dessous
+                        Modifiez les données dans Excel
             </li>
             <li className="font-medium">
               Importez le fichier modifié via la zone de dépôt
@@ -2178,112 +2177,112 @@ export const RightCard = ({
 
         {/* Section des référentiels - Tables stylisées */}
        {/* Référentiels à utiliser */}
-  <div className="space-y-4">
-    <h3 className="text-md font-semibold text-gray-800 flex items-center gap-2">
-      <span className="text-blue-600">📋</span> Référentiels à utiliser pour la modification
-    </h3>
-    
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {/* Types de Biens Table */}
-      {typeBiens && typeBiens.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-3 py-2">
-            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-              <HomeIcon size={16} />
-              Types de Biens
-            </h4>
-          </div>
-          <div className="max-h-48 overflow-y-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 sticky top-0">
-                <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {typeBiens.map((type, idx) => (
-                  <tr key={type.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-3 py-2 text-sm font-mono text-blue-600">{type.id}</td>
-                    <td className="px-3 py-2 text-sm text-gray-700">{type.type}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
-            <p className="text-xs text-gray-500">{typeBiens.length} type(s) de bien</p>
-          </div>
-        </div>
-      )}
+          <div className="space-y-4">
+            <h3 className="text-md font-semibold text-gray-800 flex items-center gap-2">
+              <span className="text-blue-600">📋</span> Référentiels à utiliser pour la modification
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Types de Biens Table */}
+              {typeBiens && typeBiens.length > 0 && (
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-3 py-2">
+                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <HomeIcon size={16} />
+                      Types de Biens
+                    </h4>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {typeBiens.map((type, idx) => (
+                          <tr key={type.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="px-3 py-2 text-sm font-mono text-blue-600">{type.id}</td>
+                            <td className="px-3 py-2 text-sm text-gray-700">{type.type}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
+                    <p className="text-xs text-gray-500">{typeBiens.length} type(s) de bien</p>
+                  </div>
+                </div>
+              )}
 
-      {/* Typologies Table */}
-      {typologies && typologies.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-green-500 to-green-600 px-3 py-2">
-            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-              <LayersIcon size={16} />
-              Typologies
-            </h4>
-          </div>
-          <div className="max-h-48 overflow-y-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 sticky top-0">
-                <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Typologie</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {typologies.map((typologie, idx) => (
-                  <tr key={typologie.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-3 py-2 text-sm font-mono text-green-600">{typologie.id}</td>
-                    <td className="px-3 py-2 text-sm text-gray-700">{typologie.typologie}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
-            <p className="text-xs text-gray-500">{typologies.length} typologie(s)</p>
-          </div>
-        </div>
-      )}
+              {/* Typologies Table */}
+              {typologies && typologies.length > 0 && (
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                  <div className="bg-gradient-to-r from-green-500 to-green-600 px-3 py-2">
+                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <LayersIcon size={16} />
+                      Typologies
+                    </h4>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Typologie</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {typologies.map((typologie, idx) => (
+                          <tr key={typologie.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="px-3 py-2 text-sm font-mono text-green-600">{typologie.id}</td>
+                            <td className="px-3 py-2 text-sm text-gray-700">{typologie.typologie}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
+                    <p className="text-xs text-gray-500">{typologies.length} typologie(s)</p>
+                  </div>
+                </div>
+              )}
 
-      {/* Vues Table */}
-      {vues && vues.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-2">
-            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-              <BuildingIcon size={16} />
-              Vues
-            </h4>
-          </div>
-          <div className="max-h-48 overflow-y-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 sticky top-0">
-                <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vue</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {vues.map((vue, idx) => (
-                  <tr key={vue.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-3 py-2 text-sm font-mono text-purple-600">{vue.id}</td>
-                    <td className="px-3 py-2 text-sm text-gray-700">{vue.vue}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
-            <p className="text-xs text-gray-500">{vues.length} vue(s)</p>
-          </div>
+              {/* Vues Table */}
+              {vues && vues.length > 0 && (
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                  <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-2">
+                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <BuildingIcon size={16} />
+                      Vues
+                    </h4>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vue</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {vues.map((vue, idx) => (
+                          <tr key={vue.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="px-3 py-2 text-sm font-mono text-purple-600">{vue.id}</td>
+                            <td className="px-3 py-2 text-sm text-gray-700">{vue.vue}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
+                    <p className="text-xs text-gray-500">{vues.length} vue(s)</p>
+                  </div>
+                </div>
+              )}
+            </div>
         </div>
-      )}
-    </div>
-</div>
         <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-start gap-2">
             <svg className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
