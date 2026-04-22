@@ -11,7 +11,9 @@ import ButtonSpinner from '@/components/ButtonSpinner';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useSociete } from "../../../../../context/SocieteContext"; 
-
+const frontendApi = axios.create({
+  baseURL: '', // Empty base URL to use relative paths
+});
 export default function UpdateSociete() {
   const { refreshSocietes } = useSociete();
   const router = useRouter();
@@ -54,12 +56,6 @@ export default function UpdateSociete() {
         .required('Téléphone est obligatoire')
         .min(10, 'Téléphone doit contenir au moins 10 caractères')
         .max(15, 'Téléphone ne doit pas dépasser 15 caractères'),
-      /*adresse: Yup.string().required('Adresse est obligatoire'),
-      registre_commerce: Yup.number().required(
-        'Registre de commerce est obligatoire'
-      ),
-      id_fiscal: Yup.number().required('ID Fiscal est obligatoire'),
-      capital: Yup.number().required('Capital est obligatoire'),*/
     }),
     onSubmit: async (values) => {
       if (!hasChanges(values)) {
@@ -82,16 +78,34 @@ export default function UpdateSociete() {
       }
 
       try {
-        await axios.post(`${APIURL.SOCIETES}/${id}?_method=PUT`, formToSend, {
+        // Capture the response here
+        const response = await axios.post(`${APIURL.SOCIETES}/${id}?_method=PUT`, formToSend, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'multipart/form-data',
           },
         });
+        
+        // After successful backend update, save logo to frontend public folder
+        if (selectedLogo && response.data.societe) {
+          const updatedSociete = response.data.societe;
+          const normalizedName = updatedSociete.raison_sociale;
+          const folderName = `${normalizedName}_${updatedSociete.id}`;
+          
+          // Save to frontend
+          const frontendFormData = new FormData();
+          frontendFormData.append('logo', selectedLogo);
+          frontendFormData.append('folderName', folderName);
+          frontendFormData.append('fileName', updatedSociete.logo);
+          
+      await frontendApi.post('/api/save-frontend-logo', frontendFormData);
+        }
+        
         refreshSocietes();
         toast.success("Informations du Societé mises à jour avec succès.");
         router.push('/societes');
       } catch (error) {
+        console.error('Error:', error);
         toast.error(
           "Erreur lors de la mise à jour des informations du Societé."
         );
@@ -114,49 +128,48 @@ export default function UpdateSociete() {
     return logoChanged || fieldsChanged;
   };
 
- useEffect(() => {
-  const fetchSocieteById = async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-      toast.error("Aucun jeton d'accès trouvé.");
-      return;
-    }
+  useEffect(() => {
+    const fetchSocieteById = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        toast.error("Aucun jeton d'accès trouvé.");
+        return;
+      }
 
-    try {
-      const response = await axios.get(`${APIURL.SOCIETES}/${id}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      try {
+        const response = await axios.get(`${APIURL.SOCIETES}/${id}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
 
-      const societeData = response.data.societe;
-      setSociete(societeData);
+        const societeData = response.data.societe;
+        setSociete(societeData);
 
-      // CHANGE THIS PART - Convert null values to empty strings
-      const initialValues = {
-        raison_sociale: societeData.raison_sociale || '',
-        nom_contact: societeData.nom_contact || '',
-        prenom_contact: societeData.prenom_contact || '',
-        email: societeData.email || '',
-        tel: societeData.tel || '',
-        adresse: societeData.adresse || '',        // Fix: null becomes ''
-        registre_commerce: societeData.registre_commerce || '', // Fix: null becomes ''
-        id_fiscal: societeData.id_fiscal || '',    // Fix: null becomes ''
-        capital: societeData.capital || '',        // Fix: null becomes ''
-        logo: null, // Keep null for logo as it's handled separately
-      };
+        const initialValues = {
+          raison_sociale: societeData.raison_sociale || '',
+          nom_contact: societeData.nom_contact || '',
+          prenom_contact: societeData.prenom_contact || '',
+          email: societeData.email || '',
+          tel: societeData.tel || '',
+          adresse: societeData.adresse || '',
+          registre_commerce: societeData.registre_commerce || '',
+          id_fiscal: societeData.id_fiscal || '',
+          capital: societeData.capital || '',
+          logo: null,
+        };
 
-      formik.setValues(initialValues);
-      initialValuesRef.current = initialValues;
-    } catch (error) {
-      toast.error(
-        "Erreur lors de la récupération des informations du Societé."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+        formik.setValues(initialValues);
+        initialValuesRef.current = initialValues;
+      } catch (error) {
+        toast.error(
+          "Erreur lors de la récupération des informations du Societé."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (id) fetchSocieteById();
-}, [id]);
+    if (id) fetchSocieteById();
+  }, [id]);
 
   if (loading) return <div>Loading...</div>;
 

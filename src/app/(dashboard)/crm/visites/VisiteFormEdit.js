@@ -167,9 +167,10 @@ export default function VisiteFormEdit({ id }) {
     bien_pre_reserve: '',
     bien_val: '',
     prix_val: '',
-    Superficie_balcon_calculer: 0,
+   /* Superficie_balcon_calculer: 0,
     superficie_jardin_calculer: 0,
-    superficie_terrasse_calculer: 0,
+    superficie_terrasse_calculer: 0,*/
+    superficie_vendable:0,
     prix_box: 0,
     prix_parking: 0,
     prix_unitaire: 0,
@@ -507,16 +508,19 @@ export default function VisiteFormEdit({ id }) {
           bien_val: visite?.bien?.propriete_dite_bien || '',
           prix_val: visite?.bien?.prix || '',
           prix: visite?.bien?.prix || '',
-          superficie_balcon_calculer:
+          superficie_vendable:
+            visite?.bien?.superficie_vendable || 0,
+         /* superficie_balcon_calculer:
             visite?.bien?.superficie_balcon_calculer || 0,
           superficie_jardin_calculer:
             visite?.bien?.superficie_jardin_calculer || 0,
           superficie_terrasse_calculer:
             visite?.bien?.superficie_terrasse_calculer || 0,
-          superficie_habitable: visite?.bien?.superficie_habitable || 0,
+          superficie_habitable: visite?.bien?.superficie_habitable || 0,*/
           prix_box: visite?.bien?.prix_box || 0,
           prix_parking: visite?.bien?.prix_parking || 0,
           prix_unitaire: visite?.bien?.prix_unitaire || 0,
+          prix_remise: visite?.bien?.prix_unitaire || 0,
           avance_minimale: visite?.bien?.avance_minimale || 0,
           date_reservation: visite?.reservation?.date_reservation || '',
           code_reservation: visite?.reservation?.code_reservation || '',
@@ -770,7 +774,11 @@ export default function VisiteFormEdit({ id }) {
   // 1) Extract all your checks into a single function
   const validateFields = () => {
     const errors = [];
-
+  if (Number(watch('statut')) == 2) {
+    if (!watch('nom') || watch('nom').trim() === '') {
+      errors.push('Le nom est obligatoire pour une vente');
+    }
+  }
     // 17. Interet required
     if (!watch('interet') || watch('interet') === '') {
       errors.push("L'intérêt de visite est requis");
@@ -829,7 +837,7 @@ export default function VisiteFormEdit({ id }) {
         }
 
         const avanceMinimale = parseFloat(watch('avance_minimale') || 0);
-        if (avance > 0 && avance < avanceMinimale) {
+        if (avance < avanceMinimale  && user?.role > 2) {
           errors.push(`Le montant doit être au moins ${avanceMinimale} MAD`);
         }
 
@@ -846,13 +854,20 @@ export default function VisiteFormEdit({ id }) {
             errors.push('La banque est requise pour ce mode de paiement');
           }
 
-          if (!watch('numero_paiement')) {
-            errors.push('Le numéro de paiement est requis');
+         // Validation for num_paiement (16 chiffres)
+        if (watch('numero_paiement') && watch('numero_paiement').trim() !== '') {
+          const numPaiement = watch('numero_paiement').toString().replace(/\s/g, '');
+          if (numPaiement.length !== 16) {
+            errors.push('Le numéro de paiement doit contenir exactement 16 chiffres');
           }
+          if (!/^\d+$/.test(numPaiement)) {
+            errors.push('Le numéro de paiement ne doit contenir que des chiffres');
+          }
+        }
           if (
-            watch('mode_paiement') !== '1' &&
-            watch('mode_paiement') !== '5' &&
-            watch('mode_paiement_suivi') !== '6'
+            watch('mode_paiement') !==1 &&
+            watch('mode_paiement') !== 5 &&
+            watch('mode_paiement') !== 6
           ) {
             if (!watch('echeance') || watch('echeance') === '') {
               errors.push("La date d'échéance est requise");
@@ -997,17 +1012,20 @@ export default function VisiteFormEdit({ id }) {
             errors.push('La banque est requise pour ce mode de paiement');
           }
 
-          if (
-            !watch('num_paiement_suivi') ||
-            watch('num_paiement_suivi') === ''
-          ) {
-            errors.push('Le numéro de paiement est requis');
+          // Validation for num_paiement_suivi (16 chiffres)
+        if (watch('num_paiement_suivi') && watch('num_paiement_suivi').trim() !== '') {
+          const numPaiementSuivi = watch('num_paiement_suivi').toString().replace(/\s/g, '');
+          if (numPaiementSuivi.length !== 16) {
+            errors.push('Le numéro de paiement (suivi) doit contenir exactement 16 chiffres');
           }
-
+          if (!/^\d+$/.test(numPaiementSuivi)) {
+            errors.push('Le numéro de paiement (suivi) ne doit contenir que des chiffres');
+          }
+        }
           if (
-            watch('mode_paiement_suivi') !== '1' &&
-            watch('mode_paiement_suivi') !== '5' &&
-            watch('mode_paiement_suivi') !== '6'
+            watch('mode_paiement_suivi') !== 1 &&
+            watch('mode_paiement_suivi') !== 5&&
+            watch('mode_paiement_suivi') !== 6
           ) {
             if (!watch('echeance_suivi') || watch('echeance_suivi') === '') {
               errors.push("La date d'échéance est requise");
@@ -1408,45 +1426,89 @@ export default function VisiteFormEdit({ id }) {
   const getParsed = (val) => parseFloat(val) || 0;
 
   //10+30+4+10    //10+4500
-  const getSurfaceTotal = () =>
+ /* const getSurfaceTotal = () =>
     getParsed(watch('superficie_jardin_calculer')) +
     getParsed(watch('superficie_habitable')) +
     getParsed(watch('superficie_balcon_calculer')) +
-    getParsed(watch('superficie_terrasse_calculer'));
-
+    getParsed(watch('superficie_terrasse_calculer'));*/
+ const getSurfaceVendable = () =>getParsed(watch('superficie_vendable'));
   const getPrixTotal = (unitPrice) =>
-    unitPrice * getSurfaceTotal() +
+    unitPrice * getSurfaceVendable() +
     getParsed(watch('prix_box')) +
     getParsed(watch('prix_parking'));
 
-  const handlechangeprix_remise = (event) => {
-    const prixRemise = getParsed(event.target.value);
-    const prixForfetaire = getParsed(watch('prix_forfetaire'));
-    if (prixRemise !== 0) {
-      const total = getPrixTotal(prixRemise);
-      setValue('prix', prixForfetaire ? total - prixForfetaire : total);
-    }
-  };
+const handlechangeprix_remise = (event) => {
+  const prixRemise = getParsed(event.target.value);
+  const prixUnitaire = getParsed(watch('prix_unitaire'));
+  const prixForfetaire = getParsed(watch('prix_forfetaire'));
+  
+  // Utilise prix_remise SEULEMENT si c'est un nombre positif (> 0)
+  // Si prix_remise est 0 ou null/undefined, utilise prix_unitaire
+  let basePrice;
+  if (prixRemise > 0) {
+    basePrice = prixRemise;
+  } else {
+    basePrice = prixUnitaire;
+  }
+  
+  const total = getPrixTotal(basePrice);
+  const finalPrice = prixForfetaire > 0 ? total - prixForfetaire : total;
+  
+  setValue('prix', finalPrice);
+  setValue('reste', finalPrice - getParsed(watch('avance_res')));
+};
 
   const handlechangeprix_forfetaire = (event) => {
-    const prixRemise = getParsed(watch('prix_remise'));
-    const prixUnitaire = getParsed(watch('prix_unitaire'));
-    const prixForfetaire = getParsed(event.target.value);
-
-    const totalRemise = getPrixTotal(prixRemise);
-    const totalUnitaire = getPrixTotal(prixUnitaire);
-
-    if (!prixForfetaire) {
-      setValue('prix', prixRemise ? totalRemise : totalUnitaire);
-    } else {
-      setValue(
-        'prix',
-        prixRemise
-          ? totalRemise - prixForfetaire
-          : totalUnitaire - prixForfetaire
-      );
+  const prixRemise = getParsed(watch('prix_remise'));
+  const prixUnitaire = getParsed(watch('prix_unitaire'));
+  const prixForfetaire = getParsed(event.target.value);
+  
+  // Utilise prix_remise SEULEMENT si c'est un nombre positif (> 0)
+  let basePrice;
+  if (prixRemise > 0) {
+    basePrice = prixRemise;
+  } else {
+    basePrice = prixUnitaire;
+  }
+  
+  const total = getPrixTotal(basePrice);
+  const finalPrice = prixForfetaire > 0 ? total - prixForfetaire : total;
+  
+  setValue('prix', finalPrice);
+  setValue('reste', finalPrice - getParsed(watch('avance_res')));
+};
+// Ouvrir les panels de réservation et paiement par défaut
+useEffect(() => {
+  if (watch('interet') === '1' && watch('statut') == 2 && watch('bien_id')) {
+    // Ouvrir les deux panels
+    if (!expanded.includes('panel_res')) {
+      setExpanded(prev => [...prev, 'panel_res']);
     }
-  };
+    if (!expanded.includes('panel_pai')) {
+      setExpanded(prev => [...prev, 'panel_pai']);
+    }
+  }
+}, [watch('interet'), watch('statut'), watch('bien_id')]);
+useEffect(() => {
+  if (watch('bien_id') && watch('interet') === '1') {
+    const prixUnitaire = getParsed(watch('prix_unitaire'));
+    const prixRemise = getParsed(watch('prix_remise'));
+    const prixForfetaire = getParsed(watch('prix_forfetaire'));
+    
+    let basePrice;
+    if (prixRemise > 0) {
+      basePrice = prixRemise;
+    } else {
+      basePrice = prixUnitaire;
+    }
+    
+    const total = getPrixTotal(basePrice);
+    const finalPrice = prixForfetaire > 0 ? total - prixForfetaire : total;
+    
+    setValue('prix', finalPrice);
+    setValue('reste', finalPrice - getParsed(watch('avance_res')));
+  }
+}, [watch('bien_id'), watch('prix_unitaire'), watch('prix_remise'), watch('prix_forfetaire')]);
 
   const handlechangeMontant = (event) => {
     const prixFinal = parseFloat(watch('prix')) || 0;
@@ -1608,7 +1670,7 @@ export default function VisiteFormEdit({ id }) {
       setValue('bien_val', newBien.propriete_dite_bien);
       setValue('prix_val', newBien.prix);
       setValue('prix', newBien.prix);
-      setValue(
+      /*setValue(
         'superficie_balcon_calculer',
         newBien.superficie_balcon_calculer != null
           ? newBien.superficie_balcon_calculer
@@ -1629,11 +1691,21 @@ export default function VisiteFormEdit({ id }) {
       setValue(
         'superficie_habitable',
         newBien.superficie_habitable != null ? newBien.superficie_habitable : 0
+      );*/
+      setValue(
+        'superficie_vendable',
+        newBien.superficie_vendable != null
+          ? newBien.superficie_vendable
+          : 0
       );
       setValue('prix_box', newBien.prix_box ? newBien.prix_box : 0);
       setValue('prix_parking', newBien.prix_parking ? newBien.prix_parking : 0);
       setValue(
         'prix_unitaire',
+        newBien.prix_unitaire ? newBien.prix_unitaire : 0
+      );
+       setValue(
+        'prix_remise',
         newBien.prix_unitaire ? newBien.prix_unitaire : 0
       );
       setValue(

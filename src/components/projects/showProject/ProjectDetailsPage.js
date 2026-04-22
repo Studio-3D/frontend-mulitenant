@@ -226,7 +226,7 @@ export const ProjectDetailsPage = () => {
           prix_parking: b?.prix_parking || 0,
           avance_minimale: b?.avance_minimale || 0,
           superficie_architecte: b?.superficie_architecte || 0,
-          superficie_habitable: b?.habitable || 0,
+          superficie_habitable: b?.superficie_habitable || 0,
           nbre_facades: b?.nbre_facades || 0,
           superficie_parking: b?.superficie_parking || 0,
           superficie_box: b?.superficie_box || 0,

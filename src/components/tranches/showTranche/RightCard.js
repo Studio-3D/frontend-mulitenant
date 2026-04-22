@@ -568,7 +568,6 @@ const TAB_CONFIG = {
         { key: 'Tranche', label: 'Tranche' },
         ...(nbre_blocs > 0 ? [{ key: 'Bloc', label: 'Bloc' }] : []),
         ...(nbre_immeubles > 0 ? [{ key: 'Immeuble', label: 'Immeuble' }] : []),
-        { key: 'Surface', label: 'Surface' },
         { key: 'Prix', label: 'Prix' },
         { key: 'Statut', label: 'Statut' },
         { key: 'Orientation', label: 'Orientation' },
@@ -648,19 +647,23 @@ const TAB_CONFIG = {
         return {
           ID: item.id || '',
           'Type ID': item.type_id || '',
+          'Typologie ID': item.typologie_id || '',
+          'Vue ID': item.vue_id || '',
           ...cleanData,
         };
       });
 
-      // Filtrer les colonnes - supprimer complètement Tranche, Bloc, Immeuble
+ 
+ // Filtrer les colonnes - supprimer complètement Tranche, Bloc, Immeuble
       const massEditColumns = [
         { key: 'ID', label: 'ID' },
         { key: 'Type ID', label: 'Type' },
+        { key: 'Typologie ID', label: 'Typologie' },
+        { key: 'Vue ID', label: 'Vue' },
         ...baseConfig.columns_export.filter(
-          (column) => !['Type'].includes(column.key)
+        (column) => !['Type', 'Typologie', 'Vue'].includes(column.key)
         ),
       ];
-
       return {
         data_to_export: massEditData,
         columns_export: massEditColumns,
@@ -1534,7 +1537,7 @@ export const RightCard = ({
             'numero',
             'nom',
             'prix unitaire',
-            'superficie totale',
+            'superficie architecte',
             'superficie habitable',
             'type',
           ];
@@ -1555,19 +1558,19 @@ export const RightCard = ({
               const row = rows[i];
 
               // Vérification des surfaces
-              if ('Superficie totale' in row && 'Superficie habitable' in row) {
+              if ('Superficie architecte' in row && 'Superficie habitable' in row) {
                 if (
-                  row['Superficie totale'] == 0 &&
+                  row['Superficie architecte'] == 0 &&
                   row['Superficie habitable'] == 0
                 ) {
                   msg_error.push({
                     id: i + 1,
-                    msg: `Ligne ${i + 1}: Aucune surface habitable ou totale`,
+                    msg: `Ligne ${i + 1}: Aucune surface habitable ou architecte`,
                   });
                   err = 1;
                 }
               } else if (
-                !('Superficie totale' in row) &&
+                !('Superficie architecte' in row) &&
                 'Superficie habitable' in row
               ) {
                 if (row['Superficie habitable'] == 0) {
@@ -1579,12 +1582,12 @@ export const RightCard = ({
                 }
               } else if (
                 !('Superficie habitable' in row) &&
-                'Superficie totale' in row
+                'Superficie architecte' in row
               ) {
-                if (row['Superficie totale'] == 0) {
+                if (row['Superficie architecte'] == 0) {
                   msg_error.push({
                     id: i + 1,
-                    msg: `Ligne ${i + 1}: Surface totale doit être > 0`,
+                    msg: `Ligne ${i + 1}: Surface architecte doit être > 0`,
                   });
                   err = 1;
                 }
@@ -2159,7 +2162,8 @@ export const RightCard = ({
           )}
           {showMassEditModal && (
             <Modal
-          
+                          maxWidth='max-w-xl'
+
               isVisible={true}
               onClose={() => {
                 setShowMassEditModal(false);
@@ -2190,69 +2194,156 @@ export const RightCard = ({
 
                 {/* Messages d'information */}
                 <div className="space-y-4 mb-6">
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h3 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
-                      <svg
-                        className="w-5 h-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Comment modifier vos biens en masse ?
-                    </h3>
-                    <ol className="list-decimal list-inside space-y-2 text-blue-700 text-sm">
-                      <li className="font-medium">
-                        Exportez le fichier Excel contenant tous les biens
-                        (inclut ID)
-                      </li>
-                      <li className="font-medium">
-                        Modifiez les données dans Excel
-                      </li>
-                      <li className="font-medium">
-                        Importez le fichier modifié via la zone de dépôt
-                        ci-dessous
-                      </li>
-                    </ol>
-                  </div>
-
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <svg
-                        className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <div className="text-yellow-700 text-sm">
-                        <strong>Important :</strong>
-                        <ul className="list-disc list-inside mt-1 ml-2 space-y-1">
-                          <li>
-                            Ne modifiez pas la colonne <strong>ID</strong> dans
-                            le fichier Excel, elle est essentielle pour
-                            identifier les biens.
-                          </li>
-                          <li>
-                            Les colonnes{' '}
-                            <strong>Projet ,Tranche, Bloc et Immeuble</strong>{' '}
-                            ne sont pas prises en compte lors de {"l'import"}.
-                            Pour modifier ces informations, veuillez utiliser
-                            les formulaires individuels de chaque bien.
-                          </li>
-                        </ul>
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                          <h3 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                            Comment modifier vos biens en masse ?
+                          </h3>
+                          <ol className="list-decimal list-inside space-y-2 text-blue-700 text-sm">
+                            <li className="font-medium">
+                              Exportez le fichier Excel contenant tous les biens (inclut ID)
+                            </li>
+                            <li className="font-medium">
+                                        Modifiez les données dans Excel
+                            </li>
+                            <li className="font-medium">
+                              Importez le fichier modifié via la zone de dépôt
+                            </li>
+                          </ol>
+                        </div>
+                
+                        {/* Section des référentiels - Tables stylisées */}
+                       {/* Référentiels à utiliser */}
+                          <div className="space-y-4">
+                            <h3 className="text-md font-semibold text-gray-800 flex items-center gap-2">
+                              <span className="text-blue-600">📋</span> Référentiels à utiliser pour la modification
+                            </h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {/* Types de Biens Table */}
+                              {typeBiens && typeBiens.length > 0 && (
+                                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-3 py-2">
+                                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                                      <HomeIcon size={16} />
+                                      Types de Biens
+                                    </h4>
+                                  </div>
+                                  <div className="max-h-48 overflow-y-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                      <thead className="bg-gray-50 sticky top-0">
+                                        <tr>
+                                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-gray-200">
+                                        {typeBiens.map((type, idx) => (
+                                          <tr key={type.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                            <td className="px-3 py-2 text-sm font-mono text-blue-600">{type.id}</td>
+                                            <td className="px-3 py-2 text-sm text-gray-700">{type.type}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                  <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
+                                    <p className="text-xs text-gray-500">{typeBiens.length} type(s) de bien</p>
+                                  </div>
+                                </div>
+                              )}
+                
+                              {/* Typologies Table */}
+                              {typologies && typologies.length > 0 && (
+                                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                                  <div className="bg-gradient-to-r from-green-500 to-green-600 px-3 py-2">
+                                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                                      <LayersIcon size={16} />
+                                      Typologies
+                                    </h4>
+                                  </div>
+                                  <div className="max-h-48 overflow-y-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                      <thead className="bg-gray-50 sticky top-0">
+                                        <tr>
+                                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Typologie</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-gray-200">
+                                        {typologies.map((typologie, idx) => (
+                                          <tr key={typologie.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                            <td className="px-3 py-2 text-sm font-mono text-green-600">{typologie.id}</td>
+                                            <td className="px-3 py-2 text-sm text-gray-700">{typologie.typologie}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                  <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
+                                    <p className="text-xs text-gray-500">{typologies.length} typologie(s)</p>
+                                  </div>
+                                </div>
+                              )}
+                
+                              {/* Vues Table */}
+                              {vues && vues.length > 0 && (
+                                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                                  <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-2">
+                                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                                      <BuildingIcon size={16} />
+                                      Vues
+                                    </h4>
+                                  </div>
+                                  <div className="max-h-48 overflow-y-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                      <thead className="bg-gray-50 sticky top-0">
+                                        <tr>
+                                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vue</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-gray-200">
+                                        {vues.map((vue, idx) => (
+                                          <tr key={vue.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                            <td className="px-3 py-2 text-sm font-mono text-purple-600">{vue.id}</td>
+                                            <td className="px-3 py-2 text-sm text-gray-700">{vue.vue}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                  <div className="bg-gray-50 px-3 py-1.5 border-t border-gray-200">
+                                    <p className="text-xs text-gray-500">{vues.length} vue(s)</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                        </div>
+                        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <div className="flex items-start gap-2">
+                            <svg className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            <div className="text-yellow-700 text-sm">
+                              <strong>Important :</strong>
+                              <ul className="list-disc list-inside mt-1 ml-2 space-y-1">
+                                <li>
+                                  Ne modifiez pas la colonne <strong>ID</strong> dans le fichier Excel
+                                </li>
+                                <li>
+                                  Les colonnes <strong>Projet, Tranche, Bloc et Immeuble</strong> sont ignorées lors de l {"'"} import
+                                </li>
+                                <li>
+                                  Pour les colonnes <strong>Type, Typologie et Vue</strong>, utilisez les IDs numériques du tableau ci-dessus
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Section d'export */}
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
@@ -2460,25 +2551,17 @@ export const RightCard = ({
                   )}
 
                   {/* Informations sur le format */}
-                  <div className="mt-3 p-3 bg-white rounded border">
-                    <h4 className="font-medium text-gray-700 text-sm mb-2">
-                      Format attendu :
-                    </h4>
-                    <ul className="text-xs text-gray-600 space-y-1">
-                      <li>
-                        • Fichier Excel (.xlsx, .xls) avec les mêmes colonnes
-                        que {"l'export"}
-                      </li>
-                      <li>
-                        • Conservez la colonne <strong>ID</strong> intacte
-                      </li>
-                      <li>
-                        • Les colonnes{' '}
-                        <strong>Tranche, Bloc et Immeuble</strong> sont ignorées
-                        lors de {"l'import"}
-                      </li>
-                    </ul>
-                  </div>
+                  <div className="mt-4 p-3 bg-white rounded border text-sm">
+          <h4 className="font-medium text-gray-700 mb-2">Format attendu :</h4>
+          <ul className="text-xs text-gray-600 space-y-1">
+            <li>• Fichier Excel (.xlsx, .xls) avec les mêmes colonnes que l{"'"}export</li>
+            <li>• Conservez la colonne <strong className="text-purple-600">ID</strong> intacte</li>
+            <li>• <strong className="text-blue-600">Type</strong> : ID numérique du type de bien (obligatoire) - voir tableau ci-dessus</li>
+            <li>• <strong className="text-green-600">Typologie</strong> : ID numérique de la typologie (optionnel) - voir tableau ci-dessus</li>
+            <li>• <strong className="text-amber-600">Vue</strong> : ID numérique de la vue (optionnel) - voir tableau ci-dessus</li>
+            <li>• Les colonnes <strong>Tranche, Bloc et Immeuble</strong> sont ignorées lors de l{"'"}import</li>
+          </ul>
+        </div>
                 </div>
 
                 {/* Affichage des erreurs */}

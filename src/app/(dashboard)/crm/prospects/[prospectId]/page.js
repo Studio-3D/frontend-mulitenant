@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
-import Button from '@/components/Button'; // adjust the path as needed
+import Button from '@/components/Button';
 import HistoriquesTable from './HistoriquesTable';
 import BreadCrumb from '../../../navigation/BreadCrumb';
 import LoadingSpin from '@/components/LoadingSpin';
@@ -14,25 +14,77 @@ import Modal from '@/components/Modal';
 import SelectInput from '@/components/SelectInput';
 import { useProjet } from '@/context/ProjetContext';
 import VisiteTable from '../../visites/VisiteTable';
-import { format } from 'date-fns'; // Import format from date-fns
+import { format } from 'date-fns';
 import JournalTable from '../../appels/[appelId]/JournalTable';
 import Modal_Traite from '../Modal_Traite';
 import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
 import { useSociete } from '@/context/SocieteContext';
+import VisiteTableShow from './VisitesTableShow';
+import {
+  ChevronRight,
+  Phone,
+  Mail,
+  Calendar,
+  User,
+  CheckCircle2,
+  Briefcase,
+  Clock,
+  MessageSquare,
+  MapPin,
+  History,
+  PhoneCall,
+  Edit,
+  ExternalLink,
+} from 'lucide-react';
 
+// Reusable Components from template
+const Badge = ({ children, variant = 'default' }) => {
+  const variants = {
+    default: 'bg-slate-100 text-slate-700 border-slate-200',
+    success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    danger: 'bg-rose-50 text-rose-700 border-rose-200',
+    primary: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    warning: 'bg-amber-50 text-amber-700 border-amber-200',
+  };
+  return (
+    <span
+      className={`px-2.5 py-1 rounded-full text-xs font-medium border ${variants[variant]}`}
+    >
+      {children}
+    </span>
+  );
+};
+const InfoRow = ({ icon: Icon, label, value, valueNode }) => (
+  <div className="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
+    <div className="flex items-center gap-2 text-slate-500">
+      {Icon && <Icon className="w-4 h-4" />}
+      <span className="text-sm font-medium">{label}</span>
+    </div>
+    <div className="text-sm text-slate-900 font-medium text-right">
+      {valueNode || value || (
+        <span className="text-slate-400 italic">Non renseigné</span>
+      )}
+    </div>
+  </div>
+);
+
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { Printer } from 'lucide-react';
+import ProspectPDF from './ProspectPdf';
 const ProspectDetails = () => {
+  const [appels, setAppels] = useState([]);
+  const [visiteDetails, setVisiteDetails] = useState([]);
   const [refreshHistoriques, setRefreshHistoriques] = useState(0);
-
   const { user, token } = useAuth();
   const router = useRouter();
-  const { prospectId } = useParams(); // Use useParams() to access dynamic params
+  const { prospectId } = useParams();
   const accessToken = token || localStorage.getItem('accessToken');
   const { projets, selectedProjet } = useProjet();
   const [showProjetModal, setShowProjetModal] = useState(false);
   const [selectedProjetId, setSelectedProjetId] = useState('');
   const [loading, setLoading] = useState(false);
-  const [prospectDetails, setProspectDetails] = useState([]);
-  const [activeTab, setActiveTab] = useState('historiques'); // Default to 'historiques' if tab is not present
+  const [prospectDetails, setProspectDetails] = useState({});
+  const [activeTab, setActiveTab] = useState('historiques');
   const [open_traite, setOpen_traite] = useState(false);
   const [traite_id, setId_traite] = useState(null);
   const [num_tel, setTel_num] = useState(null);
@@ -44,28 +96,29 @@ const ProspectDetails = () => {
     setTel_num(num_tel);
     setNomPrenom(nom_prenom);
   };
-  // Fonction appelée quand le modal de traitement est fermé APRÈS un traitement réussi
+
   const handleTraiteSuccess = () => {
     setOpen_traite(false);
-    // Incrémenter le compteur UNIQUEMENT après un traitement réussi
     setRefreshHistoriques((prev) => prev + 1);
   };
 
-  // Fonction appelée quand le modal de traitement est fermé
   const handleTraiteClose = () => {
     setOpen_traite(false);
   };
+
   const handleEdit = (id) => {
     router.push(`${ENDPOINTS.PROSPECTS}?id=${id}&action=edit`);
   };
+
   const handleShowClient = (id) => {
-    router.push(`/ventes/clients/`+id);
+    router.push(`/ventes/clients/${id}`);
   };
-useEffect(() => {
+
+  useEffect(() => {
     if (
       !isAdmin(user?.role) &&
       !isSuperAdmin(user?.role) &&
-      !isCommercial(user?.role)&&
+      !isCommercial(user?.role) &&
       !isRespoCommercial(user?.role)
     ) {
       router.push('/');
@@ -74,26 +127,26 @@ useEffect(() => {
 
   const tabs = [
     ...(prospectDetails?.id != null
-      ? [{ id: 'historiques', label: 'Historiques', icon: '' }]
+      ? [{ id: 'historiques', label: 'Historiques', icon: History }]
       : []),
-    { id: 'visites', label: 'Visites', icon: '' },
-    { id: 'journaux', label: 'Journal des Appels', icon: '' },
+    { id: 'visites', label: 'Visites', icon: MapPin },
+    { id: 'journaux', label: 'Journal des Appels', icon: PhoneCall },
   ];
 
-  // Simple cache et comparaison for return back en cas de changer projet
-      const { selectedSociete } = useSociete();
-      const [oldProjetId, setOldProjetId] = useState(null);
-      const [oldSocieteId, setOldSocieteId] = useState(null);
-  	 useEffect(() => {
-  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
-    if (oldProjetId||oldSocieteId) {
-      // Projet ou société a changé
-      router.push('/crm');
+  const { selectedSociete } = useSociete();
+  const [oldProjetId, setOldProjetId] = useState(null);
+  const [oldSocieteId, setOldSocieteId] = useState(null);
+
+  useEffect(() => {
+    if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId) || (selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
+      if (oldProjetId || oldSocieteId) {
+        router.push('/crm');
+      }
+      setOldSocieteId(selectedSociete?.id);
+      setOldProjetId(selectedProjet?.id);
     }
-    setOldSocieteId(selectedSociete?.id)
-    setOldProjetId(selectedProjet?.id);
-  }
-}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
+  }, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
+
   useEffect(() => {
     if (prospectId) {
       setLoading(true);
@@ -105,6 +158,8 @@ useEffect(() => {
         })
         .then((response) => {
           setProspectDetails(response.data.prospect);
+          setAppels(response.data.appels);
+          setVisiteDetails(response.data.visites);
           setLoading(false);
         })
         .catch(() => {
@@ -112,7 +167,7 @@ useEffect(() => {
         });
     }
   }, [prospectId, accessToken]);
-  // If WhatsApp-origin prospect with no projet assigned, prompt user to choose projet
+
   useEffect(() => {
     if (
       prospectDetails &&
@@ -144,337 +199,292 @@ useEffect(() => {
   };
 
   const handleTabClick = (tab) => {
-    // Set the active tab state
     setActiveTab(tab);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
     <>
       {loading ? (
         <div className="flex items-center justify-center min-h-screen">
-          <LoadingSpin /> {/* Use your loading spinner here */}
+          <LoadingSpin />
         </div>
       ) : (
-        <>
-          <div
-            className="flex items-center justify-start"
-            style={{ marginBottom: '8px' }}
-          >
-            <BreadCrumb
-              baseUrl={ENDPOINTS.CRM + '?tab=prospects'}
-              step={`Détail prospect`}
-            />
-          </div>
-          <div className="container mx-auto">
-            <div className="flex flex-col lg:flex-row gap-6">
-              {/* Project Summary Card - Left Side */}
-              <div className="w-full lg:w-1/3">
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="text-center p-6 border-b border-gray-200">
-                    <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-[#009FFF]">
-                        {prospectDetails.nom
-                          ? prospectDetails.nom.charAt(0).toUpperCase()
-                          : 'P'}
-                      </span>
-                    </div>
-                    <h1 className="text-xl font-semibold">
-                      {(prospectDetails?.nom || '') +
-                        ' ' +
-                        (prospectDetails?.prenom || '')}
-                    </h1>
-                    <div className="inline-block px-3 py-1 bg-blue-100 !text-blue-700 rounded-full text-sm mt-2">
-                      {`Cin: ${prospectDetails?.cin || ''}`}
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <h6
-                      className=" font-semibold leading-[1.2] text-lg"
-                      style={{ color: '#666CFF', marginBottom: '10px' }}
-                    >
-                      Informations générales
-                    </h6>
-
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">
-                          Accepte {"d'"}être contacté:
-                        </span>
-                        <span className="font-medium">
-                          <span
-                            className={`px-2 py-1 rounded text-sm font-semibold ${
-                              prospectDetails?.notifie === 1
-                                ? 'bg-[rgba(38,198,249,0.12)] text-[#26C6F9]'
-                                : 'bg-[rgba(255,77,73,0.12)]  text-[#FF4D49]'
-                            } `}
-                          >
-                            {prospectDetails?.notifie === 1 ? 'Oui' : 'Non'}
-                          </span>
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Email:</span>
-                        <span className="font-medium">
-                          {prospectDetails?.email}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Téléphone 1:</span>
-                        <span className="font-medium">
-                          {prospectDetails?.telephone}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Téléphone 2:</span>
-                        <span className="font-medium">
-                          {prospectDetails?.telephone_num2 === 'null'
-                            ? ''
-                            : prospectDetails?.telephone_num2 || ''}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Origine:</span>
-                        <span className="font-medium">
-                          {prospectDetails?.origin}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Source:</span>
-                        <span className="font-medium">
-                          <span
-                            className={`px-2 py-1 rounded text-sm font-semibold ${
-                              prospectDetails?.partenaire_id !== null
-                                ? 'bg-[rgba(102,108,255,0.12)] text-[#666CFF]'
-                                : 'bg-[rgba(114,225,40,0.12)] text-[#72E128]'
-                            } `}
-                          >
-                            {prospectDetails?.partenaire_id !== null
-                              ? `Partenaire(${prospectDetails?.partenaire?.description})`
-                              : prospectDetails?.source?.source}
-                          </span>
-                        </span>
-                      </div>
-
-                      {prospectDetails?.affecte_par_admin && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Affecté par:</span>
-                          <span className="font-medium">
-                            {`${prospectDetails.affecte_par_admin.name || ''} ${
-                              prospectDetails.affecte_par_admin.prenom || ''
-                            }`}
-                          </span>
-                        </div>
-                      )}
-
-                      {prospectDetails?.date_affectation && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">
-                            Date affectation:
-                          </span>
-                          <span className="font-medium">
-                            {format(
-                              new Date(prospectDetails.date_affectation),
-                              'yyyy-MM-dd HH:mm'
-                            )}
-                          </span>
-                        </div>
-                      )}
-
-                      {prospectDetails?.traite_par_user && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Traité par:</span>
-                          <span className="font-medium">
-                            {`${prospectDetails.traite_par_user.name || ''} ${
-                              prospectDetails.traite_par_user.prenom || ''
-                            }`}
-                          </span>
-                        </div>
-                      )}
-
-                      {prospectDetails?.date_traitement && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">
-                            Date traitement:
-                          </span>
-                          <span className="font-medium">
-                            {format(
-                              new Date(prospectDetails.date_traitement),
-                              'yyyy-MM-dd HH:mm'
-                            )}
-                          </span>
-                        </div>
-                      )}
-
-                      {prospectDetails?.message && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Message:</span>
-                          <span className="font-medium">
-                            {prospectDetails?.message}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-center gap-4 items-center mt-6 mb-6">
-                    {isAdmin(user.role) ||
-                      (prospectDetails?.commercial_affecte?.user_id_origin ==
-                        user.id && (
-                        <Button
-                          type="traite_rdv"
-                          onClick={() =>
-                            handleraiter(
-                              prospectDetails?.id,
-                              prospectDetails?.telephone,
-                              prospectDetails?.nom +
-                                ' ' +
-                                prospectDetails?.prenom
-                            )
-                          }
-                        >
-                          Traiter
-                        </Button>
-                      ))}
-                      {prospectDetails?.client_id!=null && (
-                        <Button
-                        type="valider"
-                        onClick={() => handleShowClient(prospectDetails?.client_id)}
-                        >
-                        Voir Détail Client
-                        </Button>
-                      )}
-                     
-                    <Button
-                      type="edit"
-                      onClick={() => handleEdit(prospectDetails?.id)}
-                    >
-                      Modifier
-                    </Button>
-                  </div>
-
-                  <div className="flex justify-center gap-4 items-center mt-6 mb-6"></div>
-                </div>
-              </div>
-
-              <div className="w-full lg:w-2/3">
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="border-b border-gray-200">
-                    <div className="flex overflow-x-auto">
-                      {tabs.map((tab) => (
-                        <button
-                          key={tab.id}
-                          className={`px-6 py-3 flex items-center gap-2 text-sm font-medium whitespace-nowrap ${
-                            activeTab === tab.id
-                              ? 'border-b-2 border-[#009FFF] text-[#009FFF]'
-                              : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                          }`}
-                          onClick={() => handleTabClick(tab.id)}
-                        >
-                          {tab.icon}
-                          {tab.label}
-                          {/* Optional additional spans for some tabs */}
-                          {tab.id === 'historiques' && (
-                            <span className="ml-1 text-xs"></span>
-                          )}
-                          {tab.id === 'visites' && (
-                            <span className="ml-1 text-xs"></span>
-                          )}
-                          {tab.id === 'journaux' &&
-                            prospectDetails?.appels != null && (
-                              <span className="ml-1 text-xs"></span>
-                            )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    {activeTab === 'historiques' && prospectDetails?.id && (
-                      <div className="min-h-[400px]">
-                        <div className="min-h-[400px]">
-                          <HistoriquesTable
-                            id={prospectDetails.id}
-                            refreshTrigger={refreshHistoriques}
-                            type={'prospect'}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Modal to choose projet when WhatsApp prospect has no projet */}
-                    {showProjetModal && (
-                      <Modal
-                        isVisible={true}
-                        onClose={() => setShowProjetModal(false)}
-                      >
-                        <div className="p-4">
-                          <h3 className="text-lg font-semibold mb-3">
-                            Assigner un projet au prospect
-                          </h3>
-                          <p className="text-sm text-gray-600 mb-3">
-                            Ce prospect provient de WhatsApp mais plusieurs
-                            configurations partagent le même projet. Veuillez
-                            choisir le projet auquel {"l'"}assigner.
-                          </p>
-                          <div className="mb-4">
-                            <SelectInput
-                              label="Projet"
-                              options={(projets || []).map((p) => ({
-                                label: p.nom,
-                                value: p.id,
-                              }))}
-                              value={selectedProjetId}
-                              onChange={(val) => setSelectedProjetId(val)}
-                            />
-                          </div>
-                          <div className="flex justify-end gap-2">
-                            <button
-                              className="px-3 py-2 rounded border"
-                              onClick={() => setShowProjetModal(false)}
-                            >
-                              Annuler
-                            </button>
-                            <button
-                              className="px-3 py-2 rounded bg-blue-600 text-white"
-                              onClick={handleAssignProjet}
-                              disabled={!selectedProjetId}
-                            >
-                              Assigner
-                            </button>
-                          </div>
-                        </div>
-                      </Modal>
-                    )}
-
-                    {activeTab === 'visites' && (
-                      <div className="min-h-[400px]">
-                        <VisiteTable
-                          dataProspect={prospectDetails}
-                          show_prospect={true}
-                        />
-                      </div>
-                    )}
-                    {activeTab === 'journaux' && (
-                      <div className="min-h-[400px]">
-                        <JournalTable
-                          id={prospectDetails?.appels?.id}
-                          prospect={prospectDetails}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
+        <div className="min-h-screen bg-slate-50/50 pb-12">
+          {/* Header / Breadcrumb */}
+          <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center h-16 text-sm text-slate-500">
+                <a href={ENDPOINTS.CRM + '?tab=prospects'} className="hover:text-indigo-600 transition-colors">
+                  CRM
+                </a>
+                <ChevronRight className="w-4 h-4 mx-2 text-slate-400" />
+                <a href={ENDPOINTS.CRM + '?tab=prospects'} className="hover:text-indigo-600 transition-colors">
+                  Prospects
+                </a>
+                <ChevronRight className="w-4 h-4 mx-2 text-slate-400" />
+                <span className="text-slate-900 font-medium">Détail prospect</span>
               </div>
             </div>
-          </div>
-        </>
+          </header>
+
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+            {/* Top Section - Prospect Info Cards in Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* Main Profile Card */}
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                {/* Card Header with Avatar */}
+                <div className="relative h-24 bg-gradient-to-r from-indigo-500 to-purple-600">
+                  <div className="absolute -bottom-10 left-6">
+                    <div className="w-20 h-20 bg-white rounded-xl p-1 shadow-md">
+                      <div className="w-full h-full bg-indigo-50 rounded-lg flex items-center justify-center text-2xl font-bold text-indigo-600">
+                        {prospectDetails.nom ? prospectDetails.nom.charAt(0).toUpperCase() : 'P'}
+                        {prospectDetails.prenom ? prospectDetails.prenom.charAt(0).toUpperCase() : ''}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Profile Info */}
+                <div className="pt-14 pb-6 px-6 border-b border-slate-100">
+                  <h1 className="text-xl font-bold text-slate-900">
+                    {(prospectDetails?.nom || '') + ' ' + (prospectDetails?.prenom || '')}
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
+                    <User className="w-4 h-4" />
+                    <span>CIN: {prospectDetails?.cin || 'Non renseigné'}</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="p-4 bg-slate-50/50 flex flex-col gap-3">
+                
+                  {(isAdmin(user?.role) || prospectDetails?.commercial_affecte?.user_id_origin == user?.id) && (
+                    <button
+                      onClick={() => handleraiter(prospectDetails?.id, prospectDetails?.telephone, (prospectDetails?.nom || '') + ' ' + (prospectDetails?.prenom || ''))}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 shadow-sm w-full"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Traiter le prospect
+                    </button>
+                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    {prospectDetails?.client_id != null && (
+                      <button
+                        onClick={() => handleShowClient(prospectDetails?.client_id)}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-500 shadow-sm"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Voir Client
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleEdit(prospectDetails?.id)}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-500 shadow-sm"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Modifier
+                    </button>
+                    <PDFDownloadLink
+                        document={
+                          <ProspectPDF
+                            prospect={prospectDetails}
+                            appels={appels || []}
+                            visites={visiteDetails || []}
+                            user={user}
+                          />
+                        }
+                        fileName={`prospect_${prospectDetails?.id || 'details'}.pdf`}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-500 shadow-sm"
+                      >
+                        {({ loading }) => (
+                          <>
+                            <Printer className="w-4 h-4" />
+                            {loading ? 'Préparation...' : 'Imprimer'}
+                          </>
+                        )}
+                      </PDFDownloadLink>
+                  </div>
+                </div>
+              </div>
+
+              {/* Details Card */}
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                  <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                    <Briefcase className="w-4 h-4 text-indigo-500" />
+                    Informations générales
+                  </h2>
+                </div>
+
+                <div className="px-6 py-2 max-h-[400px] overflow-y-auto">
+                  <InfoRow icon={Mail} label="Email" value={prospectDetails?.email} />
+                  <InfoRow icon={Phone} label="Téléphone 1" value={prospectDetails?.telephone} />
+                  {prospectDetails?.telephone_num2 && prospectDetails.telephone_num2 !== 'null' && (
+                    <InfoRow icon={Phone} label="Téléphone 2" value={prospectDetails.telephone_num2} />
+                  )}
+                  <InfoRow
+                    
+                    label="Accepte d'être contacté:"
+                    valueNode={
+                      <Badge variant={prospectDetails?.notifie === 1 ? 'success' : 'danger'}>
+                        {prospectDetails?.notifie === 1 ? 'Oui' : 'Non'}
+                      </Badge>
+                    }
+                  />
+                  <InfoRow
+                    label="Origine"
+                    valueNode={<Badge variant="default">{prospectDetails?.origin || 'Non spécifié'}</Badge>}
+                  />
+                  <InfoRow
+                    label="Source"
+                    valueNode={
+                      <Badge variant="primary">
+                        {prospectDetails?.partenaire_id !== null
+                          ? `Partenaire(${prospectDetails?.partenaire?.description})`
+                          : prospectDetails?.source?.source || 'Non spécifié'}
+                      </Badge>
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Tracking Card */}
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                  <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-indigo-500" />
+                 Affectation
+                  </h2>
+                </div>
+
+                <div className="px-6 py-2 max-h-[400px] overflow-y-auto">
+                  {prospectDetails?.affecte_par_admin && (
+                    <InfoRow
+                      label="Affecté par"
+                      value={`${prospectDetails.affecte_par_admin.name || ''} ${prospectDetails.affecte_par_admin.prenom || ''}`}
+                    />
+                  )}
+                  {prospectDetails?.date_affectation && (
+                    <InfoRow
+                      icon={Calendar}
+                      label="Date affectation"
+                      value={formatDate(prospectDetails.date_affectation)}
+                    />
+                  )}
+                 
+                </div>
+
+                {prospectDetails?.message && (
+                  <div className="px-6 py-4 bg-amber-50/50 border-t border-amber-100">
+                    <p className="text-xs font-medium text-amber-800 mb-1">Message initial</p>
+                    <p className="text-sm text-amber-900/80 leading-relaxed">
+                      {prospectDetails.message}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Section - Tabs */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              {/* Tabs Navigation */}
+              <div className="border-b border-slate-200 bg-slate-50/50 px-2 pt-2">
+                <div className="flex overflow-x-auto hide-scrollbar">
+                  {tabs.map((tab) => {
+                    const isActive = activeTab === tab.id;
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => handleTabClick(tab.id)}
+                        className={`
+                          flex items-center gap-2 px-6 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors
+                          ${isActive ? 'border-indigo-600 text-indigo-600 bg-white rounded-t-lg' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/50 rounded-t-lg'}
+                        `}
+                      >
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Tab Content Area */}
+              <div className="p-6 bg-white min-h-[500px]">
+                {activeTab === 'historiques' && prospectDetails?.id && (
+                  <div className="animate-in fade-in duration-300">
+                    <HistoriquesTable
+                      id={prospectDetails.id}
+                      refreshTrigger={refreshHistoriques}
+                      type={'prospect'}
+                    />
+                  </div>
+                )}
+
+                {activeTab === 'visites' && (
+                  <div className="animate-in fade-in duration-300">
+                    <VisiteTableShow dataProspect={prospectDetails} show_prospect={true} />
+                  </div>
+                )}
+
+                {activeTab === 'journaux' && (
+                  <div className="animate-in fade-in duration-300">
+                    <JournalTable id={prospectDetails?.appels?.id} prospect={prospectDetails} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </main>
+        </div>
       )}
+
+      {/* Modals */}
+      {showProjetModal && (
+        <Modal isVisible={true} onClose={() => setShowProjetModal(false)}>
+          <div className="p-4">
+            <h3 className="text-lg font-semibold mb-3">Assigner un projet au prospect</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Ce prospect provient de WhatsApp mais plusieurs configurations partagent le même projet. Veuillez choisir le projet auquel {"l'"}assigner.
+            </p>
+            <div className="mb-4">
+              <SelectInput
+                label="Projet"
+                options={(projets || []).map((p) => ({
+                  label: p.nom,
+                  value: p.id,
+                }))}
+                value={selectedProjetId}
+                onChange={(val) => setSelectedProjetId(val)}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button className="px-3 py-2 rounded border" onClick={() => setShowProjetModal(false)}>
+                Annuler
+              </button>
+              <button
+                className="px-3 py-2 rounded bg-blue-600 text-white"
+                onClick={handleAssignProjet}
+                disabled={!selectedProjetId}
+              >
+                Assigner
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {open_traite && (
         <Modal isVisible={true} onClose={handleTraiteClose}>
           <Modal_Traite

@@ -370,7 +370,7 @@ const DetailTabComponent = ({
                   <div>
                     <p className="text-sm text-gray-500">Date Réservation</p>
                     <p className="font-medium">
-                      {new Date(reservation.created_at).toLocaleDateString(
+                      {new Date(reservation.date_reservation).toLocaleDateString(
                         'fr-FR'
                       )}
                     </p>
@@ -538,13 +538,16 @@ const DetailTabComponent = ({
                       {reservation?.bien.prix_unitaire?.toLocaleString() + ' DH'}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Prix Remisé</p>
+                  {reservation?.prix_remise>0 && (
+ <div>
+                    <p className="text-sm text-gray-500">Prix Unitaire Remisé</p>
                     <p className="font-medium">
                       {' '}
                       {reservation?.prix_remise?.toLocaleString() + ' DH'}
                     </p>
                   </div>
+                  )}
+                 
                   <div>
                     <p className="text-sm text-gray-500">
                       {' '}

@@ -360,9 +360,10 @@ export default function ReservationForm({ id }) {
     ///
     reste: 0,
     prix_val: "",
-    Superficie_balcon_calculer: 0,
+   /* Superficie_balcon_calculer: 0,
     superficie_jardin_calculer: 0,
-    superficie_terrasse_calculer: 0,
+    superficie_terrasse_calculer: 0,*/
+    superficie_vendable:0,
     prix_box: 0,
     prix_parking: 0,
     prix_unitaire: 0,
@@ -451,7 +452,7 @@ export default function ReservationForm({ id }) {
             bien_id: reservation?.bien_id || "",
             prix_val: reservation?.prix || "",
             prix: reservation?.prix || "",
-            Superficie_balcon_calculer:
+           /* Superficie_balcon_calculer:
               reservation?.bien != null
                 ? reservation?.bien?.superficie_balcon_calculer
                 : 0,
@@ -466,6 +467,10 @@ export default function ReservationForm({ id }) {
             superficie_habitable:
               reservation?.bien != null
                 ? reservation?.bien?.superficie_habitable
+                : 0,*/
+            superficie_vendable:
+              reservation?.bien != null
+                ? reservation?.bien?.superficie_vendable
                 : 0,
             prix_box:
               reservation?.bien != null ? reservation?.bien?.prix_box : 0,
@@ -744,7 +749,7 @@ export default function ReservationForm({ id }) {
       setValue("prix_val", v.prix);
       setValue("prix", v.prix);
       setValue("prix_final", v.prix);
-      setValue(
+      /*setValue(
         "Superficie_balcon_calculer",
         v.superficie_balcon_calculer != null ? v.superficie_balcon_calculer : 0,
       );
@@ -761,10 +766,15 @@ export default function ReservationForm({ id }) {
       setValue(
         "superficie_habitable",
         v.superficie_habitable != null ? v.superficie_habitable : 0,
+      );*/
+      setValue(
+        "superficie_vendable",
+        v.superficie_vendable != null ? v.superficie_vendable : 0,
       );
       setValue("prix_box", v.prix_box ? v.prix_box : 0);
       setValue("prix_parking", v.prix_parking ? v.prix_parking : 0);
       setValue("prix_unitaire", v.prix_unitaire ? v.prix_unitaire : 0);
+      setValue("prix_remise", v.prix_unitaire ? v.prix_unitaire : 0);
       setValue("avance_minimale", v.avance_minimale ? v.avance_minimale : 0);
       storebien_en_proposition(v.id);
       pusher_function();
@@ -2087,42 +2097,53 @@ export default function ReservationForm({ id }) {
 
   // Common calculation logic extracted to a separate function
   const calculateTotalPrice = (values) => {
-    const {
-      prix_remise,
-      prix_unitaire,
-      prix_forfetaire,
-      superficie_jardin_calculer,
-      superficie_habitable,
-      superficie_balcon_calculer,
-      superficie_terrasse_calculer,
-      prix_box,
-      prix_parking,
-    } = values;
+  const {
+    prix_remise,
+    prix_unitaire,
+    prix_forfetaire,
+   /* superficie_jardin_calculer,
+    superficie_habitable,
+    superficie_balcon_calculer,
+    superficie_terrasse_calculer,*/
+    superficie_vendable,
+    prix_box,
+    prix_parking,
+  } = values;
 
-    const superficieTotal =
-      parseSafeFloat(superficie_jardin_calculer) +
-      parseSafeFloat(superficie_habitable) +
-      parseSafeFloat(superficie_balcon_calculer) +
-      parseSafeFloat(superficie_terrasse_calculer);
+  /*const superficieTotal =
+    parseSafeFloat(superficie_jardin_calculer) +
+    parseSafeFloat(superficie_habitable) +
+    parseSafeFloat(superficie_balcon_calculer) +
+    parseSafeFloat(superficie_terrasse_calculer);*/
 
-    const basePrice =
-      parseSafeFloat(prix_remise) || parseSafeFloat(prix_unitaire);
-    const fixedCosts = parseSafeFloat(prix_box) + parseSafeFloat(prix_parking);
+  const superficieVendable =
+    parseSafeFloat(superficie_vendable);
 
-    return (
-      basePrice * superficieTotal + fixedCosts - parseSafeFloat(prix_forfetaire)
-    );
-  };
+  // Utilise prix_remise SEULEMENT si c'est un nombre positif (>= 0.01)
+  // Si prix_remise est 0 ou null/undefined, utilise prix_unitaire
+  let basePrice;
+  if (prix_remise && parseSafeFloat(prix_remise) > 0) {
+    basePrice = parseSafeFloat(prix_remise);
+  } else {
+    basePrice = parseSafeFloat(prix_unitaire);
+  }
+  
+  const fixedCosts = parseSafeFloat(prix_box) + parseSafeFloat(prix_parking);
+  return (
+    basePrice * superficieVendable + fixedCosts - parseSafeFloat(prix_forfetaire)
+  );
+};
 
   const handleChangePrixRemise = (event) => {
     const values = {
       prix_remise: event.target.value,
       prix_unitaire: watch("prix_unitaire"),
       prix_forfetaire: watch("prix_forfetaire"),
-      superficie_jardin_calculer: watch("superficie_jardin_calculer"),
+      /*superficie_jardin_calculer: watch("superficie_jardin_calculer"),
       superficie_habitable: watch("superficie_habitable"),
       superficie_balcon_calculer: watch("Superficie_balcon_calculer"),
-      superficie_terrasse_calculer: watch("superficie_terrasse_calculer"),
+      superficie_terrasse_calculer: watch("superficie_terrasse_calculer"),*/
+      superficie_vendable: watch("superficie_vendable"),
       prix_box: watch("prix_box"),
       prix_parking: watch("prix_parking"),
     };
@@ -2134,10 +2155,11 @@ export default function ReservationForm({ id }) {
       prix_remise: watch("prix_remise"),
       prix_unitaire: watch("prix_unitaire"),
       prix_forfetaire: event.target.value,
-      superficie_jardin_calculer: watch("superficie_jardin_calculer"),
+      /*superficie_jardin_calculer: watch("superficie_jardin_calculer"),
       superficie_habitable: watch("superficie_habitable"),
       superficie_balcon_calculer: watch("Superficie_balcon_calculer"),
-      superficie_terrasse_calculer: watch("superficie_terrasse_calculer"),
+      superficie_terrasse_calculer: watch("superficie_terrasse_calculer"),*/
+      superficie_vendable: watch("superficie_vendable"),
       prix_box: watch("prix_box"),
       prix_parking: watch("prix_parking"),
     };
@@ -4426,27 +4448,11 @@ export default function ReservationForm({ id }) {
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
               />
-              <p style={{ display: "none" }}>
-                {"superficie_jardin_calculer" +
-                  watch("superficie_jardin_calculer") +
-                  "sup habitable=>" +
-                  watch("superficie_habitable") +
-                  "superficie_balcon_calculer=>" +
-                  watch("Superficie_balcon_calculer") +
-                  "sup terrasse==>" +
-                  watch("superficie_terrasse_calculer") +
-                  "prix box==>" +
-                  watch("prix_box") +
-                  "prix parking==>" +
-                  watch("prix_parking") +
-                  "prix remis=>" +
-                  watch("prix_remise") +
-                  "prix forfetaire=>" +
-                  watch("prix_forfetaire")}
-              </p>
+              
               <TextField
                 label="Prix unitaire remisé:"
                 name="prix_remise"
+                 type="number"
                 control={control}
                 errors={errors}
                 backendErrors={backendErrors}
@@ -4460,6 +4466,7 @@ export default function ReservationForm({ id }) {
                 label="Remise Forfétaire:"
                 name="prix_forfetaire"
                 control={control}
+                type="number"
                 errors={errors}
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
@@ -4480,7 +4487,7 @@ export default function ReservationForm({ id }) {
               {!isEditing && (
                 <>
                   <TextField
-                    label="Reste Avance:"
+                    label="Avance Minimale:"
                     name="avance_minimale"
                     control={control}
                     errors={errors}

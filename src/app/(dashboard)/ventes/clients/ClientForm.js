@@ -339,7 +339,7 @@ export default function ClientForm({ id, projetId, trancheId }) {
 
     // Validation pour telephone_num2 (facultatif)
     if (
-      formData.telephone_num2 &&
+      formData.telephone_num2!=null&&formData.telephone_num2!='' &&
       !/^\d{10,14}$/.test(formData.telephone_num2)
     ) {
       errors.telephone_num2 =
@@ -537,7 +537,7 @@ const handleSubmit = async (e) => {
 
             <Input
               label="Téléphone 1"
-              type="number"
+              type="tel"
               name="telephone_num1"
               value={formData.telephone_num1}
               onChange={(e) => {
@@ -552,7 +552,7 @@ const handleSubmit = async (e) => {
 
             <Input
               label="Téléphone 2"
-              type="number"
+              type="tel,"
               name="telephone_num2"
               value={formData.telephone_num2}
               onChange={(e) => {

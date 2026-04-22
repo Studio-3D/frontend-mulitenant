@@ -94,7 +94,6 @@ const styles = StyleSheet.create({
 });
 
 const MyDocument = ({ data }) => {
-  // Extract data from props - Now includes user data as last element
   const [
     visite_id,
     code_pre_reserve,
@@ -107,44 +106,22 @@ const MyDocument = ({ data }) => {
     prix,
     userName,
     userPrenom,
-    userData, // Last element contains user data
+    userData,
   ] = data;
 
-  // Use passed user data
   const user = userData || {};
   const societe = user?.societe || {};
-  const imageUrl = `/docs/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
-
+// In your PDF component, use the frontend image path
+const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos/${societe.logo}`;
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* En-tête avec logo */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            {imageUrl ? (
-              <Image
-                src={
-                  'https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=200&auto=format&fit=crop'
-                }
-                style={styles.logo}
-              />
-            ) : (
-              <View
-                style={{
-                  width: 80,
-                  height: 80,
-                  backgroundColor: '#f0f0f0',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  border: '1px solid #ccc',
-                }}
-              >
-                <Text style={{ fontSize: 8, color: '#666' }}>LOGO</Text>
-                <Text style={{ fontSize: 6, color: '#999' }}>
-                  Non disponible
-                </Text>
-              </View>
-            )}
+            <Image
+              src={logoUrl}  // Use absolute path from public folder
+              style={styles.logo}
+            />
           </View>
           <View style={styles.companyDetails}>
             <Text style={[styles.bold, { marginBottom: 5 }]}>
@@ -161,11 +138,9 @@ const MyDocument = ({ data }) => {
 
         <View style={styles.line} />
 
-        {/* Titre principal */}
         <Text style={styles.title}>REÇU DE PRÉ-RÉSERVATION</Text>
         <Text style={styles.subtitle}>N° {code_pre_reserve || ''}</Text>
 
-        {/* Contenu principal */}
         <View style={styles.section}>
           <Text style={styles.text}>
             La société{' '}
@@ -180,7 +155,7 @@ const MyDocument = ({ data }) => {
               Le bien identifié sous la référence{' '}
               <Text style={styles.bold}>{bien_propriete || ''}</Text> est situé
               au {niveau == 0 ? 'Rez-de-chaussée' : niveau + 'ème étage'},{' '}
-              {"d'"}une superficie de {superficie==null?0:superficie} m². Ce bien est proposé
+              {"d'"}une superficie de {superficie == null ? 0 : superficie} m². Ce bien est proposé
               au prix de{' '}
               <Text style={styles.bold}>
                 {prix ? prix.toLocaleString('fr-FR') : ''} DH
@@ -221,7 +196,6 @@ const MyDocument = ({ data }) => {
             {new Date().toLocaleDateString('fr-FR')}
           </Text>
 
-          {/* Zone de signatures */}
           <View style={styles.signature}>
             <View style={{ width: '40%' }}>
               <View
@@ -258,7 +232,6 @@ const MyDocument = ({ data }) => {
             </View>
           </View>
 
-          {/* Zone pour cachet */}
           <View style={styles.stampArea}>
             <Text style={{ marginBottom: 10 }}>
               Cachet et signature de la société
@@ -278,7 +251,6 @@ const MyDocument = ({ data }) => {
             </View>
           </View>
 
-          {/* Pied de page */}
           <View style={styles.footer}>
             <Text>Merci pour votre confiance</Text>
           </View>

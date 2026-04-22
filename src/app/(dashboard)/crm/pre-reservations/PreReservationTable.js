@@ -58,6 +58,9 @@ const PreReservationTable = () => {
     searchFields: [''],
   };
 
+
+// In PreReservationTable.js - Replace your logo fetch code
+
   useEffect(() => {
     localStorage.setItem('v_id_cadre', null);
     localStorage.setItem('v_id_org', null);
@@ -247,51 +250,51 @@ const PreReservationTable = () => {
             <Eye className="w-4 h-4" />
           </Link>
 
-          <PDFDownloadLink
-            document={
-              <MyDocument
-                data={[
-                  row.visite_id,
-                  row.code,
-                  row.t_appel != null
-                    ? row.t_appel.rdv.rdv
-                    : row?.visite != null
-                    ? row.visite?.rdv_relation?.rdv
-                    : null,
-                  row.date_pre_reserve,
-                  row.bien?.propriete_dite_bien,
-                  row.bien?.niveau,
-                  row.bien?.superficie_architecte,
-                  row.bien?.orientation,
-                  row.bien?.prix,
-                  row.t_appel != null
-                    ? row.t_appel.user?.name
-                    : row?.visite != null
-                    ? row.visite?.user?.name
-                    : null,
-                  row.t_appel != null
-                    ? row.t_appel.user?.prenom
-                    : row?.visite != null
-                    ? row.visite?.user?.prenom
-                    : null,
-                    JSON.parse(localStorage.getItem('authUser'))
-                ]}
-              />
-            }
-            fileName="bon_pre_reservation.pdf"
-          >
-            {({ loading }) => (
-              <button
-                className={`text-indigo-500 hover:text-indigo-700 ${
-                  loading ? 'opacity-50' : ''
-                }`}
-                title="Télécharger PDF"
-                disabled={loading}
-              >
-                {loading ? '...' : <Download className="w-4 h-4" />}
-              </button>
-            )}
-          </PDFDownloadLink>
+<PDFDownloadLink
+  document={
+    <MyDocument
+      data={[
+        row.visite_id,
+        row.code,
+        row.t_appel != null
+          ? row.t_appel.rdv.rdv
+          : row?.visite != null
+          ? row.visite?.rdv_relation?.rdv
+          : null,
+        row.date_pre_reserve,
+        row.bien?.propriete_dite_bien,
+        row.bien?.niveau,
+        row.bien?.superficie_architecte,
+        row.bien?.orientation,
+        row.bien?.prix,
+        row.t_appel != null
+          ? row.t_appel.user?.name
+          : row?.visite != null
+          ? row.visite?.user?.name
+          : null,
+        row.t_appel != null
+          ? row.t_appel.user?.prenom
+          : row?.visite != null
+          ? row.visite?.user?.prenom
+          : null,
+        JSON.parse(localStorage.getItem('authUser'))
+      ]}
+    />
+  }
+  fileName={`bon_pre_reservation_${row.code}.pdf`}
+>
+  {({ loading, error }) => (
+    <button
+      className={`text-indigo-500 hover:text-indigo-700 ${
+        loading ? 'opacity-50' : ''
+      }`}
+      title="Télécharger PDF"
+      disabled={loading }
+    >
+      {loading  ? '...' : <Download className="w-4 h-4" />}
+    </button>
+  )}
+</PDFDownloadLink>
         </div>
       ),
     },

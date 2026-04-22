@@ -9,7 +9,9 @@ import { Pencil } from "lucide-react";
 import Input from "../../../../components/Input";
 import { APIURL } from '../../../../configs/api';
 import { useSociete } from "../../../../context/SocieteContext"; 
-
+const frontendApi = axios.create({
+  baseURL: '', // Empty base URL to use relative paths
+});
 const Page = () => {
   const [imageFileUrl, setImageFileUrl] = useState(null);
   const fileInputRef = useRef(null);
@@ -42,35 +44,98 @@ const Page = () => {
       id_fiscal: Yup.number().required("ID Fiscal est obligatoire"),
       capital: Yup.number().required("Capital est obligatoire"),*/
     }),
-    onSubmit: async (values, { resetForm }) => {
-      setLoading(true);
-      try {
-        const formData = new FormData();
-        for (const key in values) {
-          if (values[key]) {
-            formData.append(key, values[key]);
-          }
-        }
+ onSubmit: async (values, { resetForm }) => {
+  setLoading(true);
+  try {
+    const formData = new FormData();
+    for (const key in values) {
+      if (values[key]) {
+        formData.append(key, values[key]);
+      }
+    }
 
-        const token = window.localStorage.getItem('accessToken');
-        await axios.post(`${APIURL.SOCIETES}`, formData, {
+    const token = window.localStorage.getItem('accessToken');
+    const response = await axios.post(`${APIURL.SOCIETES}`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    
+    console.log('Full response:', response);
+    console.log('Raw response data:', response.data);
+    
+    // Parse the response if it contains non-JSON text prefix
+    let parsedData;
+    if (typeof response.data === 'string') {
+      // Try to extract JSON from the string (find everything after the first '{')
+      const jsonStartIndex = response.data.indexOf('{');
+      if (jsonStartIndex !== -1) {
+        const jsonString = response.data.substring(jsonStartIndex);
+        parsedData = JSON.parse(jsonString);
+      } else {
+        throw new Error('No JSON found in response');
+      }
+    } else {
+      parsedData = response.data;
+    }
+    
+    console.log('Parsed data:', parsedData);
+    
+    // Check if logo was uploaded
+    if (values.logo && values.logo instanceof File) {
+      console.log('Logo file exists, saving to frontend...');
+      
+      // Access the societe object from parsed data
+      const newSociete = parsedData.societe;
+      console.log('Societe data:', newSociete);
+      
+      if (newSociete && newSociete.id) {
+        const normalizedName = newSociete.raison_sociale_concatene;
+        const folderName = `${normalizedName}_${newSociete.id}`;
+        
+        console.log('Folder name:', folderName);
+        console.log('Societe ID:', newSociete.id);
+        console.log('Raison sociale concatene:', newSociete.raison_sociale_concatene);
+        
+        // Save to frontend
+        const frontendFormData = new FormData();
+        frontendFormData.append('logo', values.logo);
+        frontendFormData.append('folderName', folderName);
+        frontendFormData.append('fileName', values.logo.name);
+        
+        // Call frontend API to save logo
+        const frontendResponse = await frontendApi.post('/api/save-frontend-logo', frontendFormData, {
           headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
+            'Content-Type': 'multipart/form-data',
           },
         });
-
-        toast.success("Société ajoutée avec succès");
-        resetForm();
-        setImageFileUrl(null);
-        refreshSocietes();
-        router.push('/societes');
-      } catch (error) {
-        toast.error("Une erreur s'est produite");
-      } finally {
-        setLoading(false);
+        
+        console.log('Frontend save response:', frontendResponse.data);
+      } else {
+        console.error('No societe data found in parsed response');
+        console.log('Parsed response structure:', Object.keys(parsedData));
       }
-    },
+    } else {
+      console.log('No logo to save');
+    }
+    
+    toast.success("Société ajoutée avec succès");
+    resetForm();
+    setImageFileUrl(null);
+    refreshSocietes();
+    router.push('/societes');
+  } catch (error) {
+    console.error('Error:', error);
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+    }
+    toast.error("Une erreur s'est produite");
+  } finally {
+    setLoading(false);
+  }
+},
     validateOnChange: true,
     validateOnBlur: true,
   });

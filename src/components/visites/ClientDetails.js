@@ -33,7 +33,7 @@ export function ClientDetails({ Prospect }) {
             <div>
               <p className="text-sm text-[whitesmoke]">Nom & Prénom:</p>
               <h2 className="text-xl font-bold">
-                {Prospect?.nom + " " + Prospect?.prenom}
+                 {`${Prospect?.nom || ''} ${Prospect?.prenom || ''}`.trim()}
               </h2>
             </div>
           </div>

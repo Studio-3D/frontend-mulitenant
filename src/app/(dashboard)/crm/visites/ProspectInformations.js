@@ -44,7 +44,7 @@ const ProspectInformations = ({
         <Input
           label="Nom:"
           name="nom"
-          required
+          required={Number(watch('interet')) == 1} // Rendre obligatoire quand interet interesse
           control={control}
           error={errors?.nom?.message || backendErrors?.nom}
           defaultValue={defaultValues?.nom}

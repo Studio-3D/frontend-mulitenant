@@ -563,7 +563,7 @@ export default function BienForm() {
         if (bienData.num_parking != null) {
           setHasParking(true);
         }
-        if (bienData.superficie_jardin != 0) {
+        if (bienData.superficie_jardin != 0 && bienData.superficie_jardin != null) {
           setHasJardin(true);
         }
         if (bienData.num_box != null) {
@@ -707,12 +707,23 @@ export default function BienForm() {
     }
   };
 
-  const recalculatePrice = (unitPrice, vendableArea) => {
-    const unitPriceValue = parseFloat(unitPrice) || 0;
-    const superficieVendable = parseFloat(vendableArea) || 0;
-    const calculatedPrice = unitPriceValue * superficieVendable;
-    setFormData((prev) => ({ ...prev, prix: calculatedPrice }));
-  };
+ const recalculatePrice = (unitPrice, vendableArea) => {
+  const unitPriceValue = parseFloat(unitPrice) || 0;
+  const superficieVendable = parseFloat(vendableArea) || 0;
+  //added
+  const prixBoxValue = parseFloat(formData.prix_box) || 0;
+  const prixParkingValue = parseFloat(formData.prix_parking) || 0;
+  
+  const calculatedPrice = (unitPriceValue * superficieVendable) + prixBoxValue + prixParkingValue;
+  setFormData((prev) => ({ ...prev, prix: calculatedPrice }));
+};
+
+// Recalculate price when prix_box or prix_parking changes
+useEffect(() => {
+  if (formData.prix_unitaire && formData.superficie_vendable) {
+    recalculatePrice(formData.prix_unitaire, formData.superficie_vendable);
+  }
+}, [formData.prix_box, formData.prix_parking, formData.prix_unitaire, formData.superficie_vendable]);
 
   // Handle form input changes with special calculations
   const handleChange = (field, value, context = 'main') => {
