@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
 
 const MyDocument = ({ data }) => {
   const user = JSON.parse(localStorage.getItem('authUser'));
-  const imageUrl = `/docs/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
+const imageUrl = `/images/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
 
   return (
     <Document>
@@ -154,31 +154,46 @@ const MyDocument = ({ data }) => {
           </Text>
 
           {/* Zone de signatures */}
-          <View style={styles.signature}>
-            <View>
-              <Text style={styles.underline}>Le Client</Text>
-              <Text>Nom et signature</Text>
-            </View>
-            <View>
-              <Text style={styles.underline}>Le Responsable Commercial</Text>
-              <Text>
-                {data[9]} {data[10]}
-              </Text>
-            </View>
-          </View>
+           <View style={styles.signature}>
+                      <View style={{ width: '40%' }}>
+                        <View
+                          style={{
+                            borderTop: '1px solid #000',
+                            marginTop: 40,
+                            paddingTop: 5,
+                          }}
+                        >
+                          <Text style={[styles.underline, { fontSize: 9 }]}>
+                            Signature du Client
+                          </Text>
+                          <Text style={{ fontSize: 8, marginTop: 3 }}>{''}</Text>
+                          <Text style={{ fontSize: 8 }}>CIN / Passeport</Text>
+                        </View>
+                      </View>
+          
+                      <View style={{ width: '40%', textAlign: 'right' }}>
+                        <View
+                          style={{
+                            borderTop: '1px solid #000',
+                            marginTop: 40,
+                            paddingTop: 5,
+                          }}
+                        >
+                          <Text style={[styles.underline, { fontSize: 9 }]}>
+                            Signature de la Société
+                          </Text>
+                          <Text style={{ fontSize: 8, marginTop: 3 }}>
+                            {user.societe?.raison_sociale || 'Société'}
+                          </Text>
+                          <Text style={{ fontSize: 8 }}>Représentant légal</Text>
+                        </View>
+                      </View>
+                    </View>
 
           {/* Pied de page */}
-          <View style={styles.footer}>
-            <Text style={styles.bold}>
-              {user.societe.raison_sociale}
-            </Text>
-            <Text>Merci de votre confiance</Text>
-          </View>
+          
 
-          {/* Zone pour cachet */}
-          <View style={styles.stampArea}>
-            <Text>Cachet et signature de {'l\''}agence</Text>
-          </View>
+         
         </View>
       </Page>
     </Document>

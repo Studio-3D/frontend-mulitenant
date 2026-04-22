@@ -765,7 +765,7 @@ const PrevisualiserRecu = () => {
           <div className="mt-10">
             <PDFDownloadLink
               document={<Document data={[formValues]} />}
-              fileName="recu.pdf"
+              fileName="quittance.pdf"
               onClick={async () => {
                 await updateClients();
               }}
@@ -792,31 +792,49 @@ const PrevisualiserRecu = () => {
         <div className="p-4">
           {/* Logo et Titre */}
 
-          <div className="flex items-center gap-4 mb-4">
-            {user.societe.logo ? (
-              <div className="relative h-24 w-24">
-                <Image
-                  src={`${RESOURCE_URL.DOCS}/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`}
-                  alt={`Logo de ${user.societe.raison_sociale_concatene}`}
-                  fill
-                  className="object-contain"
-                  sizes="96px"
-                  unoptimized={process.env.NODE_ENV !== 'production'} // Disable optimization in development
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/default-company-logo.png';
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="h-24 w-24 flex items-center justify-center bg-gray-200 rounded">
-                <BusinessIcon className="h-12 w-12 text-gray-500" />
-              </div>
-            )}
-            <h2 className="text-xl font-bold text-green-600">
-              {formValues.raison_social}
-            </h2>
-          </div>
+
+<div className="flex justify-between items-start mb-4">
+  {/* Logo à gauche */}
+  {user.societe.logo ? (
+    <div className="relative h-24 w-24">
+      <Image
+        src={`/images/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`}
+        alt={`Logo de ${user.societe.raison_sociale_concatene}`}
+        fill
+        className="object-contain"
+        sizes="96px"
+        unoptimized={process.env.NODE_ENV !== 'production'}
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = '/default-company-logo.png';
+        }}
+      />
+    </div>
+  ) : (
+    <div className="h-24 w-24 flex items-center justify-center bg-gray-200 rounded">
+      <BusinessIcon className="h-12 w-12 text-gray-500" />
+    </div>
+  )}
+  
+  {/* Informations société à droite (float right) */}
+  <div className="flex flex-col items-end text-right">
+    <h3 className="font-bold text-lg">
+      {formValues.raison_social || user.societe.raison_sociale_concatene || 'Société'}
+    </h3>
+    {formValues.adresse && (
+      <p className="text-sm text-gray-600">{formValues.adresse}</p>
+    )}
+    {user.societe.ville && (
+      <p className="text-sm text-gray-600">{user.societe.ville}</p>
+    )}
+    {user.societe.tel && (
+      <p className="text-sm text-gray-600">Tél: {user.societe.tel}</p>
+    )}
+    {user.societe.email && (
+      <p className="text-sm text-gray-600">Email: {user.societe.email}</p>
+    )}
+  </div>
+</div>
 
           <div className="my-2 border-t border-gray-300"></div>
 
@@ -830,7 +848,7 @@ const PrevisualiserRecu = () => {
 
             {/* La Société */}
             <p className="mb-4">
-              LA SOCIETE <strong>«{formValues.raison_social}»</strong>, société
+              La société <strong>«{formValues.raison_social}»</strong>,
               à responsabilité limitée de droit Marocain, au capital social de{' '}
               <strong>{formValues.capital}</strong> de dirhams, ayant son siège
               social à <strong>{formValues.adresse}</strong>, immatriculée au
@@ -915,7 +933,7 @@ const PrevisualiserRecu = () => {
                   : ' au RDC '}
               </strong>
               numéro <strong>{formValues.bien_numero}</strong> situé à{' '}
-              <strong>{formValues.adresse_projet}</strong> , consistant à{' '}
+              <strong>{formValues.adresse_projet}</strong> , consistant en{' '}
               <strong>{formValues.type}</strong> à usage {"d'"}habitation {"d'"}
               une superficie approximative de{' '}
               <strong>{formValues.superficie_habitable}</strong> m²
@@ -955,7 +973,7 @@ const PrevisualiserRecu = () => {
             </h3>
 
             {/* Mention du prix de la propriété */}
-            <p className="mb-4 font-bold">
+            <p className="mb-4">
               Etant précisé que le prix de la propriété objet de la présente
               quittance est de
               <span className="ml-2.5">
@@ -971,7 +989,7 @@ const PrevisualiserRecu = () => {
             </p>
 
             {/* Ajustement de prix en fonction de la superficie */}
-            <p className="mb-4 font-semibold">
+            <p className="mb-4">
               Etant entendu que {"s'il"} existerait une différence de métrage
               entre la superficie définitive telle {"qu'"}établie par le titre
               foncier et la superficie définie ci-dessus, le prix de vente sera

@@ -88,7 +88,6 @@ const ClientDetails = () => {
   const accessToken = token || localStorage.getItem('accessToken');
   const [loading, setLoading] = useState(false);
   const [clientDetails, setClientDetails] = useState({});
-  const [reservationDetails, setReservationDetails] = useState([]);
   const [visiteDetails, setVisiteDetails] = useState([]);
   const [activeTab, setActiveTab] = useState('encaissements');
 
@@ -149,7 +148,6 @@ const ClientDetails = () => {
         })
         .then((response) => {
           setClientDetails(response.data.client);
-          setReservationDetails(response.data.reservations);
           setVisiteDetails(response.data.visites);
           setLoading(false);
         })
@@ -228,7 +226,7 @@ const ClientDetails = () => {
                       document={
                         <ClientPDF
                           client={clientDetails}
-                          reservations={reservationDetails}
+                          reservations={clientDetails?.reservations}
                           visites={visiteDetails}
                           user={user}
                         />
@@ -239,7 +237,7 @@ const ClientDetails = () => {
                       {({ loading }) => (
                         <>
                           <Printer className="w-4 h-4" />
-                          {loading ? 'Préparation...' : 'Imprimer'}
+                          {loading ? 'Préparation...' : 'Fiche client'}
                         </>
                       )}
                     </PDFDownloadLink>

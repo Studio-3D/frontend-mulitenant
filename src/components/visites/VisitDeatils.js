@@ -42,7 +42,7 @@ import {
   getRelance_label,
 } from '../../../src/configs/enum';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import Document from '../../../src/app/(dashboard)/crm/pre-reservations/bon_pre_reservation';
+import BonPreReservationDocument from '../../../src/app/(dashboard)/crm/pre-reservations/bon_pre_reservation';
 import { useRouter } from 'next/navigation';
 import Modal_Historique_rel_rdv from './Modal_Historique_rel_rdv';
 import Modal_Historique from './Modal_Historique';
@@ -1104,7 +1104,7 @@ export function VisitDetails({
                                 visite.statut == 5) && (
                                 <PDFDownloadLink
                                   document={
-                                    <Document
+                                    <BonPreReservationDocument
                                       data={[
                                         visite.id,
                                         visite.pre_reservation_visite

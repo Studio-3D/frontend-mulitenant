@@ -70,13 +70,24 @@ const Compromis_show = ({
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const accessToken = localStorage.getItem('accessToken');
+  function NomBienComplet(bien) {
+    const noms = [];
+
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+
+    noms.push(bien.propriete_dite_bien);
+
+    return noms.join(' - ');
+  }
   // Prepare the form values for the PDF document
   const formValues = {
     user: user,
     reservationDetails: {
       bien: {
         numero: reservationData.reservation?.bien?.numero,
-        etage: reservationData.reservation?.bien?.niveau,
+        niveau: reservationData.reservation?.bien?.niveau,
         superficie_habitable:
           reservationData.reservation?.bien?.superficie_habitable,
         superficie_balcon: reservationData.reservation?.bien?.superficie_balcon,
@@ -86,6 +97,8 @@ const Compromis_show = ({
           reservationData.reservation?.bien?.composition_bien || [],
         num_parking: reservationData.reservation?.bien?.num_parking,
         num_box: reservationData.reservation?.bien?.num_box,
+        propriete_dite_bien: NomBienComplet(reservationData.reservation?.bien),
+        type: reservationData.reservation?.bien?.type_bien?.type,
       },
       prix: reservationData.reservation?.prix,
     },

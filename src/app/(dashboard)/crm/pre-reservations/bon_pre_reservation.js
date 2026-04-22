@@ -93,7 +93,18 @@ const styles = StyleSheet.create({
   },
 });
 
-const MyDocument = ({ data }) => {
+const BonPreReservationDocument = ({ data }) => {
+  const formatCurrency = (amount) => {
+  if (!amount && amount !== 0) return "0 DH";
+  
+  // Arrondir et convertir en nombre
+  const num = Math.round(Number(amount));
+  
+  // Ajouter les espaces tous les 3 chiffres
+  const formatted = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  
+  return `${formatted} DH`;
+};
   const [
     visite_id,
     code_pre_reserve,
@@ -113,7 +124,22 @@ const MyDocument = ({ data }) => {
   const societe = user?.societe || {};
 // In your PDF component, use the frontend image path
 const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos/${societe.logo}`;
-  return (
+const getOrientationFullName = (abbreviation) => {
+  const orientationMap = {
+    'N': 'Nord',
+    'S': 'Sud',
+    'E': 'Est',
+    'O': 'Ouest',
+    'N_E': 'Nord-Est',
+    'N_O': 'Nord-Ouest',
+    'S_E': 'Sud-Est',
+    'S_O': 'Sud-Ouest',
+  };
+  return orientationMap[abbreviation] || abbreviation;
+}; 
+  const orientationFullName = getOrientationFullName(orientation);
+
+return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
@@ -136,7 +162,6 @@ const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos
           </View>
         </View>
 
-        <View style={styles.line} />
 
         <Text style={styles.title}>REÇU DE PRÉ-RÉSERVATION</Text>
         <Text style={styles.subtitle}>N° {code_pre_reserve || ''}</Text>
@@ -154,11 +179,16 @@ const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos
             <Text style={styles.text}>
               Le bien identifié sous la référence{' '}
               <Text style={styles.bold}>{bien_propriete || ''}</Text> est situé
-              au {niveau == 0 ? 'Rez-de-chaussée' : niveau + 'ème étage'},{' '}
-              {"d'"}une superficie de {superficie == null ? 0 : superficie} m². Ce bien est proposé
+              au { 
+                    niveau == 0 ? 'Rez-de-chaussée' : 
+                    (niveau == 1 ? '1er étage' : 
+                    (niveau == 2 ? '2ème étage' : 
+                    niveau + 'ème étage')) 
+                },{' '}
+              d{"'"}une superficie de {superficie == null ? 0 : superficie} m² et  {orientationFullName ? `orientation ${orientationFullName}` : ''}. Ce bien est proposé
               au prix de{' '}
               <Text style={styles.bold}>
-                {prix ? prix.toLocaleString('fr-FR') : ''} DH
+                {prix ? formatCurrency(prix) : ''} DH
               </Text>
               .
               {rdv_date && (
@@ -177,7 +207,7 @@ const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos
           </View>
 
           <Text style={styles.text}>
-            Ce reçu atteste de {"l'"}engagement du client à procéder à la
+            Ce reçu atteste de l{"'"}engagement du client à procéder à la
             réservation définitive du bien selon les modalités convenues entre
             les parties.
           </Text>
@@ -188,11 +218,11 @@ const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos
                 ? new Date(date_pre_reserve).toLocaleDateString('fr-FR')
                 : ''}
             </Text>
-            .
+            
           </Text>
 
           <Text style={styles.text}>
-            Fait à {societe?.ville || '...'}, le{' '}
+            Fait à {societe?.ville || '............'}, le{' '}
             {new Date().toLocaleDateString('fr-FR')}
           </Text>
 
@@ -208,7 +238,7 @@ const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos
                 <Text style={[styles.underline, { fontSize: 9 }]}>
                   Signature du Client
                 </Text>
-                <Text style={{ fontSize: 8, marginTop: 3 }}>Nom et prénom</Text>
+                <Text style={{ fontSize: 8, marginTop: 3 }}></Text>
                 <Text style={{ fontSize: 8 }}>CIN / Passeport</Text>
               </View>
             </View>
@@ -232,32 +262,13 @@ const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos
             </View>
           </View>
 
-          <View style={styles.stampArea}>
-            <Text style={{ marginBottom: 10 }}>
-              Cachet et signature de la société
-            </Text>
-            <View
-              style={{
-                width: 150,
-                height: 80,
-                border: '1px dashed #999',
-                margin: '0 auto',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 8, color: '#999' }}>Cachet ici</Text>
-            </View>
-          </View>
+          
 
-          <View style={styles.footer}>
-            <Text>Merci pour votre confiance</Text>
-          </View>
+         
         </View>
       </Page>
     </Document>
   );
 };
 
-export default MyDocument;
+export default BonPreReservationDocument;

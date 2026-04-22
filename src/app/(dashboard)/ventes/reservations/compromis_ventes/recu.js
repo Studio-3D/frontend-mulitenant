@@ -13,19 +13,7 @@ const styles = StyleSheet.create({
   page: {
     padding: 40,
     fontFamily: "Helvetica",
-    color: "#2a2c3e", // Dark blue-gray text color
-  },
-  header: {
-    backgroundColor: "#4F46E5",
-    padding: 20,
-    color: "white",
-    textAlign: "center",
-    marginBottom: 20,
-    borderRadius: 8,
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: "bold",
+    color: "#2a2c3e",
   },
   container: {
     border: "1px solid #E5E7EB",
@@ -34,64 +22,60 @@ const styles = StyleSheet.create({
   },
   companyHeader: {
     flexDirection: "row",
-    alignItems: "space-between",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     marginBottom: 20,
+    gap: 20,
   },
-  companyInfoContainer: {
+  leftSection: {
     flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
+    alignItems: "flex-start",
+    flex: 2,
+    gap: 12,
+  },
+  logoContainer: {
+    width: 50,
+    height: 50,
+    marginTop: 4,
+  },
+  logo: {
+    width: 50,
+    height: 50,
+    objectFit: 'contain',
   },
   companyInfo: {
     flexDirection: "column",
-  },
-  companyAddress: {
-    fontSize: 10,
-    color: "#6B7280",
-    flexDirection: "row", // This makes address display horizontally
-    flexWrap: "wrap", // Allows text to wrap if needed
-  },
-  metaInfo: {
-    flexDirection: "column",
-    alignItems: "flex-end",
-    minWidth: 150,
-  },
-  companyIcon: {
-    width: 40,
-    height: 40,
-    backgroundColor: "#3B82F6",
-    borderRadius: 20,
-    padding: 8,
-    marginRight: 12,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  companyInfo: {
     flex: 1,
   },
   companyName: {
     fontSize: 14,
     fontWeight: "bold",
     color: "#111827",
+    marginBottom: 4,
   },
-  companyAddress: {
-    fontSize: 10,
+  companyDetailText: {
+    fontSize: 9,
     color: "#6B7280",
+    marginBottom: 2,
+  },
+  companyDetails: {
+    flexDirection: "column",
+    marginTop: 2,
   },
   metaInfo: {
     flexDirection: "column",
     alignItems: "flex-end",
+    flex: 1,
   },
   metaRow: {
     flexDirection: "row",
-    marginBottom: 4,
+    marginBottom: 6,
     alignItems: "center",
   },
   metaLabel: {
     fontSize: 10,
     color: "#6B7280",
-    width: 60,
+    width: 50,
     marginRight: 8,
   },
   metaValue: {
@@ -169,30 +153,64 @@ const styles = StyleSheet.create({
     border: "1px solid #D1D5DB",
     borderRadius: 4,
   },
-  icon: {
-    width: 24,
-    height: 24,
-    marginRight: 8,
-  },
 });
+
+const formatCivilite = (civilite) => {
+  switch (civilite) {
+    case "1":
+      return "Monsieur";
+    case "2":
+      return "Madame";
+    case "3":
+      return "Mademoiselle";
+    default:
+      return civilite || "";
+  }
+};
 
 const Document_Compromis = ({ data }) => (
   <Document>
     <Page size="A4" style={styles.page}>
-      {/* Header */}
-
-      {/* Content */}
       <View style={styles.container}>
-        {/* Company Header */}
+        {/* Company Header - Logo, Company Info with all details, and Meta Info in one row */}
         <View style={styles.companyHeader}>
-          <View style={styles.companyInfoContainer}>
-            {/* Company Icon would go here */}
+          <View style={styles.leftSection}>
+            {data.user?.societe?.logo && (
+              <View style={styles.logoContainer}>
+                <Image
+                  src={`/images/${data.user?.societe?.raison_sociale_concatene}_${data.user?.societe?.id}/logos/${data.user?.societe?.logo}`}
+                  style={styles.logo}
+                />
+              </View>
+            )}
             <View style={styles.companyInfo}>
               <Text style={styles.companyName}>
                 {data.user?.societe?.raison_sociale}
               </Text>
-              <View style={styles.companyAddress}>
-                <Text>47, Boulevard Al Amir 5ème étage, Fès</Text>
+              <View style={styles.companyDetails}>
+                <Text style={styles.companyDetailText}>
+                  {data.user?.societe?.adresse || 'Adresse non disponible'}
+                </Text>
+                {data.user?.societe?.tel && (
+                  <Text style={styles.companyDetailText}>
+                    Tél: {data.user?.societe?.tel}
+                  </Text>
+                )}
+                {data.user?.societe?.email && (
+                  <Text style={styles.companyDetailText}>
+                    Email: {data.user?.societe?.email}
+                  </Text>
+                )}
+                {data.user?.societe?.rc && (
+                  <Text style={styles.companyDetailText}>
+                    RC: {data.user?.societe?.rc}
+                  </Text>
+                )}
+                {data.user?.societe?.ice && (
+                  <Text style={styles.companyDetailText}>
+                    ICE: {data.user?.societe?.ice}
+                  </Text>
+                )}
               </View>
             </View>
           </View>
@@ -228,21 +246,20 @@ const Document_Compromis = ({ data }) => (
                 {data.user?.societe?.raison_sociale}
               </Text>{" "}
               », société à responsabilité limitée de droit Marocain, au capital
-              social de 100.000,00 de dirhams, ayant son siège social à Fes, 47,
-              Boulevard Al Amir 5ème étage, immatriculée au registre du commerce
-              de Casablanca sous n° 526365 et dont le numéro de {"l'"}
-              identifiant fiscal est le n° 55555.
+              social de 100.000,00 de dirhams, ayant son siège social à  {data.user?.societe?.adresse}, immatriculée au registre du commerce
+              de Casablanca sous n°  {data.user?.societe?.rc} et dont le numéro de {"l'"}
+              identifiant fiscal est le n° {data.user?.societe?.ice}.
             </Text>
           </View>
 
           {/* Client Info */}
           <View style={{ marginTop: 15 }}>
-            <Text style={styles.sectionTitle}>LE RESERVANT {"D'"}UNE PART</Text>
+            <Text style={styles.sectionTitle}>LE RESERVANT {"D'UNE"} PART</Text>
             {data.clients?.map((client, idx) => (
               <View key={idx} style={styles.clientInfoContainer}>
                 <Text style={styles.paragraph}>
                   <Text style={styles.boldText}>
-                    {client.client.civilite} {client.client.nom}{" "}
+                    {formatCivilite(client.client.civilite)} {client.client.nom}{" "}
                     {client.client.prenom}
                   </Text>
                   , titulaire de la carte {"d'"}identité nationale n°{" "}
@@ -258,7 +275,7 @@ const Document_Compromis = ({ data }) => (
           {/* Article 1 */}
           <View style={{ marginTop: 15 }}>
             <Text style={styles.sectionTitle}>
-              LE RESERVATAIRE {" D'"}AUTRE PART
+              LE RESERVATAIRE {" D'AUTRE"} PART
             </Text>
             <Text style={styles.articleTitle}>Article 1 : OBJET</Text>
             <Text style={styles.paragraph}>
@@ -273,27 +290,36 @@ const Document_Compromis = ({ data }) => (
           <View style={{ marginTop: 15 }}>
             <Text style={styles.articleTitle}>Article 2 : Désignation</Text>
             <Text style={styles.paragraph}>
-              Un Appartement{" "}
+              Le bien est un  :{data.reservationDetails?.bien.type}
               <Text style={styles.boldText}>
                 n° {data.reservationDetails?.bien.numero}
               </Text>{" "}
-              sous le nom : <Text style={styles.boldText}>{data.bien}</Text>. en
-              copropriété sis à FES, commune a, Al Amir à distraire des
+              sous le nom : <Text style={styles.boldText}>{data.reservationDetails?.bien?.propriete_dite_bien}</Text>.à distraire des
               propriétés dénommées : -« » objet du titre foncier mère numéro
-              82493/47 Cet Appartement sera situé au{" "}
+             {data.reservationDetails?.bien?.projet?.titre_foncier} Cet Appartement sera situé au{" "}
               <Text style={styles.boldText}>
-                {data.reservationDetails?.bien.etage == 0
-                  ? "RDC"
-                  : data.reservationDetails?.bien.etage + "étage"}{" "}
-              </Text>
+                  {(() => {
+                    const etage = data.reservationDetails?.bien.niveau;
+                    if (etage == 0) return "RDC";
+                    if (etage == 1) return "1er étage";
+                    if (etage == 2) return "2ème étage";
+                    if (etage == 3) return "3ème étage";
+                    return `${etage}ème étage`;
+                  })()}
+                </Text>
               , {"D'"}une superficie approximative de{" "}
               <Text style={styles.boldText}>
                 {data.reservationDetails?.bien.superficie_habitable} m²{" "}
               </Text>{" "}
-              dont un balcon et buanderie {"d'"}une superficie approximative de{" "}
-              <Text style={styles.boldText}>
-                {data.reservationDetails?.bien.superficie_balcon} m²
-              </Text>{" "}
+              dont 
+               {data.reservationDetails?.bien.superficie_balcon > 0 && (
+                <Text style={styles.paragraph}>un balcon e {"d'"}une superficie approximative de{" "}
+                    <Text style={styles.boldText}>
+                    {data.reservationDetails?.bien.superficie_balcon} m²
+                  </Text>{" "}
+                </Text>
+              )}
+              
             </Text>
 
             {/* Terrasse condition */}

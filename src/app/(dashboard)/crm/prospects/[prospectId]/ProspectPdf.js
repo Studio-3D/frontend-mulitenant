@@ -1,5 +1,5 @@
 // components/ProspectFullPDF.jsx
-import React from "react";
+import React from 'react';
 import {
   Page,
   Document,
@@ -8,82 +8,114 @@ import {
   StyleSheet,
   Image,
 } from "@react-pdf/renderer";
-import { formatDate } from "@/utils/dateUtils";
+import { formatDate } from '@/utils/dateUtils';
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
-    fontFamily: "Helvetica",
-    backgroundColor: "#FFFFFF",
+    padding: 30,
+    fontSize: 10,
+    fontFamily: 'Helvetica',
   },
   header: {
-    marginBottom: 20,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E4E4E4",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 30,
+  },
+  logoContainer: {
+    width: '30%',
+    minHeight: 80,
   },
   logo: {
-    width: 120,
-    height: 50,
+    width: 80,
+    height: 80,
+    objectFit: 'contain',
   },
-  headerText: {
-    textAlign: "right",
+  companyDetails: {
+    width: '65%',
+    fontSize: 9,
+    textAlign: 'right',
+    lineHeight: 1.5,
   },
-  companyName: {
+  line: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#000',
+    marginBottom: 20,
+  },
+  title: {
+    textAlign: 'center',
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#2C3E50",
-  },
-  reportTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#3498DB",
+    fontWeight: 'bold',
     marginBottom: 10,
-    textAlign: "center",
-    textTransform: "uppercase",
+    textDecoration: 'underline',
   },
   section: {
-    marginBottom: 25,
-    backgroundColor: "#F8F9FA",
-    padding: 15,
-    borderRadius: 5,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 13,
+    fontWeight: 'bold',
     marginBottom: 10,
-    color: "#2C3E50",
+    marginTop: 15,
+    color: '#2C3E50',
     borderBottomWidth: 1,
-    borderBottomColor: "#3498DB",
+    borderBottomColor: '#3498DB',
     paddingBottom: 3,
+  },
+  text: {
+    fontSize: 11,
+    lineHeight: 1.6,
+    textAlign: 'justify',
+    marginBottom: 10,
+  },
+  bold: {
+    fontWeight: 'bold',
   },
   infoRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     marginBottom: 5,
+    paddingVertical: 3,
   },
   infoLabel: {
     width: "30%",
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "bold",
-    color: "#7F8C8D",
+    color: "#34495E",
   },
   infoValue: {
     width: "70%",
-    fontSize: 12,
-    color: "#34495E",
+    fontSize: 11,
+    color: "#555",
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  gridItem: {
+    width: '50%',
+    marginBottom: 8,
+  },
+  gridLabel: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#7F8C8D',
+    marginBottom: 2,
+  },
+  gridValue: {
+    fontSize: 10,
+    color: '#34495E',
   },
   table: {
     width: "100%",
-    marginTop: 15,
-    marginBottom: 20,
+    marginTop: 10,
+    marginBottom: 15,
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#3498DB",
+    backgroundColor: "#34495E",
     paddingVertical: 8,
     paddingHorizontal: 5,
   },
@@ -95,13 +127,13 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E4E4E4",
   },
   tableCell: {
-    fontSize: 10,
+    fontSize: 9,
     flex: 1,
     textAlign: "left",
     paddingHorizontal: 3,
   },
   tableHeaderCell: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "bold",
     color: "white",
     flex: 1,
@@ -109,28 +141,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 3,
   },
   footer: {
-    position: "absolute",
-    bottom: 30,
-    left: 0,
-    right: 0,
-    textAlign: "center",
-    fontSize: 10,
-    color: "#7F8C8D",
-    borderTopWidth: 1,
-    borderTopColor: "#E4E4E4",
-    paddingTop: 10,
-    marginHorizontal: 40,
+    textAlign: 'center',
+    fontSize: 9,
+    marginTop: 30,
+    color: '#7F8C8D',
+  },
+  stampArea: {
+    marginTop: 30,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    fontSize: 9,
+  },
+  badge: {
+    backgroundColor: '#3498DB',
+    color: 'white',
+    padding: 5,
+    textAlign: 'center',
+    borderRadius: 3,
+    marginBottom: 15,
   },
   messageBox: {
-    marginTop: 10,
+    marginTop: 15,
     padding: 10,
-    backgroundColor: "#FFF3E0",
+    backgroundColor: '#F0F7FF',
     borderRadius: 5,
   },
   messageText: {
-    fontSize: 11,
-    color: "#E65100",
-    fontStyle: "italic",
+    fontSize: 10,
+    color: '#2C3E50',
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
 });
 
@@ -144,8 +184,10 @@ const formatInteret = (interet) => {
       return "Perdu";
     case "4":
       return "Injoignable";
+    case "5":
+      return "Suivi Dossier";
     default:
-      return "Non spécifié";
+      return "";
   }
 };
 
@@ -162,7 +204,7 @@ const formatStatutVisite = (statut) => {
     case "5":
       return "Pré-Réservation Vendu";
     default:
-      return "Non spécifié";
+      return "";
   }
 };
 
@@ -179,104 +221,131 @@ const NomBienComplet = (bien) => {
 };
 
 const ProspectPDF = ({ prospect, appels, visites, user }) => {
+  const societe = user?.societe || {};
+  const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos/${societe.logo}`;
+  
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header */}
+        {/* Header - Style pré-réservation */}
         <View style={styles.header}>
-          <Image src="/path/to/your/logo.png" style={styles.logo} />
-          <View style={styles.headerText}>
-            <Text style={styles.companyName}>
-              {user?.societe?.raison_sociale || "Votre Société"}
+          <View style={styles.logoContainer}>
+            <Image
+              src={logoUrl}
+              style={styles.logo}
+            />
+          </View>
+          <View style={styles.companyDetails}>
+            <Text style={[styles.bold, { marginBottom: 5 }]}>
+              {societe?.raison_sociale || 'Société'}
             </Text>
-            <Text>Fiche Prospect </Text>
+            {societe?.adresse && <Text>{societe.adresse}</Text>}
+            {societe?.ville && <Text>{societe.ville}</Text>}
+            {societe?.tel && <Text>Tél: {societe.tel}</Text>}
+            {societe?.email && <Text>Email: {societe.email}</Text>}
+            {societe?.rc && <Text>RC: {societe.rc}</Text>}
+            {societe?.ice && <Text>ICE: {societe.ice}</Text>}
           </View>
         </View>
 
-        <Text style={styles.reportTitle}>FICHE PROSPECT COMPLÈTE</Text>
+
+        <Text style={styles.title}>FICHE D{"'"}INFORMATION PROSPECT</Text>
+        
+        <View style={styles.badge}>
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>
+            Document de suivi commercial confidentiel
+          </Text>
+        </View>
 
         {/* Section Informations Prospect */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>INFORMATIONS PROSPECT</Text>
+          <Text style={styles.sectionTitle}>INFORMATIONS PERSONNELLES</Text>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Nom Complet:</Text>
-            <Text style={styles.infoValue}>
-              {(prospect?.nom || "") + " " + (prospect?.prenom || "")}
-            </Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>CIN:</Text>
-            <Text style={styles.infoValue}>{prospect?.cin || "Non renseigné"}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Téléphone 1:</Text>
-            <Text style={styles.infoValue}>{prospect?.telephone || "Non renseigné"}</Text>
-          </View>
-
-          {prospect?.telephone_num2 && prospect.telephone_num2 !== 'null' && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Téléphone 2:</Text>
-              <Text style={styles.infoValue}>{prospect.telephone_num2}</Text>
+          <View style={styles.gridContainer}>
+            <View style={styles.gridItem}>
+              <Text style={styles.gridLabel}>Nom complet</Text>
+              <Text style={styles.gridValue}>
+                {(prospect?.nom || "") + " " + (prospect?.prenom || "")}
+              </Text>
             </View>
-          )}
 
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Email:</Text>
-            <Text style={styles.infoValue}>{prospect?.email || "Non renseigné"}</Text>
-          </View>
+            <View style={styles.gridItem}>
+              <Text style={styles.gridLabel}>CIN / Passeport</Text>
+              <Text style={styles.gridValue}>{prospect?.cin || ""}</Text>
+            </View>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Origine:</Text>
-            <Text style={styles.infoValue}>{prospect?.origin || "Non spécifié"}</Text>
-          </View>
+            <View style={styles.gridItem}>
+              <Text style={styles.gridLabel}>Téléphone principal</Text>
+              <Text style={styles.gridValue}>{prospect?.telephone || ""}</Text>
+            </View>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Source:</Text>
-            <Text style={styles.infoValue}>
-              {prospect?.partenaire_id !== null
-                ? `Partenaire (${prospect?.partenaire?.description})`
-                : prospect?.source?.source || "Non spécifié"}
-            </Text>
-          </View>
+            <View style={styles.gridItem}>
+              <Text style={styles.gridLabel}>Téléphone secondaire</Text>
+              <Text style={styles.gridValue}>
+                {prospect?.telephone_num2 && prospect.telephone_num2 !== 'null' 
+                  ? prospect.telephone_num2 
+                  : ""}
+              </Text>
+            </View>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Accepte d{"'"}être contacté:</Text>
-            <Text style={styles.infoValue}>
-              {prospect?.notifie === 1 ? "Oui" : "Non"}
-            </Text>
+            <View style={styles.gridItem}>
+              <Text style={styles.gridLabel}>Adresse email</Text>
+              <Text style={styles.gridValue}>{prospect?.email || ""}</Text>
+            </View>
+
+            <View style={styles.gridItem}>
+              <Text style={styles.gridLabel}>Accepte d{"'"}être contacté</Text>
+              <Text style={styles.gridValue}>
+                {prospect?.notifie === 1 ? "Oui ✓" : "Non ✗"}
+              </Text>
+            </View>
           </View>
         </View>
 
-        {/* Section Suivi */}
+        {/* Section Origine et Affectation */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Affectation</Text>
+          <Text style={styles.sectionTitle}>ORIGINE & AFFECTATION</Text>
 
-          {prospect?.affecte_par_admin && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Affecté par:</Text>
-              <Text style={styles.infoValue}>
-                {prospect.affecte_par_admin.name || ""} {prospect.affecte_par_admin.prenom || ""}
+          <View style={styles.gridContainer}>
+            <View style={styles.gridItem}>
+              <Text style={styles.gridLabel}>Source / Origine</Text>
+              <Text style={styles.gridValue}>{prospect?.origin || ""}</Text>
+            </View>
+
+            <View style={styles.gridItem}>
+              <Text style={styles.gridLabel}>Provenance</Text>
+              <Text style={styles.gridValue}>
+                {prospect?.partenaire_id !== null
+                  ? `Partenaire : ${prospect?.partenaire?.description || ""}`
+                  : prospect?.source?.source || ""}
               </Text>
             </View>
-          )}
 
-          {prospect?.date_affectation && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Date affectation:</Text>
-              <Text style={styles.infoValue}>{formatDate(prospect.date_affectation)}</Text>
-            </View>
-          )}
+            {prospect?.affecte_par_admin && (
+              <>
+                <View style={styles.gridItem}>
+                  <Text style={styles.gridLabel}>Commercial assigné</Text>
+                  <Text style={styles.gridValue}>
+                    {prospect.affecte_par_admin.name || ""} {prospect.affecte_par_admin.prenom || ""}
+                  </Text>
+                </View>
 
+                <View style={styles.gridItem}>
+                  <Text style={styles.gridLabel}>Date d{"'"}assignation</Text>
+                  <Text style={styles.gridValue}>
+                    {prospect?.date_affectation ? formatDate(prospect.date_affectation) : "Non définie"}
+                  </Text>
+                </View>
+              </>
+            )}
+          </View>
         </View>
 
         {/* Section Appels */}
         {appels && appels.length > 0 && (
-          <View style={{ marginBottom: 25 }}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              JOURNAL DES APPELS ({appels.length})
+              HISTORIQUE DES ÉCHANGES TÉLÉPHONIQUES ({appels.length} appel(s))
             </Text>
 
             <View style={styles.table}>
@@ -284,7 +353,7 @@ const ProspectPDF = ({ prospect, appels, visites, user }) => {
                 <Text style={styles.tableHeaderCell}>Date</Text>
                 <Text style={styles.tableHeaderCell}>Commercial</Text>
                 <Text style={styles.tableHeaderCell}>Type</Text>
-                <Text style={styles.tableHeaderCell}>Intérêt</Text>
+                <Text style={styles.tableHeaderCell}>Niveau d{"'"}intérêt</Text>
               </View>
 
               {appels.map((appel, index) => (
@@ -294,7 +363,7 @@ const ProspectPDF = ({ prospect, appels, visites, user }) => {
                     {appel.user?.name || ""} {appel.user?.prenom || ""}
                   </Text>
                   <Text style={styles.tableCell}>
-                    {appel.type_appel === 1 ? "Appel entrant" : "Appel sortant"}
+                    {appel.type_appel === 1 ? "📞 Entrant" : "📞 Sortant"}
                   </Text>
                   <Text style={styles.tableCell}>
                     {formatInteret(appel.interet)}
@@ -307,8 +376,10 @@ const ProspectPDF = ({ prospect, appels, visites, user }) => {
 
         {/* Section Visites */}
         {visites && visites.length > 0 && (
-          <View style={{ marginBottom: 25 }}>
-            <Text style={styles.sectionTitle}>VISITES ({visites.length})</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              VISITES RÉALISÉES ({visites.length} visite(s))
+            </Text>
 
             <View style={styles.table}>
               <View style={styles.tableHeader}>
@@ -316,7 +387,7 @@ const ProspectPDF = ({ prospect, appels, visites, user }) => {
                 <Text style={styles.tableHeaderCell}>Responsable</Text>
                 <Text style={styles.tableHeaderCell}>Intérêt</Text>
                 <Text style={styles.tableHeaderCell}>Statut</Text>
-                <Text style={styles.tableHeaderCell}>Bien</Text>
+                <Text style={styles.tableHeaderCell}>Bien immobilier</Text>
               </View>
 
               {visites.map((visite, index) => (
@@ -340,13 +411,20 @@ const ProspectPDF = ({ prospect, appels, visites, user }) => {
           </View>
         )}
 
+        {/* Message professionnel */}
+        <View style={styles.messageBox}>
+          <Text style={styles.messageText}>
+            Ce document fait office de suivi commercial. Toute information contenue dans ce document 
+            est confidentielle et réservée à l{"'"}usage interne de {societe?.raison_sociale || 'la société'}.
+          </Text>
+        </View>
+
         {/* Footer */}
         <View style={styles.footer}>
           <Text>
-            Document généré le {formatDate(new Date())} - ©{" "}
-            {user?.societe?.raison_sociale || "Votre Société"} {new Date().getFullYear()}
+            Document généré le {formatDate(new Date())} — {societe?.raison_sociale || 'Société'} — 
+            Tous droits réservés {new Date().getFullYear()}
           </Text>
-          <Text style={{ marginTop: 5 }}>Page 1 sur 1</Text>
         </View>
       </Page>
     </Document>

@@ -490,7 +490,7 @@ export const ContractTab = ({
                         {user?.societe?.raison_sociale}, société à
                         responsabilité limitée de droit Marocain, au capital
                         social de 100.000,00 de dirhams, ayant son siège social
-                        à Fes, 47, Boulevard Al Amir 5ème étage.
+                        à  {user?.societe?.adresse}.
                       </p>
                     </div>
 
@@ -540,7 +540,7 @@ export const ContractTab = ({
                   {/* Détails du bien */}
                   <div className="mb-6">
                     <h4 className="text-lg font-bold text-[#5A5FE0] border-b border-[#EEEEEE] pb-2 mb-4">
-                      Détails du bien {data_reservation?.bien?.niveau}
+                      Détails du bien 
                     </h4>
                     <div className="bg-[#F5F0F5] p-4 rounded-lg border-l-4 border-[#5A5FE0]">
                       <p className="text-sm mb-3">
@@ -550,9 +550,12 @@ export const ContractTab = ({
                         , identifié par le numéro{' '}
                         {data_reservation?.bien?.numero || 'non renseigné'}. Il
                         est situé au{' '}
-                        {data_reservation?.bien?.niveau == 0
-                          ? 'rez-de-chaussée'
-                          : `${data_reservation?.bien?.niveau}ème étage`}{' '}
+                          {data_reservation?.bien.niveau == 0
+                          ? 'RDC'
+                          : data_reservation?.bien.niveau == 1
+                          ? '1er étage'
+                          : data_reservation?.bien.niveau + 'ème étage'}
+                        
                         et offre une superficie habitable de{' '}
                         {data_reservation?.bien?.superficie_habitable || '0'}{' '}
                         m².
@@ -561,119 +564,123 @@ export const ContractTab = ({
                         {data_reservation?.bien?.superficie_terrasse > 0 &&
                           ` Il dispose également d'une terrasse de ${data_reservation.bien.superficie_terrasse} m².`}
                       </p>
+                           {data_reservation?.bien?.composition_bien?.length  && (
+                            <>
+                                <p className="text-sm font-semibold mb-1">Composition:</p>
+                                  {data_reservation?.bien?.composition_bien?.length > 0 ? (
+                                    <div className="bg-white p-3 rounded-lg border border-gray-200">
+                                      {(() => {
+                                        const summedComposition =
+                                          data_reservation.bien.composition_bien.reduce(
+                                            (acc, curr) => ({
+                                              nbre_halls:
+                                                (acc.nbre_halls || 0) +
+                                                (curr.nbre_halls || 0),
+                                              nbre_salons:
+                                                (acc.nbre_salons || 0) +
+                                                (curr.nbre_salons || 0),
+                                              nbre_chambres:
+                                                (acc.nbre_chambres || 0) +
+                                                (curr.nbre_chambres || 0),
+                                              nbre_cuisines:
+                                                (acc.nbre_cuisines || 0) +
+                                                (curr.nbre_cuisines || 0),
+                                              nbre_sdb:
+                                                (acc.nbre_sdb || 0) + (curr.nbre_sdb || 0),
+                                              nbre_balcons:
+                                                (acc.nbre_balcons || 0) +
+                                                (curr.nbre_balcons || 0),
+                                              nbre_buanderies:
+                                                (acc.nbre_buanderies || 0) +
+                                                (curr.nbre_buanderies || 0),
+                                              nbre_placards:
+                                                (acc.nbre_placards || 0) +
+                                                (curr.nbre_placards || 0),
+                                              nbre_receptions:
+                                                (acc.nbre_receptions || 0) +
+                                                (curr.nbre_receptions || 0),
+                                            }),
+                                            {}
+                                          );
 
-                      <p className="text-sm font-semibold mb-1">Composition:</p>
-                      {data_reservation?.bien?.composition_bien?.length > 0 ? (
-                        <div className="bg-white p-3 rounded-lg border border-gray-200">
-                          {(() => {
-                            const summedComposition =
-                              data_reservation.bien.composition_bien.reduce(
-                                (acc, curr) => ({
-                                  nbre_halls:
-                                    (acc.nbre_halls || 0) +
-                                    (curr.nbre_halls || 0),
-                                  nbre_salons:
-                                    (acc.nbre_salons || 0) +
-                                    (curr.nbre_salons || 0),
-                                  nbre_chambres:
-                                    (acc.nbre_chambres || 0) +
-                                    (curr.nbre_chambres || 0),
-                                  nbre_cuisines:
-                                    (acc.nbre_cuisines || 0) +
-                                    (curr.nbre_cuisines || 0),
-                                  nbre_sdb:
-                                    (acc.nbre_sdb || 0) + (curr.nbre_sdb || 0),
-                                  nbre_balcons:
-                                    (acc.nbre_balcons || 0) +
-                                    (curr.nbre_balcons || 0),
-                                  nbre_buanderies:
-                                    (acc.nbre_buanderies || 0) +
-                                    (curr.nbre_buanderies || 0),
-                                  nbre_placards:
-                                    (acc.nbre_placards || 0) +
-                                    (curr.nbre_placards || 0),
-                                  nbre_receptions:
-                                    (acc.nbre_receptions || 0) +
-                                    (curr.nbre_receptions || 0),
-                                }),
-                                {}
-                              );
-
-                            return (
-                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                {summedComposition.nbre_halls > 0 && (
-                                  <span className="bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_halls} Hall
-                                    {summedComposition.nbre_halls > 1
-                                      ? 's'
-                                      : ''}
-                                  </span>
-                                )}
-                                {summedComposition.nbre_salons > 0 && (
-                                  <span className="bg-green-50 text-green-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_salons} Salon
-                                  </span>
-                                )}
-                                {summedComposition.nbre_chambres > 0 && (
-                                  <span className="bg-purple-50 text-purple-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_chambres} Chambre
-                                    {summedComposition.nbre_chambres > 1
-                                      ? 's'
-                                      : ''}
-                                  </span>
-                                )}
-                                {summedComposition.nbre_cuisines > 0 && (
-                                  <span className="bg-yellow-50 text-yellow-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_cuisines} Cuisine
-                                  </span>
-                                )}
-                                {summedComposition.nbre_sdb > 0 && (
-                                  <span className="bg-red-50 text-red-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_sdb} Salle
-                                    {summedComposition.nbre_sdb > 1
-                                      ? 's'
-                                      : ''}{' '}
-                                    de bain
-                                  </span>
-                                )}
-                                {summedComposition.nbre_balcons > 0 && (
-                                  <span className="bg-indigo-50 text-indigo-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_balcons} Balcon
-                                    {summedComposition.nbre_balcons > 1
-                                      ? 's'
-                                      : ''}
-                                  </span>
-                                )}
-                                {summedComposition.nbre_buanderies > 0 && (
-                                  <span className="bg-teal-50 text-teal-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_buanderies}{' '}
-                                    Buanderie
-                                  </span>
-                                )}
-                                {summedComposition.nbre_placards > 0 && (
-                                  <span className="bg-orange-50 text-orange-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_placards} Placard
-                                    {summedComposition.nbre_placards > 1
-                                      ? 's'
-                                      : ''}
-                                  </span>
-                                )}
-                                {summedComposition.nbre_receptions > 0 && (
-                                  <span className="bg-pink-50 text-pink-800 px-2 py-1 rounded text-xs">
-                                    {summedComposition.nbre_receptions}{' '}
-                                    Réception
-                                    {summedComposition.nbre_receptions > 1
-                                      ? 's'
-                                      : ''}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-500">Non spécifiée</p>
-                      )}
+                                        return (
+                                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                            {summedComposition.nbre_halls > 0 && (
+                                              <span className="bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_halls} Hall
+                                                {summedComposition.nbre_halls > 1
+                                                  ? 's'
+                                                  : ''}
+                                              </span>
+                                            )}
+                                            {summedComposition.nbre_salons > 0 && (
+                                              <span className="bg-green-50 text-green-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_salons} Salon
+                                              </span>
+                                            )}
+                                            {summedComposition.nbre_chambres > 0 && (
+                                              <span className="bg-purple-50 text-purple-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_chambres} Chambre
+                                                {summedComposition.nbre_chambres > 1
+                                                  ? 's'
+                                                  : ''}
+                                              </span>
+                                            )}
+                                            {summedComposition.nbre_cuisines > 0 && (
+                                              <span className="bg-yellow-50 text-yellow-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_cuisines} Cuisine
+                                              </span>
+                                            )}
+                                            {summedComposition.nbre_sdb > 0 && (
+                                              <span className="bg-red-50 text-red-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_sdb} Salle
+                                                {summedComposition.nbre_sdb > 1
+                                                  ? 's'
+                                                  : ''}{' '}
+                                                de bain
+                                              </span>
+                                            )}
+                                            {summedComposition.nbre_balcons > 0 && (
+                                              <span className="bg-indigo-50 text-indigo-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_balcons} Balcon
+                                                {summedComposition.nbre_balcons > 1
+                                                  ? 's'
+                                                  : ''}
+                                              </span>
+                                            )}
+                                            {summedComposition.nbre_buanderies > 0 && (
+                                              <span className="bg-teal-50 text-teal-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_buanderies}{' '}
+                                                Buanderie
+                                              </span>
+                                            )}
+                                            {summedComposition.nbre_placards > 0 && (
+                                              <span className="bg-orange-50 text-orange-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_placards} Placard
+                                                {summedComposition.nbre_placards > 1
+                                                  ? 's'
+                                                  : ''}
+                                              </span>
+                                            )}
+                                            {summedComposition.nbre_receptions > 0 && (
+                                              <span className="bg-pink-50 text-pink-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_receptions}{' '}
+                                                Réception
+                                                {summedComposition.nbre_receptions > 1
+                                                  ? 's'
+                                                  : ''}
+                                              </span>
+                                            )}
+                                          </div>
+                                        );
+                                      })()}
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-gray-500">Non spécifiée</p>
+                                  )}
+                              </>
+                           )}
+                      
                     </div>
                   </div>
                   {/* Conditions financières */}
@@ -687,8 +694,8 @@ export const ContractTab = ({
                           Prix global (DHS):
                         </span>
                         <span className="text-sm font-bold text-[#5A5FE0]">
-                          {data_reservation?.bien?.prix
-                            ? `${data_reservation.bien.prix.toLocaleString(
+                          {data_reservation?.prix
+                            ? `${data_reservation.prix.toLocaleString(
                                 'fr-FR'
                               )} `
                             : ''}
@@ -709,9 +716,9 @@ export const ContractTab = ({
                           Reste à payer (DHS):
                         </span>
                         <span className="text-sm font-bold text-[#5A5FE0]">
-                          {data_reservation?.bien?.prix && sum_avances_valides
+                          {data_reservation?.prix && sum_avances_valides
                             ? `${(
-                                data_reservation.bien.prix - sum_avances_valides
+                                data_reservation.prix - sum_avances_valides
                               ).toLocaleString('fr-FR')}`
                             : ''}
                         </span>

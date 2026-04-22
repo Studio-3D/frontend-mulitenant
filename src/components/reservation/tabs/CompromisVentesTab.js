@@ -290,31 +290,41 @@ const fetchData = async () => {
               <div className="max-h-[80vh] overflow-y-auto p-6">
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   {/* Header */}
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                    <div className="flex items-center mb-4 md:mb-0">
-                      <div className="bg-blue-500 p-2 rounded-full mr-3">
-                        <svg
-                          className="h-6 w-6 text-blue-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                          />
-                        </svg>
-                      </div>
+               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                     <div className="flex items-center mb-4 md:mb-0">
+                          {/* Logo image instead of SVG */}
+                          {user?.societe?.raison_sociale_concatene && user?.societe?.id && user?.societe?.logo && (
+                            <div className="mr-3">
+                              <img
+                                src={`/images/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`}
+                                alt="Logo société"
+                                className="h-8 w-8 object-contain"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
                       <div>
                         <h2 className="text-lg font-bold text-gray-800">
                           {user?.societe?.raison_sociale}
                         </h2>
                         <p className="text-sm text-gray-600">
-                          47, Boulevard Al Amir 5ème étage, Fès
+                          {user?.societe?.adresse}
                         </p>
-                      </div>
+                        <p className="text-sm text-gray-600">
+                          {user?.societe?.adresse}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {user?.societe?.adresse}
+                        </p>
+                        {user?.societe?.tel && <p className="text-sm text-gray-600">Tél: {user?.societe?.tel}</p>}
+                        {user?.societe?.email && <p className="text-sm text-gray-600">Email: {user?.societe?.email}</p>}
+                        {user?.societe?.rc && <p className="text-sm text-gray-600">RC: {user?.societe?.rc}</p>}
+                        {user?.societe?.ice && <p className="text-sm text-gray-600">ICE: {user?.societe?.ice}</p>}
+
+                         </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center">
@@ -356,10 +366,10 @@ const fetchData = async () => {
                         </span>{' '}
                         », société à responsabilité limitée de droit Marocain,
                         au capital social de 100.000,00 de dirhams, ayant son
-                        siège social à Fes, 47, Boulevard Al Amir 5ème étage,
+                        siège social à{user?.societe?.adresse},
                         immatriculée au registre du commerce de Casablanca sous
-                        n° 526365 et dont le numéro de {"l'"}identifiant fiscal
-                        est le n° 55555.
+                        n° {user?.societe?.rc} et dont le numéro de {"l'"}identifiant fiscal
+                        est le n° {user?.societe?.ice}.
                       </p>
                     </div>
 
@@ -417,29 +427,32 @@ const fetchData = async () => {
                         className="text-gray-700 leading-relaxed mt-2"
                         style={style_p}
                       >
-                        Un Appartement
+                        le Bien est un :{data.reservationDetails?.bien.type_bien?.type}
                         <b> n° {data.reservationDetails?.bien.numero}</b> sous
-                        le nom :<b>{data.reservationDetails?.bien.propriete_dite_bien} </b>. en copropriété sis à FES,
-                        commune a, Al Amir à distraire des propriétés dénommées
-                        : -« » objet du titre foncier mère numéro 82493/47 Cet
+                        le nom :<b>{NomBienComplet(data.bien)} </b>.à distraire des propriétés dénommées
+                        : -« » objet du titre foncier mère numéro {data.reservationDetails?.bien?.projet?.numero} Cet
                         Appartement sera situé au{' '}
                         <b>
-                          {data.reservationDetails?.bien.etage == 0
-                            ? 'RDC'
-                            : data.reservationDetails?.bien.etage +
-                              'étage'}{' '}
+                         {data.reservationDetails?.bien.niveau == 0
+                          ? 'RDC'
+                          : data.reservationDetails?.bien.niveau == 1
+                          ? '1er étage'
+                          : data.reservationDetails?.bien.niveau + 'ème étage'}
                         </b>
                         , {"D'"}une superficie approximative de{' '}
                         <b>
                           {data.reservationDetails?.bien.superficie_habitable}{' '}
                           m²{' '}
                         </b>{' '}
-                        dont un balcon et buanderie {"d'"}une superficie
-                        approximative de{' '}
-                        <b>
-                          {data.reservationDetails?.bien.superficie_balcon} m²
-                        </b>{' '}
-                        Et une terrasse {"d'"}une superficie approximative de{' '}
+                        dont {data.reservationDetails?.bien.superficie_balcon > 0 && (
+                          
+                          <p>un balcon et buanderie {"d'"}une superficie
+                              approximative de{' '}
+                              <b>
+                                {data.reservationDetails?.bien.superficie_balcon} m²
+                              </b>{' '}
+                            
+                        </p>)}
                       </p>
                       <p>
                         {/* Terrasse condition */}

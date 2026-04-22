@@ -11,7 +11,7 @@ import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils'
 import Link from 'next/link';
 import { format, parseISO, isValid } from 'date-fns';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import MyDocument from './bon_pre_reservation.js';
+import BonPreReservationDocument from './bon_pre_reservation.js';
 import Input from '@/components/Input';
 
 const PreReservationTable = () => {
@@ -252,7 +252,7 @@ const PreReservationTable = () => {
 
 <PDFDownloadLink
   document={
-    <MyDocument
+    <BonPreReservationDocument
       data={[
         row.visite_id,
         row.code,
