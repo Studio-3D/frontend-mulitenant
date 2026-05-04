@@ -427,11 +427,11 @@ const fetchData = async () => {
                         className="text-gray-700 leading-relaxed mt-2"
                         style={style_p}
                       >
-                        le Bien est un :{data.reservationDetails?.bien.type_bien?.type}
+                        le Bien est un {data.reservationDetails?.bien.type_bien?.type}
                         <b> n° {data.reservationDetails?.bien.numero}</b> sous
                         le nom :<b>{NomBienComplet(data.bien)} </b>.à distraire des propriétés dénommées
-                        : -« » objet du titre foncier mère numéro {data.reservationDetails?.bien?.projet?.numero} Cet
-                        Appartement sera situé au{' '}
+                        : -« » objet du titre foncier mère numéro {data.reservationDetails?.bien?.projet?.numero} Ce
+                        Bien sera situé au{' '}
                         <b>
                          {data.reservationDetails?.bien.niveau == 0
                           ? 'RDC'

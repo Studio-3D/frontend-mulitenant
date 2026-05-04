@@ -551,7 +551,7 @@ export const ContractTab = ({
                         {data_reservation?.bien?.numero || 'non renseigné'}. Il
                         est situé au{' '}
                           {data_reservation?.bien.niveau == 0
-                          ? 'RDC'
+                          ? 'RDC '
                           : data_reservation?.bien.niveau == 1
                           ? '1er étage'
                           : data_reservation?.bien.niveau + 'ème étage'}
@@ -817,7 +817,7 @@ export const ContractTab = ({
           </div>
 
           {/* Contract Details */}
-          <div className="bg-white rounded-b-xl shadow-xl border border-gray-100 divide-y divide-gray-100">
+          <div className="bg-white rounded-b-xl  border border-gray-100 divide-y divide-gray-100">
             {/* Summary Section */}
             <div className="grid grid-cols-1 md:grid-cols-3">
               <div className="p-6 border-b md:border-b-0 md:border-r border-gray-100">

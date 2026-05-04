@@ -122,7 +122,7 @@ const Compromis_show = ({
     setDate_sign_mo(data_c.date_sign_mo);
     setDate_enreg(data_c.date_enreg);
     set_duree_echeance(data_c.duree_echeance);
-    set_date_echeance(data_c.date_echeance);
+    set_date_echeance(data_c.date_echeance || ''); // Add fallback to empty string
     setCommentaire(data_c.commentaire);
     set_nb_comp_annule(nb_compromis_annule);
     setCompromis_id(data_c.id);
@@ -270,7 +270,7 @@ const Compromis_show = ({
 
   const handleFileClick = (file) => {
     window.open(
-      `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/compromis_vente/${file}`,
+      `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/compromis_vente/${reservationData?.reservation?.code_reservation}/${file}`,
       '_blank'
     );
   };
@@ -286,10 +286,10 @@ const Compromis_show = ({
 
   return (
     <>
-      <div className="container mx-auto px-4">
+     <div className="container mx-auto px-4">
         <div className="flex justify-center">
           <div className="w-full max-w-4xl">
-            <div className="rounded-lg shadow-lg overflow-hidden mb-8">
+            <div className="rounded-lg overflow-hidden mb-8">
               <div className="p-6 flex flex-col items-center">
                 {/* Header */}
                 <div className="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center mb-4">
@@ -587,39 +587,25 @@ const Compromis_show = ({
                     <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
                   </div>
                 </div>
-                <div className="mb-2">
+               <div className="mb-2">
                   <label
                     htmlFor="date_echeance"
                     className="block text-[15px] font-medium text-gray-700 mb-1"
                   >
                     Date Echéance
                   </label>
-                  {display ? (
-                    <input
-                      type="date"
-                      id="date_echeance"
-                      value={date_echeance}
-                      onChange={(e) => set_date_echeance(e.target.value)}
-                      disabled={duree_echeance != 'Autre'}
-                      className={`block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
-                        duree_echeance != 'Autre'
-                          ? 'bg-gray-100 cursor-not-allowed'
-                          : ''
-                      }`}
-                    />
-                  ) : (
-                    <input
-                      type="date"
-                      id="date_echeance"
-                      defaultValue={
-                        data.date_echeance &&
-                        format(new Date(data.date_echeance), 'yyyy-MM-dd')
-                      }
-                      onChange={(e) => set_date_echeance(e.target.value)}
-                      disabled
-                      className="block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none bg-gray-100 cursor-not-allowed"
-                    />
-                  )}
+                  <input
+                    type="date"
+                    id="date_echeance"
+                    value={date_echeance || ''}
+                    onChange={(e) => set_date_echeance(e.target.value)}
+                    disabled={!display || duree_echeance !== 'Autre'}
+                    className={`block w-full h-[38px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none hover:border-gray-500 focus:border-gray-500 ${
+                      (!display || duree_echeance !== 'Autre') 
+                        ? 'bg-gray-100 cursor-not-allowed' 
+                        : ''
+                    }`}
+                  />
                 </div>
               </div>
 
@@ -740,7 +726,7 @@ const Compromis_show = ({
               <div>
                 <h3 className="text-xl font-bold flex items-center gap-2">
                   <Archive className="w-5 h-5" />
-                  Historique des Attestation Annulés
+                  Historique des Attestations Annulés
                 </h3>
                 <p className="text-red-100 text-sm mt-1">
                   {data_compromis_annule?.length || 0} enregistrements

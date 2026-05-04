@@ -569,7 +569,7 @@ const loadRelancesHistory = async (rdvId) => {
                   {etatRes == 1 && contratVente == null && (
                     <>
                       {/* Traiter RDV button - show only for today's appointments with statut 0 */}
-                      {isTodayAppointment && rdv.statut == 1  && user.role ==5 && (
+                      {(isTodayAppointment||isPastAppointment) && rdv.statut == 1  && user.role ==5 && (
                         <button
                           className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
                           onClick={() => {

@@ -290,13 +290,13 @@ const Document_Compromis = ({ data }) => (
           <View style={{ marginTop: 15 }}>
             <Text style={styles.articleTitle}>Article 2 : Désignation</Text>
             <Text style={styles.paragraph}>
-              Le bien est un  :{data.reservationDetails?.bien.type}
+              Le bien est un {data.reservationDetails?.bien.type}
               <Text style={styles.boldText}>
                 n° {data.reservationDetails?.bien.numero}
               </Text>{" "}
               sous le nom : <Text style={styles.boldText}>{data.reservationDetails?.bien?.propriete_dite_bien}</Text>.à distraire des
               propriétés dénommées : -« » objet du titre foncier mère numéro
-             {data.reservationDetails?.bien?.projet?.titre_foncier} Cet Appartement sera situé au{" "}
+             {data.reservationDetails?.bien?.projet?.titre_foncier} Ce Bien sera situé au{" "}
               <Text style={styles.boldText}>
                   {(() => {
                     const etage = data.reservationDetails?.bien.niveau;

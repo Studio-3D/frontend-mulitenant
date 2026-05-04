@@ -68,8 +68,8 @@ export default function CombinedNavbar() {
 
         {/* Right side - User menu & actions */}
         <div className="flex items-center gap-4 justify-end">
-          <Moon className="h-7 w-7 cursor-pointer" />
-
+          
+           {/* Notifications <Moon className="h-7 w-7 cursor-pointer" />*/}
           {/* Notifications */}
           <NotificationDropdown 
             notifications={notifications}
