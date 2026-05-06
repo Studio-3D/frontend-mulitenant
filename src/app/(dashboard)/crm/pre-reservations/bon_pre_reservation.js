@@ -123,7 +123,9 @@ const BonPreReservationDocument = ({ data }) => {
   const user = userData || {};
   const societe = user?.societe || {};
 // In your PDF component, use the frontend image path
-const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos/${societe.logo}`;
+  //const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos/${societe.logo}`;
+  const logoUrl = `/docs/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
+
 const getOrientationFullName = (abbreviation) => {
   const orientationMap = {
     'N': 'Nord',
