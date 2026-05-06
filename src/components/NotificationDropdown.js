@@ -118,8 +118,7 @@ const NotificationDropdown = ({ isLoadingNotifications: propLoading }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
-          <div className="p-4 border-b border-gray-200">
+<div className="absolute right-0 mt-2 w-96 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">          <div className="p-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-medium text-gray-900">Notifications</h3>
@@ -168,12 +167,12 @@ const NotificationDropdown = ({ isLoadingNotifications: propLoading }) => {
                           {getIconComponent(notification.icon)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium truncate ${
+                          <p className={`text-sm font-medium  ${
                             !isSeen ? 'text-gray-900' : 'text-gray-600'
                           }`}>
                             {notification.title}
                           </p>
-                          <p className="text-sm text-gray-500 truncate">
+                          <p className="text-sm text-gray-500 break-words">
                             {notification.subtitle}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">

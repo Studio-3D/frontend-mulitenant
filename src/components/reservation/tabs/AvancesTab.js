@@ -373,7 +373,7 @@ export const AvancesTab = ({
     if (name == 'banque_id') {
       setFormData((prev) => ({
         ...prev,
-        [fieldName]: fieldValue?.id,
+      [fieldName]: fieldValue, // fieldValue is the id directly
       }));
     } else {
       setFormData((prev) => ({
@@ -449,8 +449,11 @@ export const AvancesTab = ({
     ) {
       // These modes require bank
       if (!formData.banque_id) errors.banque_id = 'Banque requise';
-      if (!formData.numero_paiement)
-        errors.numero_paiement = 'Numéro de paiement requis';
+     if (!formData.numero_paiement) {
+      errors.numero_paiement = 'Numéro de paiement requis';
+    } else if (!/^\d{16}$/.test(formData.numero_paiement)) {
+      errors.numero_paiement = 'Le numéro de paiement doit contenir exactement 16 chiffres';
+    }
     }
 
     setFormErrors(errors);
@@ -1294,22 +1297,33 @@ export const AvancesTab = ({
                       parseInt(formData.mode_paiement)
                     ) && (
                       <div>
-                        <Autocomplete
-                          label="Banque:"
-                          name="banque_id"
-                          required={true}
-                          options={banques}
-                          value={formData.banque_id || ''}
-                          loading={loadingBanques}
-                          errors={{}}
-                          backendErrors={{}}
-                          onChange={(value) => {
-                            handleInputChange({
-                              target: { name: 'banque_id', value },
-                            });
-                          }}
-                          choix="nom"
-                        />
+                        <SelectInput
+                                                  label="Banque:"
+                                                  placeholder="Sélectionner une banque"
+                                                  name="banque_id"
+                                                   value={formData.banque_id || ''}
+                                                  required={true}
+                                                  options={
+                                                    Array.isArray(banques)
+                                                      ? banques.map((banque) => ({
+                                                          value: banque.id,
+                                                          label:
+                                                            banque.nom ||
+                                                            `Banque ${banque.id}`,
+                                                        }))
+                                                      : []
+                                                  }
+                                                  loading={loadingBanques}
+                                                 onChange={(value) => {
+                                                      handleInputChange({
+                                                        target: { name: 'banque_id', value },
+                                                      });
+                                                    }}
+                                                  submitted={true} // to show error on submit
+
+                                                  errors={formErrors.banque_id}
+                                                />
+                      
 
                         {formErrors.banque_id && (
                           <p className="mt-1 text-sm text-red-500">

@@ -451,6 +451,7 @@ export default function ReservationForm({ id }) {
             commentaire: reservation?.commentaire || "",
             bien_id: reservation?.bien_id || "",
             prix_val: reservation?.prix || "",
+            prix_final: reservation?.prix || "",
             prix: reservation?.prix || "",
            /* Superficie_balcon_calculer:
               reservation?.bien != null
@@ -4461,7 +4462,6 @@ export default function ReservationForm({ id }) {
                   handleChangePrixRemise(e);
                 }}
               />
-
               <TextField
                 label="Remise Forfétaire:"
                 name="prix_forfetaire"

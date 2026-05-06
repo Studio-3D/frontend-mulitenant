@@ -160,14 +160,15 @@ const Page = () => {
         params,
       });
 
-      // Filter out current user from results
+      /*Filter out current user from results
       const filteredUsers = response.data.users.filter(
         (u) => u.id !== user?.id
-      );
+      );*/
+      
 
-      setUsers(filteredUsers);
+      setUsers(response.data.users);
       setTotalRows(
-        response.data.pagination?.totalItems || filteredUsers.length
+        response.data.pagination?.totalItems || response.data.users.length
       );
     } catch (err) {
       const msg = err.response?.data?.message || 'Erreur lors du chargement';

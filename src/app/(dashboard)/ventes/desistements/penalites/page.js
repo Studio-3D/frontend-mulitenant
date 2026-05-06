@@ -16,7 +16,7 @@ import Button from '@/components/Button';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import Document from './recu';
+import DocuPenaliteDesistementDocumentment from './recu';
 import Input from '@/components/Input';
 
 import { useProjet } from '@/context/ProjetContext';
@@ -334,7 +334,7 @@ export default function PenalitesTable() {
               {row.sr == 0 && (
                 <PDFDownloadLink
                   document={
-                    <Document
+                    <DocuPenaliteDesistementDocumentment
                       data={[
                         row.pen.desistement.reservation_ancien
                           ?.code_reservation,
@@ -343,7 +343,7 @@ export default function PenalitesTable() {
                         row.pen.mode_paiement,
                         row.pen.numero_paiement,
                         row.pen.desistement.reservation_ancien?.bien
-                          .propriete_dite_bien,
+                          ,
                         row.pen.desistement.user.name,
                         row.pen.desistement.user.prenom,
                         row.pen.desistement.reservation_ancien?.aquereurs_ancien?.map(

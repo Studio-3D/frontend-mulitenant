@@ -25,6 +25,7 @@
     "@radix-ui/react-select": "^2.2.2",
     "@radix-ui/react-slot": "^1.1.2",
     "@react-pdf/renderer": "^4.3.0",
+    "@vercel/blob": "^2.3.3",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",

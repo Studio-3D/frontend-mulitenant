@@ -19,7 +19,7 @@ import {
 } from '@/configs/enum';
 import toast from 'react-hot-toast';
 
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle, Printer, X } from 'lucide-react';
 import LoadingSpin from '@/components/LoadingSpin';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import Button from '@/components/Button'; // Import the component
@@ -31,6 +31,9 @@ import CorrectionForm from './CorrectionForm';
 
 import { useProjet } from '@/context/ProjetContext';
 import { useSociete } from '@/context/SocieteContext';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import DocuPenaliteDesistementDocumentment from '../recu';
+
 const STATUS_BADGES = {
   0: { text: 'Attente Validation', color: 'bg-yellow-100 text-yellow-800' },
   1: { text: 'Validé', color: 'bg-green-100 text-green-800' },
@@ -299,52 +302,115 @@ const ShowPenalite = () => {
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Side - Desistement Info */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2
-            className="text-lg font-semibold mb-4  border-b pb-2"
-            style={{ color: 'rgb(102, 108, 255)' }}
-          >
-            Détail Désistement
-          </h2>
+        {/* Left Side - Desistement Info */}
+<div className="bg-white rounded-lg shadow p-6">
+  <h2
+    className="text-lg font-semibold mb-4 border-b pb-2"
+    style={{ color: 'rgb(102, 108, 255)' }}
+  >
+    Détail Désistement
+  </h2>
 
-          <div className="space-y-4">
-            <InfoRow
-              label="Date"
-              value={format(new Date(penalite.created_at), 'dd/MM/yyyy')}
-            />
-            <InfoRow label="Type" value={'Désistement ' + getTypeLabel()} />
-            <InfoRow
-              label="Code Réservation"
-              value={penalite.desistement.reservation_ancien.code_reservation}
-            />
-            <InfoRow
-              label="Prix"
-              value={`${penalite.desistement.reservation_ancien.prix?.toLocaleString()} DH`}
-              highlight
-            />
-            <InfoRow
-              label="Avances"
-              value={`${sumAvancesValides?.toLocaleString()} DH`}
-              highlight2
-            />
-            <InfoRow
-              label="Responsable"
-              value={`${penalite.desistement.user.name} ${penalite.desistement.user.prenom}`}
-            />
+  <div className="space-y-4">
+    <InfoRow
+      label="Date"
+      value={format(new Date(penalite.created_at), 'dd/MM/yyyy')}
+    />
+    <InfoRow label="Type" value={'Désistement ' + getTypeLabel()} />
+    <InfoRow
+      label="Code Réservation"
+      value={penalite.desistement.reservation_ancien.code_reservation}
+    />
+    <InfoRow
+      label="Prix"
+      value={`${penalite.desistement.reservation_ancien.prix?.toLocaleString()} DH`}
+      highlight
+    />
+    <InfoRow
+      label="Avances"
+      value={`${sumAvancesValides?.toLocaleString()} DH`}
+      highlight2
+    />
+    <InfoRow
+      label="Responsable"
+      value={`${penalite.desistement.user.name} ${penalite.desistement.user.prenom}`}
+    />
 
-            <button
-              onClick={() =>
-                window.open(
-                  `/ventes/desistements/show/${penalite.desistement_id}`,
-                  '_blank'
-                )
-              }
-              className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-            >
-              View Dossier
-            </button>
-          </div>
-        </div>
+
+    {/* Buttons in same row */}
+    <div className="flex flex-row gap-3 mt-4">
+      <button
+        onClick={() =>
+          window.open(
+            `/ventes/desistements/show/${penalite.desistement_id}`,
+            '_blank'
+          )
+        }
+        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-center"
+      >
+        View Dossier
+      </button>
+    {penalite.sr == 0 && (
+
+        <PDFDownloadLink
+          document={
+            <DocuPenaliteDesistementDocumentment
+              data={[
+                penalite.desistement.reservation_ancien?.code_reservation,
+                penalite.num_recu,
+                penalite.montant,
+                penalite.mode_paiement,
+                penalite.numero_paiement,
+                penalite.desistement.reservation_ancien?.bien,
+                penalite.desistement.user.name,
+                penalite.desistement.user.prenom,
+                penalite.desistement.reservation_ancien?.aquereurs_ancien?.map(
+                  (aq, i, arr) => {
+                    return aq.client.cin +
+                      '  ' +
+                      aq.client.nom +
+                      ' ' +
+                      aq.client.prenom +
+                      (arr.length - 1 === i ? '' : ' et ');
+                  }
+                ),
+              ]}
+            />
+          }
+          fileName={`recu_penalite_${penalite.id}.pdf`}
+        >
+          {({ loading, error }) => {
+            if (error) {
+              console.error('PDF generation error:', error);
+              return (
+                <button
+                  type="button"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-50 text-red-700 border border-red-300 hover:bg-red-100"
+                >
+                  <Printer className="w-4 h-4" />
+                  Erreur PDF
+                </button>
+              );
+            }
+            
+            return (
+              <button
+                type="button"
+                disabled={loading}
+                className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-emerald-500 shadow-sm ${
+                  loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                }`}
+              >
+                <Printer className="w-4 h-4" />
+                {loading ? 'Préparation...' : 'Télécharger Reçu'}
+              </button>
+            );
+          }}
+        </PDFDownloadLink>
+      )}
+      </div>
+  </div>
+</div>
 
         {/* Right Side - Penalty Info */}
         <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
