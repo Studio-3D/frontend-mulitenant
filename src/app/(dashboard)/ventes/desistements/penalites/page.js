@@ -461,7 +461,7 @@ export default function PenalitesTable() {
               ? 'En cours'
               : etat_penalite == 2
               ? 'Rejeté'
-              : 'Autre'
+              : ' '
           } `}
           data_to_export={data_to_export()}
           columns_export={columns_export}

@@ -822,10 +822,10 @@ const PrevisualiserRecu = () => {
       {formValues.raison_social || user.societe.raison_sociale_concatene || 'Société'}
     </h3>
     {formValues.adresse && (
-      <p className="text-sm text-gray-600">{formValues.adresse}</p>
+      <p className="text-sm text-gray-600">Adresse:{formValues.adresse}</p>
     )}
     {user.societe.ville && (
-      <p className="text-sm text-gray-600">{user.societe.ville}</p>
+      <p className="text-sm text-gray-600">Ville:{user.societe.ville}</p>
     )}
     {user.societe.tel && (
       <p className="text-sm text-gray-600">Tél: {user.societe.tel}</p>

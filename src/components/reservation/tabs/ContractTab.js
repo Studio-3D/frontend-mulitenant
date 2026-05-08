@@ -63,10 +63,10 @@ export const ContractTab = ({
     setTimeout(() => setErrors(''), 5000);
   };
 
-  const showToast = (message, type = 'success') => {
+const showToast = (message, type = 'success') => {
     toast[type](message, {
       position: 'top-right',
-      duration: 3000,
+      duration: 100, // 0.1 seconde
     });
   };
 

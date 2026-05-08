@@ -282,8 +282,8 @@ const ClientFullPDF = ({ client, reservations, visites, user }) => {
             <Text style={[styles.bold, { marginBottom: 5 }]}>
               {societe?.raison_sociale || 'Société'}
             </Text>
-            {societe?.adresse && <Text>{societe.adresse}</Text>}
-            {societe?.ville && <Text>{societe.ville}</Text>}
+            {societe?.adresse && <Text>Adresse:{societe.adresse}</Text>}
+            {societe?.ville && <Text>Ville:{societe.ville}</Text>}
             {societe?.tel && <Text>Tél: {societe.tel}</Text>}
             {societe?.email && <Text>Email: {societe.email}</Text>}
             {societe?.rc && <Text>RC: {societe.rc}</Text>}
@@ -351,7 +351,7 @@ const ClientFullPDF = ({ client, reservations, visites, user }) => {
 
             <View style={styles.gridItem}>
               <Text style={styles.gridLabel}>Adresse</Text>
-              <Text style={styles.gridValue}>{client.adresse || "e"}</Text>
+              <Text style={styles.gridValue}>{client.adresse || " "}</Text>
             </View>
           </View>
         </View>

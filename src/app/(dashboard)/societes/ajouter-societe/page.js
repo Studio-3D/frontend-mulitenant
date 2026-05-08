@@ -9,9 +9,7 @@ import { Pencil } from "lucide-react";
 import Input from "../../../../components/Input";
 import { APIURL } from '../../../../configs/api';
 import { useSociete } from "../../../../context/SocieteContext"; 
-const frontendApi = axios.create({
-  baseURL: '', // Empty base URL to use relative paths
-});
+
 const Page = () => {
   const [imageFileUrl, setImageFileUrl] = useState(null);
   const fileInputRef = useRef(null);
@@ -81,45 +79,7 @@ const Page = () => {
     }
     
     console.log('Parsed data:', parsedData);
-    
-    // Check if logo was uploaded
-    if (values.logo && values.logo instanceof File) {
-      console.log('Logo file exists, saving to frontend...');
-      
-      // Access the societe object from parsed data
-      const newSociete = parsedData.societe;
-      console.log('Societe data:', newSociete);
-      
-      if (newSociete && newSociete.id) {
-        const normalizedName = newSociete.raison_sociale_concatene;
-        const folderName = `${normalizedName}_${newSociete.id}`;
-        
-        console.log('Folder name:', folderName);
-        console.log('Societe ID:', newSociete.id);
-        console.log('Raison sociale concatene:', newSociete.raison_sociale_concatene);
-        
-        // Save to frontend
-        const frontendFormData = new FormData();
-        frontendFormData.append('logo', values.logo);
-        frontendFormData.append('folderName', folderName);
-        frontendFormData.append('fileName', values.logo.name);
-        
-        // Call frontend API to save logo
-        const frontendResponse = await frontendApi.post('/api/save-frontend-logo', frontendFormData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        
-        console.log('Frontend save response:', frontendResponse.data);
-      } else {
-        console.error('No societe data found in parsed response');
-        console.log('Parsed response structure:', Object.keys(parsedData));
-      }
-    } else {
-      console.log('No logo to save');
-    }
-    
+     
     toast.success("Société ajoutée avec succès");
     resetForm();
     setImageFileUrl(null);

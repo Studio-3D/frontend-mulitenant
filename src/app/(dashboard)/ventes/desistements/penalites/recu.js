@@ -221,8 +221,8 @@ const PenaliteDesistementDocument = ({ data }) => {
             <Text style={[styles.bold, { marginBottom: 5 }]}>
               {societe?.raison_sociale || 'Société'}
             </Text>
-            {societe?.adresse && <Text>{societe.adresse}</Text>}
-            {societe?.ville && <Text>{societe.ville}</Text>}
+            {societe?.adresse && <Text>Adresse:{societe.adresse}</Text>}
+            {societe?.ville && <Text>Ville:{societe.ville}</Text>}
             {societe?.tel && <Text>Tél: {societe.tel}</Text>}
             {societe?.email && <Text>Email: {societe.email}</Text>}
             {societe?.rc && <Text>RC: {societe.rc}</Text>}

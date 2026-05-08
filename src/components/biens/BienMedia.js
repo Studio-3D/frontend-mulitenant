@@ -4,6 +4,7 @@ import { APIURL } from "@/configs/api";
 import toast from "react-hot-toast";
 import { Image, FileVideo, X, Share2, Upload, UploadCloud } from "lucide-react";
 import BienDescriptionGenerator from "./BienDescriptionGenerator";
+import Modal from "../Modal";
 
 export default function BienMedia({ bienId }) {
   const [media, setMedia] = useState([]);
@@ -217,61 +218,72 @@ export default function BienMedia({ bienId }) {
     if (!selectedMedia) return null;
 
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-        <div className="relative max-w-4xl w-full bg-white rounded-lg overflow-hidden">
-          <div className="p-4 border-b flex justify-between items-center">
-            <h3 className="text-lg font-medium !text-gray-800">
-              {selectedMedia.title || "Aperçu du média"}
-            </h3>
-            <button
-              onClick={closeMediaModal}
-              className="p-2 rounded-full hover:bg-gray-100"
-            >
-              <X className="w-5 h-5 !text-gray-700" />
-            </button>
-          </div>
-
-          <div className="p-6 flex flex-col items-center">
-            {selectedMedia.file_type === "image" ? (
-              <img
-                src={selectedMedia.url}
-                alt={selectedMedia.title || "Image du bien"}
-                className="max-h-[70vh] max-w-full object-contain"
-              />
-            ) : (
-              <video
-                src={selectedMedia.url}
-                controls
-                className="max-h-[70vh] max-w-full"
+      <Modal
+                isVisible={modalOpen}
+                onClose={closeMediaModal}
               >
-                Votre navigateur ne prend pas en charge la lecture de vidéos.
-              </video>
-            )}
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+                        <div className="relative max-w-4xl w-full bg-white rounded-lg overflow-hidden">
+                          <div className="p-4 border-b flex justify-between items-center">
+                            <h3 className="text-lg font-medium !text-gray-800">
+                              {selectedMedia.title || "Aperçu du média"}
+                            </h3>
+                            <button
+                              onClick={closeMediaModal}
+                              className="p-2 rounded-full hover:bg-gray-100"
+                            >
+                              <X className="w-5 h-5 !text-gray-700" />
+                            </button>
+                          </div>
 
-            {selectedMedia.description && (
-              <p className="mt-4 text-gray-600 max-w-2xl text-center">
-                {selectedMedia.description}
-              </p>
-            )}
-          </div>
+                          <div className="p-6 flex flex-col items-center">
+                            {selectedMedia.file_type === "image" ? (
+                              <img
+                                src={selectedMedia.url}
+                                alt={selectedMedia.title || "Image du bien"}
+                                className="max-h-[70vh] max-w-full object-contain"
+                              />
+                            ) : (
+                              <video
+                                src={selectedMedia.url}
+                                controls
+                                className="max-h-[70vh] max-w-full"
+                              >
+                                Votre navigateur ne prend pas en charge la lecture de vidéos.
+                              </video>
+                            )}
 
-          <div className="p-4 bg-gray-50 flex justify-end">
-            <button
-              onClick={openShareModal}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              <Share2 className="w-4 h-4" />
-              Partager
-            </button>
-          </div>
-        </div>
-      </div>
+                            {selectedMedia.description && (
+                              <p className="mt-4 text-gray-600 max-w-2xl text-center">
+                                {selectedMedia.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="p-4 bg-gray-50 flex justify-end">
+                            <button
+                              onClick={openShareModal}
+                              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            >
+                              <Share2 className="w-4 h-4" />
+                              Partager
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+      </Modal>
+      
     );
   };
 
   // Render upload modal
   const renderUploadModal = () => {
     return (
+       <Modal
+                isVisible={isUploadModalOpen}
+                onClose={closeUploadModal}
+              >
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
         <div className="relative max-w-lg w-full bg-white rounded-lg overflow-hidden">
           <div className="p-4 border-b flex justify-between items-center">
@@ -423,6 +435,7 @@ export default function BienMedia({ bienId }) {
           </div>
         </div>
       </div>
+      </Modal>
     );
   };
 

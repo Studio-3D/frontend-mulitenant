@@ -559,8 +559,8 @@ const PageTraitement_Validation_rejets = () => {
           />
         </Modal>
       )}
-      {open_r && (
-        <Modal isVisible={true} onClose={() => setOpen_r(false)}>
+      {open_r && (        
+        <Modal isVisible={true} onClose={() => setOpen_r(false)} maxWidth="max-w-xl">
           <Modal_Rejeter_Reservation
             code_reservation={code_reservation}
             id={ID}

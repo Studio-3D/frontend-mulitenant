@@ -103,7 +103,7 @@ const imageUrl = `/images/${user.societe.raison_sociale_concatene}_${user.societ
           </View>
           <View style={styles.companyDetails}>
             <Text style={styles.bold}>{user.societe.raison_sociale}</Text>
-            <Text>{user.societe.adresse}</Text>
+            <Text>Adresse:{user.societe.adresse}</Text>
             <Text>Tél: {user.societe.tel}</Text>
             <Text>Email: {user.societe.email}</Text>
           </View>

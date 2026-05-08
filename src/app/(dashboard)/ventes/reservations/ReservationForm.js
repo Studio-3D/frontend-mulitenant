@@ -1210,7 +1210,7 @@ export default function ReservationForm({ id }) {
         }
 
         // Minimum amount validation (only when amount > 0)
-        if (avance > 0 && avance_minimale && avance < avance_minimale) {
+        if (avance > 0 && avance_minimale && avance < avance_minimale  && user?.role > 2) {
           errors.push(`Le montant doit être au moins ${avance_minimale}`);
         }
       }
@@ -4518,13 +4518,13 @@ export default function ReservationForm({ id }) {
                           positif.{" "}
                         </p>
                       )}
-                    {watch("avance") > 0 &&
-                      watch("avance") < watch("avance_minimale") && (
+                    {(watch("avance") > 0 && watch("avance") < watch("avance_minimale"))&& user?.role > 2 && (
                         <p style={{ color: "red" }}>
                           Le montant doit être au moins{" "}
                           {watch("avance_minimale")}
                         </p>
                       )}
+
                   </div>
                   <TextField
                     label="Reste:"
