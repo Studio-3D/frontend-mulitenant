@@ -19,31 +19,45 @@ export default function CombinedNavbar() {
     isLoadingNotifications,
     fetchNotifications,
     setNotifications,
-    setNewNotificationsCount
+    setNewNotificationsCount,
   } = useNotifications();
 
   // Fetch notifications when the component mounts or when the selected project changes
   useEffect(() => {
     if (selectedProjet?.id) {
-      console.log('Project selected, fetching notifications for project:', selectedProjet.id);
+      console.log(
+        "Project selected, fetching notifications for project:",
+        selectedProjet.id,
+      );
       fetchNotifications();
-      
-      // Set up Pusher for real-time notifications
+
       const pusherKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF;
+      console.log("PUSHER NOTIF KEY:", pusherKey);
       if (pusherKey) {
         const pusher = new Pusher(pusherKey, {
-          cluster: 'eu',
-          encrypted: true
+          cluster: "eu",
+          encrypted: true,
         });
 
-        
-        const channel = pusher.subscribe('Notifications');
+        const channel = pusher.subscribe("Notifications");
 
-        channel.bind('App\\Events\\NotificationEvent', () => {
-          console.log('Received notification event pusher');
+        pusher.connection.bind("connected", () => {
+          console.log("Pusher connected");
+        });
+
+        pusher.connection.bind("error", (err) => {
+          console.error("Pusher error", err);
+        });
+
+        channel.bind("App\\Events\\NotificationEvent", () => {
+          console.log("Received notification event pusher");
           fetchNotifications();
         });
-        
+
+        channel.bind("App\\Events\\NotificationEvent", (data) => {
+          console.log("Full event reçu", data);
+        });
+
         return () => {
           channel.unbind_all();
           channel.unsubscribe();
@@ -68,15 +82,13 @@ export default function CombinedNavbar() {
 
         {/* Right side - User menu & actions */}
         <div className="flex items-center gap-4 justify-end">
-          
-           {/* Notifications <Moon className="h-7 w-7 cursor-pointer" />*/}
+          {/* Notifications <Moon className="h-7 w-7 cursor-pointer" />*/}
           {/* Notifications */}
-          <NotificationDropdown 
+          <NotificationDropdown
             notifications={notifications}
             newNotificationsCount={newNotificationsCount}
             onFetchNotifications={fetchNotifications}
             isLoadingNotifications={isLoadingNotifications}
-          
           />
 
           {/* User Dropdown */}
