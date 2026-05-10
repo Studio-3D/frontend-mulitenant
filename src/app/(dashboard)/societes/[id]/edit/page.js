@@ -11,9 +11,7 @@ import ButtonSpinner from '@/components/ButtonSpinner';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useSociete } from "../../../../../context/SocieteContext"; 
-const frontendApi = axios.create({
-  baseURL: '', // Empty base URL to use relative paths
-});
+
 export default function UpdateSociete() {
   const { refreshSocietes } = useSociete();
   const router = useRouter();
@@ -85,22 +83,7 @@ export default function UpdateSociete() {
             'Content-Type': 'multipart/form-data',
           },
         });
-        
-        // After successful backend update, save logo to frontend public folder
-        if (selectedLogo && response.data.societe) {
-          const updatedSociete = response.data.societe;
-          const normalizedName = updatedSociete.raison_sociale;
-          const folderName = `${normalizedName}_${updatedSociete.id}`;
-          
-          // Save to frontend
-          const frontendFormData = new FormData();
-          frontendFormData.append('logo', selectedLogo);
-          frontendFormData.append('folderName', folderName);
-          frontendFormData.append('fileName', updatedSociete.logo);
-          
-      await frontendApi.post('/api/save-frontend-logo', frontendFormData);
-        }
-        
+       
         refreshSocietes();
         toast.success("Informations du Societé mises à jour avec succès.");
         router.push('/societes');

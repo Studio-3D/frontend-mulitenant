@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { isAdmin, isSuperAdmin,isCommercial,isRespoCommercial} from '@/configs/enum';
 
 export default function Composition({ bien, reloadTrigger }) {
   const [loading, setLoading] = useState(false);
@@ -199,7 +200,9 @@ export default function Composition({ bien, reloadTrigger }) {
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
+          { isAdmin(user.role)&&(
+            <>
+              <button
             className="text-blue-500 hover:text-blue-700"
             onClick={() => handleEdit(row.id)}
             title="Modifier"
@@ -216,6 +219,9 @@ export default function Composition({ bien, reloadTrigger }) {
           >
             <Trash2 className="w-4 h-4" />
           </button>
+            </>
+          )}
+        
         </div>
       ),
     },
@@ -234,7 +240,7 @@ export default function Composition({ bien, reloadTrigger }) {
         columns={columns}
         onFilterToggle={handleFilterToggle}
         data={compositionBiens}
-        addLink={`/biens/${bien}/ajouter-composition`}
+        addLink={  isAdmin(user.role) &&(`/biens/${bien}/ajouter-composition`)}
         totalRows={totalRows}
         loading={loading}
         error={error}

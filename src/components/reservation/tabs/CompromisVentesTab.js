@@ -310,14 +310,9 @@ const fetchData = async () => {
                         <h2 className="text-lg font-bold text-gray-800">
                           {user?.societe?.raison_sociale}
                         </h2>
+                        
                         <p className="text-sm text-gray-600">
-                          {user?.societe?.adresse}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {user?.societe?.adresse}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {user?.societe?.adresse}
+                         Adresse: {user?.societe?.adresse}
                         </p>
                         {user?.societe?.tel && <p className="text-sm text-gray-600">Tél: {user?.societe?.tel}</p>}
                         {user?.societe?.email && <p className="text-sm text-gray-600">Email: {user?.societe?.email}</p>}

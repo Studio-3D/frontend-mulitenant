@@ -118,8 +118,8 @@ const MyDocument = ({ data }) => {
             <Text style={[styles.bold, { marginBottom: 5 }]}>
               {formValues.raison_social || societe?.raison_sociale || "Société"}
             </Text>
-            {formValues.adresse && <Text>{formValues.adresse}</Text>}
-            {societe?.ville && <Text>{societe.ville}</Text>}
+            {formValues.adresse && <Text>Adresse:{formValues.adresse}</Text>}
+            {societe?.ville && <Text>Ville:{societe.ville}</Text>}
             {societe?.tel && <Text>Tél: {societe.tel}</Text>}
             {societe?.email && <Text>Email: {societe.email}</Text>}
           </View>

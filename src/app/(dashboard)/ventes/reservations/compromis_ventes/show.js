@@ -268,6 +268,89 @@ const Compromis_show = ({
     }
   };
 
+  const handleDownloadPDF = async () => {
+  try {
+    setLoading_btn(true);
+    
+    // Prepare the data to send to backend (using existing frontend data)
+    const pdfData = {
+      user: {
+        id: user?.id,
+        name: user?.name,
+        prenom: user?.prenom,
+        societe: {
+          id: user?.societe?.id,
+          raison_sociale: user?.societe?.raison_sociale,
+          raison_sociale_concatene: user?.societe?.raison_sociale_concatene,
+          adresse: user?.societe?.adresse,
+          tel: user?.societe?.tel,
+          email: user?.societe?.email,
+          rc: user?.societe?.rc,
+          ice: user?.societe?.ice,
+          logo: user?.societe?.logo
+        }
+      },
+      reservationDetails: {
+        bien: {
+          numero: reservationData?.reservation?.bien?.numero,
+          niveau: reservationData?.reservation?.bien?.niveau,
+          superficie_habitable: reservationData?.reservation?.bien?.superficie_habitable,
+          superficie_balcon: reservationData?.reservation?.bien?.superficie_balcon,
+          superficie_terrasse: reservationData?.reservation?.bien?.superficie_terrasse,
+          composition_bien: reservationData?.reservation?.bien?.composition_bien || [],
+          num_parking: reservationData?.reservation?.bien?.num_parking,
+          num_box: reservationData?.reservation?.bien?.num_box,
+          propriete_dite_bien: NomBienComplet(reservationData?.reservation?.bien),
+          type: reservationData?.reservation?.bien?.type_bien?.type,
+          projet: {
+            titre_foncier: reservationData?.reservation?.bien?.projet?.titre_foncier
+          }
+        },
+        prix: reservationData?.reservation?.prix,
+      },
+      clients: reservationData?.reservation?.aquereurs || [],
+      sum_avances_valides: reservationData?.sum_avances_valides || 0,
+      num_recu: data.num_recu,
+      form: {
+        date_sign_client: date_sign_client,
+        date_sign_mo: date_sign_mo,
+        date_enreg: date_enreg,
+        duree_echeance: duree_echeance,
+        date_echeance: date_echeance,
+        commentaire: commentaire,
+      }
+    };
+
+    const response = await axios.post(
+      `${apiUrl}/generate-compromis-pdf`,
+      { data: pdfData }, // Send the data directly
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        responseType: 'blob'
+      }
+    );
+
+    // Create blob link to download
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `compromis_vente_${data.num_recu || 'temp'}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success('PDF généré avec succès');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    toast.error('Erreur lors de la génération du PDF');
+  } finally {
+    setLoading_btn(false);
+  }
+};
   const handleFileClick = (file) => {
     window.open(
       `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/compromis_vente/${reservationData?.reservation?.code_reservation}/${file}`,
@@ -378,7 +461,24 @@ const Compromis_show = ({
                 <div className="flex flex-wrap justify-center gap-4">
                   {!comp_sign && (
                     <>
-                      <PDFDownloadLink
+                    <button
+                      onClick={handleDownloadPDF}
+                      className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-indigo-700 ${
+                        loading_btn ? 'opacity-50' : ''
+                      }`}
+                      title="Télécharger PDF"
+                      disabled={loading_btn}
+                    >
+                      {loading_btn ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin inline" />
+                          Génération en cours...
+                        </>
+                      ) : (
+                        'Télécharger le PDF'
+                      )}
+                    </button>
+                      {/*<PDFDownloadLink
                         document={<Document_Compromis data={formValues} />}
                         fileName={`compromis_vente_${
                           data.num_recu || 'temp'
@@ -394,10 +494,10 @@ const Compromis_show = ({
                           >
                             {loading
                               ? 'Génération en cours...'
-                              : 'Télécharger le PDF'}
+                              : 'Télécharger fadle PDF'}
                           </button>
                         )}
-                      </PDFDownloadLink>
+                      </PDFDownloadLink>*/}
                       {etat_res == 1 && (
                         <>
                           <button
