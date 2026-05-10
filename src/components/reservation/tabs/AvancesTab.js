@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   ScanEye,
   Pencil,
@@ -12,26 +12,26 @@ import {
   FileText,
   Plus,
   Eye,
-} from 'lucide-react';
-import Table from '@/components/Table';
-import { APIURL, RESOURCE_URL } from '../../../configs/api';
+} from "lucide-react";
+import Table from "@/components/Table";
+import { APIURL, RESOURCE_URL } from "../../../configs/api";
 import {
   MODE_PAIEMENT,
   Avance_Statut,
   MODE_PAIEMENT_with_transfert,
-} from '../../../configs/enum';
+} from "../../../configs/enum";
 import {
   fetchData_Select,
   fetchList_fichier_exist_by_Code,
-} from '../../../../src/configs/api-utils';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
-import { formatDate } from '../../../utils/dateUtils';
-import Autocomplete from '@/components/Autocomplete';
-import Modal from '@/components/Modal';
-import DeleteData from '@/components/DeleteData';
-import Pusher from 'pusher-js';
-import SelectInput from '@/components/SelectInput';
+} from "../../../../src/configs/api-utils";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { formatDate } from "../../../utils/dateUtils";
+import Autocomplete from "@/components/Autocomplete";
+import Modal from "@/components/Modal";
+import DeleteData from "@/components/DeleteData";
+import Pusher from "pusher-js";
+import SelectInput from "@/components/SelectInput";
 
 export const AvancesTab = ({
   reservationData,
@@ -47,14 +47,14 @@ export const AvancesTab = ({
   const [selectedId, setSelectedId] = useState(null);
   const [selectedFiles_avc, setSelectedFiles_avc] = useState([]);
 
-  const accessToken = propAccessToken || localStorage.getItem('accessToken');
+  const accessToken = propAccessToken || localStorage.getItem("accessToken");
   const [loading_list, setLoading_list] = useState(false);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState({
     table: false,
     form: false,
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,9 +78,9 @@ export const AvancesTab = ({
   const [open_v_r, setOpen_v_r] = useState(false);
   const [ID, setID] = useState(0);
   const [num_recu, set_num_recu] = useState(0);
-  const [Commentaire_r, setCommentaire_r] = useState('');
+  const [Commentaire_r, setCommentaire_r] = useState("");
   const [type_action, set_type_action] = useState(null);
-  const [action, setAction] = useState('');
+  const [action, setAction] = useState("");
   const [date_encaissement_v, set_date_encaissement_v] = useState(null);
   const [num_remise_v, set_num_remise_v] = useState(null);
   const [reste, setReste] = useState(0);
@@ -103,80 +103,82 @@ export const AvancesTab = ({
     // Initialize Pusher with the correct connection
     const initializePusher = () => {
       if (!pusher_key_avances || !reservationId) {
-        console.log('Pusher key or reservation ID missing');
+        console.log("Pusher key or reservation ID missing");
         return () => {};
       }
 
       Pusher.logToConsole = true;
       console.log(
-        'Initializing Pusher for avances, reservation:',
-        reservationId
+        "Initializing Pusher for avances, reservation:",
+        reservationId,
       );
 
       // Use the correct Pusher configuration that matches your backend
       const pusher = new Pusher(pusher_key_avances, {
-        cluster: 'eu',
+        cluster: "eu",
         encrypted: true,
         forceTLS: true,
-        wsHost: 'ws-eu.pusher.com', // Add explicit WebSocket host
+        wsHost: "ws-eu.pusher.com", // Add explicit WebSocket host
         wssPort: 443,
-        enabledTransports: ['ws', 'wss'], // Force WebSocket transport
+        enabledTransports: ["ws", "wss"], // Force WebSocket transport
       });
 
       // Create the EXACT channel name that matches your Laravel event
       const channelName = `avances-updates-${reservationId}`;
-      console.log('Subscribing to channel:', channelName);
+      console.log("Subscribing to channel:", channelName);
 
       try {
         const channel = pusher.subscribe(channelName);
 
-        channel.bind('AvancesEvent', (data) => {
-          console.log('Pusher AvancesEvent received:', data);
+        channel.bind("AvancesEvent", (data) => {
+          console.log("Pusher AvancesEvent received:", data);
           console.log(
-            'Current reservation ID:',
+            "Current reservation ID:",
             reservationId,
-            'Event reservation ID:',
-            data.reservationId
+            "Event reservation ID:",
+            data.reservationId,
           );
 
+          toast.success("Mise à jour des avances reçue");
+
           // Always refresh when we receive an event for this channel
-          console.log('Refreshing avances data via Pusher');
+          console.log("Refreshing avances data via Pusher");
           fetchData();
         });
 
         // Handle connection events
-        channel.bind('pusher:subscription_succeeded', () => {
-          console.log('✅ Successfully subscribed to channel:', channelName);
+        channel.bind("pusher:subscription_succeeded", () => {
+          console.log("✅ Successfully subscribed to channel:", channelName);
         });
 
-        channel.bind('pusher:subscription_error', (status) => {
-          console.error('❌ Pusher subscription error:', status);
+        channel.bind("pusher:subscription_error", (status) => {
+          console.error("❌ Pusher subscription error:", status);
         });
 
         // Also listen for connection state changes
-        pusher.connection.bind('state_change', (states) => {
+        pusher.connection.bind("state_change", (states) => {
           console.log(
-            'Pusher connection state changed:',
+            "Pusher connection state changed:",
             states.previous,
-            '->',
-            states.current
+            "->",
+            states.current,
           );
         });
 
-        pusher.connection.bind('connected', () => {
-          console.log('✅ Pusher connected successfully');
+        pusher.connection.bind("connected", () => {
+          console.log("✅ Pusher connected successfully");
         });
 
-        pusher.connection.bind('disconnected', () => {
-          console.log('🔴 Pusher disconnected');
+        pusher.connection.bind("disconnected", () => {
+          console.log("🔴 Pusher disconnected");
         });
       } catch (error) {
-        console.error('Error subscribing to Pusher channel:', error);
+        console.error("Error subscribing to Pusher channel:", error);
       }
 
       // Return cleanup function
       return () => {
-        console.log('Cleaning up Pusher subscription for:', channelName);
+        console.log("Cleaning up Pusher subscription for:", channelName);
         if (pusher) {
           pusher.disconnect();
         }
@@ -188,9 +190,9 @@ export const AvancesTab = ({
     if (filesList_avc.length === 0) {
       fetchList_fichier_exist_by_Code(
         setfilesList_avc,
-        'avc',
+        "avc",
         reservationData?.reservation?.code_reservation,
-        setLoading_list
+        setLoading_list,
       );
     }
 
@@ -199,7 +201,7 @@ export const AvancesTab = ({
   const fetchData = async () => {
     try {
       if (!reservationId) {
-        setError('No reservation ID provided');
+        setError("No reservation ID provided");
         return;
       }
 
@@ -207,7 +209,7 @@ export const AvancesTab = ({
       setError(null);
 
       if (!accessToken) {
-        throw new Error('No access token found');
+        throw new Error("No access token found");
       }
 
       const apiUrl = `${APIURL.ROOTV1}/getAvancesByReservation/${reservationId}`;
@@ -247,7 +249,7 @@ export const AvancesTab = ({
         });
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       setError(error.message);
     } finally {
       setLoading((prev) => ({ ...prev, table: false }));
@@ -265,7 +267,7 @@ export const AvancesTab = ({
     banque,
     numero_paiement,
     num_rem,
-    date_encais
+    date_encais,
   ) => {
     set_num_recu(n_recu);
     set_banque_show(banque);
@@ -278,14 +280,14 @@ export const AvancesTab = ({
   const handleFileClick = (file) => {
     window.open(
       `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/paiements/${reservationData?.reservation.code_reservation}/${file}`,
-      '_blank'
+      "_blank",
     );
   };
 
   const PrintRecu = (paiementId) => {
-    localStorage.setItem('avanceId', paiementId);
+    localStorage.setItem("avanceId", paiementId);
     const editUrl = `${window.location.origin}/ventes/reservations/printRecuPaiement/${paiementId}`;
-    window.open(editUrl, '_blank');
+    window.open(editUrl, "_blank");
   };
 
   // Add these state variables to your component
@@ -293,16 +295,16 @@ export const AvancesTab = ({
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [currentPaiement, setCurrentPaiement] = useState(null);
   const [formData, setFormData] = useState({
-    date_reglement: new Date().toISOString().split('T')[0],
-    montant: '',
-    mode_paiement: '',
-    banque_id: '',
-    numero_paiement: '',
-    echeance: '',
-    commentaireAvance: '',
+    date_reglement: new Date().toISOString().split("T")[0],
+    montant: "",
+    mode_paiement: "",
+    banque_id: "",
+    numero_paiement: "",
+    echeance: "",
+    commentaireAvance: "",
     sr: 0,
-    num_remise: '',
-    date_encaissement: '',
+    num_remise: "",
+    date_encaissement: "",
   });
   const [banques, setBanques] = useState([]);
   const [loadingBanques, setLoadingBanques] = useState(false);
@@ -315,13 +317,13 @@ export const AvancesTab = ({
       date_reglement: paiement.date_reglement,
       montant: paiement.montant,
       mode_paiement: paiement.mode_paiement,
-      banque_id: paiement.banque?.id || '',
+      banque_id: paiement.banque?.id || "",
       numero_paiement: paiement.numero_paiement,
-      echeance: paiement.echeance || '',
-      commentaireAvance: paiement.commentaireAvance || '',
-      sr: paiement.sr || '',
-      num_remise: paiement.last_statut?.num_remise || '',
-      date_encaissement: paiement.last_statut?.date_encaissement || '',
+      echeance: paiement.echeance || "",
+      commentaireAvance: paiement.commentaireAvance || "",
+      sr: paiement.sr || "",
+      num_remise: paiement.last_statut?.num_remise || "",
+      date_encaissement: paiement.last_statut?.date_encaissement || "",
     });
     set_num_remise_v(paiement.last_statut?.num_remise);
     set_date_encaissement_v(paiement.last_statut?.date_encaissement);
@@ -331,16 +333,16 @@ export const AvancesTab = ({
   const handleAdd = () => {
     setCurrentPaiement(null);
     setFormData({
-      date_reglement: new Date().toISOString().split('T')[0],
-      montant: '',
-      mode_paiement: '',
-      banque_id: '',
-      numero_paiement: '',
-      echeance: '',
-      commentaireAvance: '',
+      date_reglement: new Date().toISOString().split("T")[0],
+      montant: "",
+      mode_paiement: "",
+      banque_id: "",
+      numero_paiement: "",
+      echeance: "",
+      commentaireAvance: "",
       sr: 0,
-      num_remise: '',
-      date_encaissement: '',
+      num_remise: "",
+      date_encaissement: "",
     });
     set_num_remise_v(null);
     set_date_encaissement_v(null);
@@ -357,7 +359,7 @@ export const AvancesTab = ({
 
   const handleInputChange = (e) => {
     // Handle checkbox separately
-    if (e.target && e.target.name == 'sr') {
+    if (e.target && e.target.name == "sr") {
       setFormData((prev) => ({
         ...prev,
         sr: e.target.checked ? 1 : 0, // Set to 1 if checked, 0 if not
@@ -365,15 +367,15 @@ export const AvancesTab = ({
       return;
     }
 
-    const { name, value } = e.target || '';
+    const { name, value } = e.target || "";
 
     // For Autocomplete components that might pass just the value
     const fieldName = name || e.name;
     const fieldValue = value !== undefined ? value : e;
-    if (name == 'banque_id') {
+    if (name == "banque_id") {
       setFormData((prev) => ({
         ...prev,
-      [fieldName]: fieldValue, // fieldValue is the id directly
+        [fieldName]: fieldValue, // fieldValue is the id directly
       }));
     } else {
       setFormData((prev) => ({
@@ -383,7 +385,7 @@ export const AvancesTab = ({
     }
 
     // Special handling for montant field
-    if (fieldName == 'montant') {
+    if (fieldName == "montant") {
       const montantValue = parseFloat(fieldValue) || 0;
       let newReste = 0;
 
@@ -403,7 +405,7 @@ export const AvancesTab = ({
       // Check if reste would be negative
       if (newReste < 0) {
         if (!toastShown) {
-          toast.error('Le montant ne doit pas dépasser le prix total!');
+          toast.error("Le montant ne doit pas dépasser le prix total!");
           setToastShown(true);
         }
 
@@ -429,7 +431,7 @@ export const AvancesTab = ({
 
   useEffect(() => {
     if (editDialogOpen || addDialogOpen) {
-      fetchData_Select('banques', setBanques, setLoadingBanques);
+      fetchData_Select("banques", setBanques, setLoadingBanques);
     }
   }, [editDialogOpen, addDialogOpen]);
 
@@ -437,23 +439,24 @@ export const AvancesTab = ({
     const errors = {};
 
     if (!formData.date_reglement)
-      errors.date_reglement = 'Date de règlement requise';
+      errors.date_reglement = "Date de règlement requise";
     if (!formData.montant || isNaN(formData.montant))
-      errors.montant = 'Montant invalide';
+      errors.montant = "Montant invalide";
     if (!formData.mode_paiement)
-      errors.mode_paiement = 'Mode de paiement requis';
+      errors.mode_paiement = "Mode de paiement requis";
 
     if (
       formData.mode_paiement &&
       [2, 3, 4, 5, 6].includes(parseInt(formData.mode_paiement))
     ) {
       // These modes require bank
-      if (!formData.banque_id) errors.banque_id = 'Banque requise';
-     if (!formData.numero_paiement) {
-      errors.numero_paiement = 'Numéro de paiement requis';
-    } else if (!/^\d{16}$/.test(formData.numero_paiement)) {
-      errors.numero_paiement = 'Le numéro de paiement doit contenir exactement 16 chiffres';
-    }
+      if (!formData.banque_id) errors.banque_id = "Banque requise";
+      if (!formData.numero_paiement) {
+        errors.numero_paiement = "Numéro de paiement requis";
+      } else if (!/^\d{16}$/.test(formData.numero_paiement)) {
+        errors.numero_paiement =
+          "Le numéro de paiement doit contenir exactement 16 chiffres";
+      }
     }
 
     setFormErrors(errors);
@@ -483,7 +486,7 @@ export const AvancesTab = ({
     }
 
     if (newReste < 0) {
-      toast.error('Le montant saisi dépasse le prix total!');
+      toast.error("Le montant saisi dépasse le prix total!");
       return;
     }
     setLoading((prev) => ({ ...prev, form: true }));
@@ -509,14 +512,14 @@ export const AvancesTab = ({
     if (currentPaiement) {
       const files = selectedFiles_avc.filter((file) => file instanceof File);
       const objects = selectedFiles_avc.filter(
-        (file) => !(file instanceof File)
+        (file) => !(file instanceof File),
       );
 
       if (objects.length !== 0) {
         objects.forEach((file, index) => {
           // Convert object to File before sending
           const blob = new Blob([file.fichier], {
-            type: 'application/octet-stream',
+            type: "application/octet-stream",
           });
           const newFile = new File([blob], file.fichier);
           dataToSend.append(`files_avance[${index}]`, newFile);
@@ -528,24 +531,24 @@ export const AvancesTab = ({
         }
       }
 
-      dataToSend.append('_method', 'PATCH');
+      dataToSend.append("_method", "PATCH");
     }
 
     // Add reservation ID
-    dataToSend.append('reservation_id', reservationId);
+    dataToSend.append("reservation_id", reservationId);
 
     try {
       const response = await axios.post(url, dataToSend, {
         headers: {
-          Accept: 'application/json',
+          Accept: "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
       if (response.status == 200) {
         const message = currentPaiement
-          ? 'Paiement modifié avec succès'
-          : 'Paiement ajouté avec succès';
+          ? "Paiement modifié avec succès"
+          : "Paiement ajouté avec succès";
 
         toast.success(message);
         // Close all possible modal states
@@ -575,17 +578,17 @@ export const AvancesTab = ({
         }
       }
     } catch (error) {
-      console.error('Error saving paiement:', error);
+      console.error("Error saving paiement:", error);
 
       if (error.response?.status == 422) {
         toast.error(
           error.response.data.errors ||
-            "Une erreur s'est produite lors de la soumission du formulaire."
+            "Une erreur s'est produite lors de la soumission du formulaire.",
         );
       } else {
         toast.error(
           error.response?.data?.message ||
-            "Une erreur s'est produite lors de la soumission du formulaire."
+            "Une erreur s'est produite lors de la soumission du formulaire.",
         );
       }
     } finally {
@@ -609,8 +612,8 @@ export const AvancesTab = ({
 
     try {
       const formData = new FormData();
-      formData.append('avance_id', avanceId);
-      formData.append('fichier_scanner', fichier_scanner);
+      formData.append("avance_id", avanceId);
+      formData.append("fichier_scanner", fichier_scanner);
 
       await axios.post(`${APIURL.ROOTV1}/scanner_file`, formData, {
         headers: {
@@ -618,12 +621,12 @@ export const AvancesTab = ({
         },
       });
 
-      toast.success('Le fichier a été scanné avec succès');
+      toast.success("Le fichier a été scanné avec succès");
       closeScannerPopup();
       fetchData();
     } catch (err) {
-      console.error('Error scanning file:', err);
-      toast.error('Erreur lors du scan du fichier');
+      console.error("Error scanning file:", err);
+      toast.error("Erreur lors du scan du fichier");
     } finally {
       setLoading_scann(false);
     }
@@ -631,7 +634,7 @@ export const AvancesTab = ({
 
   const handle_Histo = (paiementId) => {
     const editUrl = `${window.location.origin}/ventes/reservations/historiquesPaiement/${paiementId}`;
-    window.open(editUrl, '_blank');
+    window.open(editUrl, "_blank");
   };
 
   const handle_valider_rejete = (Id, n_recu, number, text) => {
@@ -640,7 +643,7 @@ export const AvancesTab = ({
     set_num_recu(n_recu);
     set_type_action(text);
     if (number == 1) {
-      setAction('1');
+      setAction("1");
     }
   };
 
@@ -665,10 +668,10 @@ export const AvancesTab = ({
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
-      toast.success('Avance traitée avec succès');
+      toast.success("Avance traitée avec succès");
 
       setCommentaire_r(null);
       set_date_encaissement_v(null);
@@ -677,25 +680,25 @@ export const AvancesTab = ({
       setOpen_v_r(false);
       setLoading_traite(false);
     } catch (error) {
-      console.error('Error processing avance:', error);
-      toast.error('Erreur lors du traitement');
+      console.error("Error processing avance:", error);
+      toast.error("Erreur lors du traitement");
       setLoading_traite(false);
     }
   };
 
   const show_dos_desiste = (dosId) => {
-    window.open(`/ventes/reservations/${dosId}`, '_blank');
+    window.open(`/ventes/reservations/${dosId}`, "_blank");
   };
 
   const formatData = () => {
     return data.map((Paiement) => ({
       id: Paiement.id,
-      sr: Paiement?.sr == 0 ? Paiement?.num_recu : 'SR',
+      sr: Paiement?.sr == 0 ? Paiement?.num_recu : "SR",
       date_reglement: Paiement?.date_reglement
         ? formatDate(Paiement.date_reglement)
-        : 'N/A',
-      respo: `${Paiement.user.name} ${Paiement.user.prenom || ''}`.trim(),
-      montant: Paiement.montant.toLocaleString() + ' DH' || null,
+        : "N/A",
+      respo: `${Paiement.user.name} ${Paiement.user.prenom || ""}`.trim(),
+      montant: Paiement.montant.toLocaleString() + " DH" || null,
       mode_pai: Paiement.mode_paiement,
       banque: Paiement.banque?.nom || null,
       numero_paiement: Paiement.numero_paiement || null,
@@ -717,48 +720,48 @@ export const AvancesTab = ({
   };
 
   const columns = [
-    { key: 'sr', label: 'N° Reçu' },
-    { key: 'date_reglement', label: 'Date' },
-    { key: 'respo', label: 'Responsable' },
+    { key: "sr", label: "N° Reçu" },
+    { key: "date_reglement", label: "Date" },
+    { key: "respo", label: "Responsable" },
     {
-      key: 'montant',
-      label: 'Montant',
+      key: "montant",
+      label: "Montant",
       render: (row) => (
-        <strong key={`montant-${row.id}`} style={{ color: 'blue' }}>
+        <strong key={`montant-${row.id}`} style={{ color: "blue" }}>
           {row.montant}
         </strong>
       ),
     },
 
     {
-      key: 'mode_pai',
-      label: 'Mode Paiement',
+      key: "mode_pai",
+      label: "Mode Paiement",
       render: (row) => {
         if (!row.mode_pai) return null;
         return (
           <span
             className={`px-2 py-1 rounded text-sm font-semibold ${
               {
-                1: 'bg-purple-100 text-purple-500',
-                2: 'bg-blue-100 text-blue-500',
-                3: 'bg-indigo-100 text-indigo-500',
-                4: 'bg-teal-100 text-teal-500',
-                5: 'bg-green-100 text-green-500',
-                6: 'bg-amber-100 text-amber-500',
-                7: 'bg-gray-100 text-gray-500',
-              }[row.mode_pai] || 'bg-gray-100 text-gray-500'
+                1: "bg-purple-100 text-purple-500",
+                2: "bg-blue-100 text-blue-500",
+                3: "bg-indigo-100 text-indigo-500",
+                4: "bg-teal-100 text-teal-500",
+                5: "bg-green-100 text-green-500",
+                6: "bg-amber-100 text-amber-500",
+                7: "bg-gray-100 text-gray-500",
+              }[row.mode_pai] || "bg-gray-100 text-gray-500"
             }`}
           >
-            {MODE_PAIEMENT_with_transfert[row.mode_pai]?.label || 'Unknown'}
+            {MODE_PAIEMENT_with_transfert[row.mode_pai]?.label || "Unknown"}
           </span>
         );
       },
     },
 
-    { key: 'echeance', label: 'Echéance' },
+    { key: "echeance", label: "Echéance" },
     {
-      key: 'statut',
-      label: 'Statut',
+      key: "statut",
+      label: "Statut",
       render: (row) => {
         if (!row.statut) return null;
         //mode paiement 7 transfert  //statut=>1 validé
@@ -779,21 +782,21 @@ export const AvancesTab = ({
           <span
             className={`px-2 py-1 rounded text-sm font-semibold ${
               {
-                1: 'bg-green-100 text-green-500',
-                3: 'bg-blue-100 text-blue-500',
-                2: 'bg-red-100 text-red-500',
-              }[row.statut] || 'bg-gray-100 text-gray-500'
+                1: "bg-green-100 text-green-500",
+                3: "bg-blue-100 text-blue-500",
+                2: "bg-red-100 text-red-500",
+              }[row.statut] || "bg-gray-100 text-gray-500"
             }`}
           >
-            {Avance_Statut[row.statut]?.label || 'Inconnu'}
+            {Avance_Statut[row.statut]?.label || "Inconnu"}
           </span>
         );
       },
     },
 
     {
-      key: 'recu_scanne',
-      label: 'Reçu scanné',
+      key: "recu_scanne",
+      label: "Reçu scanné",
       render: (row) => {
         if (!row.recu_scanne) return null;
 
@@ -810,13 +813,15 @@ export const AvancesTab = ({
       },
     },
     {
-      key: 'actions',
-      label: 'Actions',
+      key: "actions",
+      label: "Actions",
       render: (row) => {
         const isAdminOrEditor = user?.role == 1 || user?.role == 2;
         const isLastRow = row.number == last_row_number;
         const canShowScan =
-          etat_res == 1 && (user?.role <= 3 || user?.role ==9)&& !row.recu_scanne;
+          etat_res == 1 &&
+          (user?.role <= 3 || user?.role == 9) &&
+          !row.recu_scanne;
 
         return (
           <div className="flex gap-3 items-center">
@@ -833,7 +838,7 @@ export const AvancesTab = ({
                     row.banque,
                     row.numero_paiement,
                     row.num_remise,
-                    row.date_encaissement
+                    row.date_encaissement,
                   )
                 }
                 title="Détails"
@@ -841,7 +846,7 @@ export const AvancesTab = ({
                 <Eye className="w-5 h-5" />
               </button>
             )}
-            {row.sr !== 'SR' && reservationData.reservation?.etat == 1 && (
+            {row.sr !== "SR" && reservationData.reservation?.etat == 1 && (
               <button
                 className="p-1 text-blue-500 hover:text-blue-700"
                 onClick={() => PrintRecu(row.id)}
@@ -887,7 +892,11 @@ export const AvancesTab = ({
                       </button>
                     )}
                   </>
-                ) : (user?.role == 3||user?.role == 5||user?.role == 6||user?.role == 9) && Number(row.statut != 1) ? (
+                ) : (user?.role == 3 ||
+                    user?.role == 5 ||
+                    user?.role == 6 ||
+                    user?.role == 9) &&
+                  Number(row.statut != 1) ? (
                   <button
                     className="p-1 text-yellow-500 hover:text-yellow-700"
                     onClick={() => handleEdit(row.id)}
@@ -899,7 +908,7 @@ export const AvancesTab = ({
 
                 {/* Validation/Encashment Buttons */}
                 {reservationData.reservation?.statut == 1 &&
-                  (isAdminOrEditor||user?.role==7) && (
+                  (isAdminOrEditor || user?.role == 7) && (
                     <>
                       {Number(row.statut) == 3 && (
                         <button
@@ -909,7 +918,7 @@ export const AvancesTab = ({
                               row.id,
                               row.sr,
                               0,
-                              'validation'
+                              "validation",
                             )
                           }
                           title="Valider le paiement"
@@ -931,7 +940,7 @@ export const AvancesTab = ({
                                 row.id,
                                 row.sr,
                                 1,
-                                'encaissement'
+                                "encaissement",
                               )
                             }
                             title="Ajouter encaissement"
@@ -991,7 +1000,7 @@ export const AvancesTab = ({
 
       const fileExistsInSelected = selectedFiles_avc.some(
         (selectedFile) =>
-          selectedFile.name == fileName || selectedFile.fichier == fileName
+          selectedFile.name == fileName || selectedFile.fichier == fileName,
       );
 
       if (fileExistsInSelected) {
@@ -1000,7 +1009,7 @@ export const AvancesTab = ({
         let newFileName = fileName;
         let fileNumber = 1;
 
-        const lastDotIndex = fileName.lastIndexOf('.');
+        const lastDotIndex = fileName.lastIndexOf(".");
         const baseName = fileName.substring(0, lastDotIndex);
         const extension = fileName.substring(lastDotIndex + 1);
 
@@ -1015,7 +1024,7 @@ export const AvancesTab = ({
           selectedFiles_avc.some(
             (selectedFile) =>
               selectedFile.name == newFileName ||
-              selectedFile.fichier == newFileName
+              selectedFile.fichier == newFileName,
           )
         ) {
           setMyfile([newFile]);
@@ -1035,11 +1044,11 @@ export const AvancesTab = ({
   };
 
   const getFileIcon = (filename) => {
-    const extension = filename.split('.').pop().toLowerCase();
-    const iconClass = 'w-5 h-5 flex-shrink-0 text-gray-400';
+    const extension = filename.split(".").pop().toLowerCase();
+    const iconClass = "w-5 h-5 flex-shrink-0 text-gray-400";
 
     switch (extension) {
-      case 'pdf':
+      case "pdf":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1049,9 +1058,9 @@ export const AvancesTab = ({
             />
           </svg>
         );
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
+      case "jpg":
+      case "jpeg":
+      case "png":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1061,8 +1070,8 @@ export const AvancesTab = ({
             />
           </svg>
         );
-      case 'doc':
-      case 'docx':
+      case "doc":
+      case "docx":
         return (
           <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -1086,7 +1095,7 @@ export const AvancesTab = ({
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes) return 'N/A';
+    if (!bytes) return "N/A";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / 1048576).toFixed(1)} MB`;
@@ -1107,14 +1116,14 @@ export const AvancesTab = ({
             <div>
               <p className="text-sm text-gray-500">Total versé</p>
               <p className="text-2xl font-bold">
-                {sum_avances === 0?'-':sum_avances.toLocaleString()} DH
+                {sum_avances === 0 ? "-" : sum_avances.toLocaleString()} DH
               </p>
             </div>
 
             <div>
               <p className="text-sm text-gray-500">Reste à payer</p>
               <p className="text-2xl font-bold">
-                {loading.table ? '-' : reste_first.toLocaleString()} DH
+                {loading.table ? "-" : reste_first.toLocaleString()} DH
               </p>
             </div>
 
@@ -1126,7 +1135,7 @@ export const AvancesTab = ({
                 !prix ||
                 prix <= 0 ||
                 sum_avances == 0
-                  ? '-'
+                  ? "-"
                   : `${Math.round((sum_avances / prix) * 100)}%`}
               </p>
             </div>
@@ -1135,16 +1144,20 @@ export const AvancesTab = ({
       </div>
       {etat_res == 1 && (
         <>
-          {(user?.role <= 3|| user?.role==9|| user?.role==5||user?.role==6)&& reste_first > 0 && (
-            <button
-              onClick={handleAdd}
-              className="px-4 py-2 rounded-md flex items-center bg-[rgb(26,21,120)] text-white hover:bg-indigo-700"
-              size="small"
-              variant="outlined"
-            >
-              <Plus className="w-5 h-5" /> Ajouter Avance
-            </button>
-          )}
+          {(user?.role <= 3 ||
+            user?.role == 9 ||
+            user?.role == 5 ||
+            user?.role == 6) &&
+            reste_first > 0 && (
+              <button
+                onClick={handleAdd}
+                className="px-4 py-2 rounded-md flex items-center bg-[rgb(26,21,120)] text-white hover:bg-indigo-700"
+                size="small"
+                variant="outlined"
+              >
+                <Plus className="w-5 h-5" /> Ajouter Avance
+              </button>
+            )}
         </>
       )}
       {/* Main Table */}
@@ -1164,574 +1177,573 @@ export const AvancesTab = ({
         />
       </div>
       {(editDialogOpen || addDialogOpen) && (
-        <Modal isVisible={editDialogOpen || addDialogOpen} onClick={handleDialogClose}>
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          {/* Added max-h-[90vh] and overflow-y-auto here */}
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div
-              style={{ backgroundColor: color_header_modal }}
-              className="text-white p-4 rounded-t-lg sticky top-0 z-10"
-            >
-              <h2 className="text-xl font-bold">
-                {currentPaiement ? 'Modifier Avance' : 'Ajouter Avance'}
-              </h2>
-            </div>
+        <Modal
+          isVisible={editDialogOpen || addDialogOpen}
+          onClick={handleDialogClose}
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            {/* Added max-h-[90vh] and overflow-y-auto here */}
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div
+                style={{ backgroundColor: color_header_modal }}
+                className="text-white p-4 rounded-t-lg sticky top-0 z-10"
+              >
+                <h2 className="text-xl font-bold">
+                  {currentPaiement ? "Modifier Avance" : "Ajouter Avance"}
+                </h2>
+              </div>
 
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column */}
-                <div className="space-y-4">
-                  {/* Date de règlement */}
-                  <div className="flex items-center">
-                    <input
-                      id="sr"
-                      name="sr"
-                      type="checkbox"
-                      checked={formData.sr == 1}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label
-                      htmlFor="sr"
-                      className="ml-2 block text-sm text-gray-700"
-                    >
-                      SR
-                    </label>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Date de règlement <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
+              <form onSubmit={handleSubmit} className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-4">
+                    {/* Date de règlement */}
+                    <div className="flex items-center">
                       <input
-                        type="date"
-                        name="date_reglement"
-                        value={formData.date_reglement || ''}
+                        id="sr"
+                        name="sr"
+                        type="checkbox"
+                        checked={formData.sr == 1}
                         onChange={handleInputChange}
-                        className={`w-full p-2 border rounded-md ${
-                          formErrors.date_reglement
-                            ? 'border-red-500'
-                            : 'border-gray-300'
-                        }`}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                    </div>
-                    {formErrors.date_reglement && (
-                      <p className="mt-1 text-sm text-red-500">
-                        {formErrors.date_reglement}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Montant */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Montant (DH) <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        name="montant"
-                        value={formData.montant || ''}
-                        onChange={handleInputChange}
-                        className={`w-full p-2 border rounded-md ${
-                          formErrors.montant
-                            ? 'border-red-500'
-                            : 'border-gray-300'
-                        }`}
-                        step="0.01"
-                        min="0"
-                      />
-                    </div>
-                    {formErrors.montant && (
-                      <p className="mt-1 text-sm text-red-500">
-                        {formErrors.montant}
-                      </p>
-                    )}
-                  </div>
-                  {/* In your form, after the montant input */}
-                  <div className="mt-1 text-sm">
-                    <span className="font-medium">Montant restant : </span>
-                    <span
-                      className={reste < 0 ? 'text-red-500' : 'text-green-500'}
-                    >
-                      {reste.toLocaleString() + ' DH'}
-                    </span>
-                  </div>
-                </div>
-                {/* Right Column */}
-                <div className="space-y-4">
-                  <div className="flex items-center"></div>
-                  <div className="flex items-center"></div>
-                  {/* Mode de paiement */}
-                  <div>
-                    <SelectInput
-                      label="Mode Paiement :"
-                      placeholder="Sélectionner un mode de paiement"
-                      name="mode_paiement"
-                      value={formData.mode_paiement || ''}
-                      required={true}
-                      options={Object.values(MODE_PAIEMENT || {}).map(
-                        (item) => ({
-                          value: item.code || item.value,
-                          label: item.label || item.name,
-                        })
-                      )}
-                      onChange={(value) => {
-                        handleInputChange({
-                          target: { name: 'mode_paiement', value },
-                        });
-                      }}
-                      error={formErrors.mode_paiement} // Change this line
-                    />
-
-                    {formErrors.mode_paiement && (
-                      <p className="mt-1 text-sm text-red-500">
-                        {formErrors.mode_paiement}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Banque (conditionally shown) */}
-                  {formData.mode_paiement &&
-                    [2, 3, 4, 5, 6].includes(
-                      parseInt(formData.mode_paiement)
-                    ) && (
-                      <div>
-                        <SelectInput
-                                                  label="Banque:"
-                                                  placeholder="Sélectionner une banque"
-                                                  name="banque_id"
-                                                   value={formData.banque_id || ''}
-                                                  required={true}
-                                                  options={
-                                                    Array.isArray(banques)
-                                                      ? banques.map((banque) => ({
-                                                          value: banque.id,
-                                                          label:
-                                                            banque.nom ||
-                                                            `Banque ${banque.id}`,
-                                                        }))
-                                                      : []
-                                                  }
-                                                  loading={loadingBanques}
-                                                 onChange={(value) => {
-                                                      handleInputChange({
-                                                        target: { name: 'banque_id', value },
-                                                      });
-                                                    }}
-                                                  submitted={true} // to show error on submit
-
-                                                  errors={formErrors.banque_id}
-                                                />
-                      
-
-                        {formErrors.banque_id && (
-                          <p className="mt-1 text-sm text-red-500">
-                            {formErrors.banque_id}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  {/* Numéro de paiement (conditionally shown) */}
-                  {formData.mode_paiement &&
-                    [2, 3, 4, 5, 6].includes(
-                      parseInt(formData.mode_paiement)
-                    ) && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Numéro de paiement
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          required
-                          type="text"
-                          name="numero_paiement"
-                          value={formData.numero_paiement || ''}
-                          onChange={handleInputChange}
-                          className={`w-full p-2 border rounded-md ${
-                            formErrors.numero_paiement
-                              ? 'border-red-500'
-                              : 'border-gray-300'
-                          }`}
-                        />
-                        {formErrors.numero_paiement && (
-                          <p className="mt-1 text-sm text-red-500">
-                            {formErrors.numero_paiement}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                  {/* Échéance (for checks) */}
-                  {formData.mode_paiement &&
-                    [2, 3, 4].includes(parseInt(formData.mode_paiement)) && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Échéance <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <input
-                            required
-                            type="date"
-                            name="echeance"
-                            value={formData.echeance || ''}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                          />
-                        </div>
-                      </div>
-                    )}
-                </div>
-              </div>
-
-              <div className="relative mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fichier Paiements
-                </label>
-                <input
-                  type="file"
-                  name=""
-                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
-                  onChange={(e) => handleFileChange(e, 2)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                />
-
-                <p className="mt-1 text-xs text-gray-500">
-                  Formats acceptés: PDF, JPG, PNG, DOC (Taille max: 10MB)
-                </p>
-              </div>
-              {/* Selected Files Preview */}
-              {selectedFiles_avc.length > 0 && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2 text-primary-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    Fichiers sélectionnés ({selectedFiles_avc.length})
-                  </h3>
-
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                      {selectedFiles_avc.map((data, index) => (
-                        <div
-                          key={data.id || data.name}
-                          className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
-                        >
-                          <div className="flex items-center mb-2">
-                            {/* File icon based on type */}
-                            {getFileIcon(data.name || data.fichier)}
-
-                            <button
-                              onClick={() =>
-                                data.fichier
-                                  ? handleFileClick(data.fichier)
-                                  : handleDownloadFile(data)
-                              }
-                              className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
-                              title={data.fichier || data.name}
-                            >
-                              {data.fichier || data.name}
-                            </button>
-                          </div>
-
-                          <div className="flex items-center justify-between mt-auto">
-                            <span className="text-xs text-gray-500">
-                              {formatFileSize(data.size)}
-                            </span>
-                            <button
-                              onClick={() => handleDeleteFile(index, 'rsv')}
-                              className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
-                              title="Supprimer"
-                            >
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* Commentaire */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
-                  Commentaire
-                </label>
-                <textarea
-                  name="commentaireAvance"
-                  value={formData.commentaireAvance}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              {/* Encaisse Section */}
-              {user?.role <= 2 && formData.montant > 0 && (
-                <div className="border-t pt-4 mt-4">
-                  <h3 className="text-lg font-semibold mb-3">Encaissement</h3>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        N° Remise
-                        {/*formData.date_encaissement != '' ? (
-                          <span className="text-red-500">*</span>
-                        ) : null*/}
+                      <label
+                        htmlFor="sr"
+                        className="ml-2 block text-sm text-gray-700"
+                      >
+                        SR
                       </label>
-
-                      <input
-                        name="num_remise"
-                        type="number"
-                        /* required={
-                          formData.date_encaissement != '' ? true : false
-                        }*/
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        value={formData.num_remise || ''}
-                        onChange={handleInputChange}
-                      />
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Date encaissement
-                        {formData.num_remise != '' ? (
-                          <span className="text-red-500">*</span>
-                        ) : null}
+                        Date de règlement{" "}
+                        <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <input
-                          name="date_encaissement"
                           type="date"
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                          value={formData.date_encaissement || ''}
-                          required={formData.num_remise != '' ? true : false}
+                          name="date_reglement"
+                          value={formData.date_reglement || ""}
                           onChange={handleInputChange}
+                          className={`w-full p-2 border rounded-md ${
+                            formErrors.date_reglement
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
                         />
+                      </div>
+                      {formErrors.date_reglement && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {formErrors.date_reglement}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Montant */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Montant (DH) <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          name="montant"
+                          value={formData.montant || ""}
+                          onChange={handleInputChange}
+                          className={`w-full p-2 border rounded-md ${
+                            formErrors.montant
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                          step="0.01"
+                          min="0"
+                        />
+                      </div>
+                      {formErrors.montant && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {formErrors.montant}
+                        </p>
+                      )}
+                    </div>
+                    {/* In your form, after the montant input */}
+                    <div className="mt-1 text-sm">
+                      <span className="font-medium">Montant restant : </span>
+                      <span
+                        className={
+                          reste < 0 ? "text-red-500" : "text-green-500"
+                        }
+                      >
+                        {reste.toLocaleString() + " DH"}
+                      </span>
+                    </div>
+                  </div>
+                  {/* Right Column */}
+                  <div className="space-y-4">
+                    <div className="flex items-center"></div>
+                    <div className="flex items-center"></div>
+                    {/* Mode de paiement */}
+                    <div>
+                      <SelectInput
+                        label="Mode Paiement :"
+                        placeholder="Sélectionner un mode de paiement"
+                        name="mode_paiement"
+                        value={formData.mode_paiement || ""}
+                        required={true}
+                        options={Object.values(MODE_PAIEMENT || {}).map(
+                          (item) => ({
+                            value: item.code || item.value,
+                            label: item.label || item.name,
+                          }),
+                        )}
+                        onChange={(value) => {
+                          handleInputChange({
+                            target: { name: "mode_paiement", value },
+                          });
+                        }}
+                        error={formErrors.mode_paiement} // Change this line
+                      />
+
+                      {formErrors.mode_paiement && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {formErrors.mode_paiement}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Banque (conditionally shown) */}
+                    {formData.mode_paiement &&
+                      [2, 3, 4, 5, 6].includes(
+                        parseInt(formData.mode_paiement),
+                      ) && (
+                        <div>
+                          <SelectInput
+                            label="Banque:"
+                            placeholder="Sélectionner une banque"
+                            name="banque_id"
+                            value={formData.banque_id || ""}
+                            required={true}
+                            options={
+                              Array.isArray(banques)
+                                ? banques.map((banque) => ({
+                                    value: banque.id,
+                                    label: banque.nom || `Banque ${banque.id}`,
+                                  }))
+                                : []
+                            }
+                            loading={loadingBanques}
+                            onChange={(value) => {
+                              handleInputChange({
+                                target: { name: "banque_id", value },
+                              });
+                            }}
+                            submitted={true} // to show error on submit
+                            errors={formErrors.banque_id}
+                          />
+
+                          {formErrors.banque_id && (
+                            <p className="mt-1 text-sm text-red-500">
+                              {formErrors.banque_id}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    {/* Numéro de paiement (conditionally shown) */}
+                    {formData.mode_paiement &&
+                      [2, 3, 4, 5, 6].includes(
+                        parseInt(formData.mode_paiement),
+                      ) && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Numéro de paiement
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            required
+                            type="text"
+                            name="numero_paiement"
+                            value={formData.numero_paiement || ""}
+                            onChange={handleInputChange}
+                            className={`w-full p-2 border rounded-md ${
+                              formErrors.numero_paiement
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            }`}
+                          />
+                          {formErrors.numero_paiement && (
+                            <p className="mt-1 text-sm text-red-500">
+                              {formErrors.numero_paiement}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                    {/* Échéance (for checks) */}
+                    {formData.mode_paiement &&
+                      [2, 3, 4].includes(parseInt(formData.mode_paiement)) && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Échéance <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              required
+                              type="date"
+                              name="echeance"
+                              value={formData.echeance || ""}
+                              onChange={handleInputChange}
+                              className="w-full p-2 border border-gray-300 rounded-md"
+                            />
+                          </div>
+                        </div>
+                      )}
+                  </div>
+                </div>
+
+                <div className="relative mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Fichier Paiements
+                  </label>
+                  <input
+                    type="file"
+                    name=""
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" // Specify accepted file types
+                    onChange={(e) => handleFileChange(e, 2)}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+
+                  <p className="mt-1 text-xs text-gray-500">
+                    Formats acceptés: PDF, JPG, PNG, DOC (Taille max: 10MB)
+                  </p>
+                </div>
+                {/* Selected Files Preview */}
+                {selectedFiles_avc.length > 0 && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-2 text-primary-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      Fichiers sélectionnés ({selectedFiles_avc.length})
+                    </h3>
+
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {selectedFiles_avc.map((data, index) => (
+                          <div
+                            key={data.id || data.name}
+                            className="flex flex-col p-3 bg-white rounded-md border border-gray-200 hover:border-blue-200 transition-colors h-full"
+                          >
+                            <div className="flex items-center mb-2">
+                              {/* File icon based on type */}
+                              {getFileIcon(data.name || data.fichier)}
+
+                              <button
+                                onClick={() =>
+                                  data.fichier
+                                    ? handleFileClick(data.fichier)
+                                    : handleDownloadFile(data)
+                                }
+                                className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate flex-1 text-left"
+                                title={data.fichier || data.name}
+                              >
+                                {data.fichier || data.name}
+                              </button>
+                            </div>
+
+                            <div className="flex items-center justify-between mt-auto">
+                              <span className="text-xs text-gray-500">
+                                {formatFileSize(data.size)}
+                              </span>
+                              <button
+                                onClick={() => handleDeleteFile(index, "rsv")}
+                                className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50 transition-colors"
+                                title="Supprimer"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
+                )}
+                {/* Commentaire */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
+                    Commentaire
+                  </label>
+                  <textarea
+                    name="commentaireAvance"
+                    value={formData.commentaireAvance}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
                 </div>
-              )}
-              <div className="flex justify-end space-x-3 pt-6">
-                <button
-                  type="button"
-                  onClick={handleDialogClose}
-                  className="px-4 py-2 border bg-gray-300 border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading.form || reste < 0}
-                  className={`px-4 py-2 rounded-md flex items-center ${
-                    loading.form
-                      ? 'bg-indigo-200 text-indigo-400 cursor-not-allowed'
-                      : reste < 0
-                      ? 'bg-red-500 text-white cursor-not-allowed'
-                      : 'bg-[rgb(26,21,120)] text-white hover:bg-indigo-700'
-                  }`}
-                >
-                  {currentPaiement ? 'Modifier' : `Ajouter`}
-                </button>
-              </div>
-            </form>
+                {/* Encaisse Section */}
+                {user?.role <= 2 && formData.montant > 0 && (
+                  <div className="border-t pt-4 mt-4">
+                    <h3 className="text-lg font-semibold mb-3">Encaissement</h3>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          N° Remise
+                          {/*formData.date_encaissement != '' ? (
+                          <span className="text-red-500">*</span>
+                        ) : null*/}
+                        </label>
+
+                        <input
+                          name="num_remise"
+                          type="number"
+                          /* required={
+                          formData.date_encaissement != '' ? true : false
+                        }*/
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                          value={formData.num_remise || ""}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Date encaissement
+                          {formData.num_remise != "" ? (
+                            <span className="text-red-500">*</span>
+                          ) : null}
+                        </label>
+                        <div className="relative">
+                          <input
+                            name="date_encaissement"
+                            type="date"
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            value={formData.date_encaissement || ""}
+                            required={formData.num_remise != "" ? true : false}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="flex justify-end space-x-3 pt-6">
+                  <button
+                    type="button"
+                    onClick={handleDialogClose}
+                    className="px-4 py-2 border bg-gray-300 border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading.form || reste < 0}
+                    className={`px-4 py-2 rounded-md flex items-center ${
+                      loading.form
+                        ? "bg-indigo-200 text-indigo-400 cursor-not-allowed"
+                        : reste < 0
+                          ? "bg-red-500 text-white cursor-not-allowed"
+                          : "bg-[rgb(26,21,120)] text-white hover:bg-indigo-700"
+                    }`}
+                  >
+                    {currentPaiement ? "Modifier" : `Ajouter`}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
         </Modal>
       )}
       {/* Validation/Rejection Dialog */}
       {open_v_r && (
-          <Modal isVisible={open_v_r} onClose={() => setOpen_v_r(false)}>
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-0 rounded-lg max-w-md w-full">
-            <div
-              style={{ backgroundColor: color_header_modal }}
-              className=" text-white p-4 rounded-t-lg mb-3"
-            >
-              <h3 className="text-lg font-bold">
-                {type_action == 'validation'
-                  ? 'Traiter un Avance'
-                  : 'Encaissement'}
-              </h3>
-            </div>
+        <Modal isVisible={open_v_r} onClose={() => setOpen_v_r(false)}>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-0 rounded-lg max-w-md w-full">
+              <div
+                style={{ backgroundColor: color_header_modal }}
+                className=" text-white p-4 rounded-t-lg mb-3"
+              >
+                <h3 className="text-lg font-bold">
+                  {type_action == "validation"
+                    ? "Traiter un Avance"
+                    : "Encaissement"}
+                </h3>
+              </div>
 
-            <form onSubmit={onSubmit_valider_rejete}>
-              <div className="space-y-4 mb-6 p-2">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    N° Reçu:
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    value={num_recu}
-                    disabled
-                  />
-                </div>
-
-                {type_action == 'validation' && (
+              <form onSubmit={onSubmit_valider_rejete}>
+                <div className="space-y-4 mb-6 p-2">
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Statut:
+                      N° Reçu:
                     </label>
-                    <select
+                    <input
+                      type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      value={action}
-                      onChange={(e) => setAction(e.target.value)}
-                      required
-                    >
-                      <option value="">Sélectionner</option>
-                      <option value="1">Valider</option>
-                      <option value="2">Rejeter</option>
-                    </select>
+                      value={num_recu}
+                      disabled
+                    />
                   </div>
-                )}
 
-                {action == '1' && (
-                  <>
+                  {type_action == "validation" && (
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        N° Remise:
+                        Statut:
                       </label>
-                      <input
-                        type="number"
+                      <select
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        value={num_remise_v || ''}
-                        onChange={(e) => set_num_remise_v(e.target.value)}
-                      />
+                        value={action}
+                        onChange={(e) => setAction(e.target.value)}
+                        required
+                      >
+                        <option value="">Sélectionner</option>
+                        <option value="1">Valider</option>
+                        <option value="2">Rejeter</option>
+                      </select>
                     </div>
+                  )}
+
+                  {action == "1" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          N° Remise:
+                        </label>
+                        <input
+                          type="number"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          value={num_remise_v || ""}
+                          onChange={(e) => set_num_remise_v(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Date encaissement:{" "}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          value={date_encaissement_v || ""}
+                          onChange={(e) =>
+                            set_date_encaissement_v(e.target.value)
+                          }
+                          required
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {action == "2" && (
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Date encaissement:{' '}
-                        <span className="text-red-500">*</span>
+                        Commentaire: <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="date"
+                      <textarea
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                        value={date_encaissement_v || ''}
-                        onChange={(e) =>
-                          set_date_encaissement_v(e.target.value)
-                        }
+                        rows={3}
+                        value={Commentaire_r}
+                        onChange={(e) => setCommentaire_r(e.target.value)}
                         required
                       />
                     </div>
-                  </>
-                )}
+                  )}
+                </div>
+                <div className="flex justify-end gap-4 mr-2 mb-2">
+                  <button
+                    type="button"
+                    className="px-4 py-2 border bg-gray-300 border-gray-300 rounded-md hover:bg-gray-50"
+                    onClick={() => setOpen_v_r(false)}
+                  >
+                    Annuler
+                  </button>
 
-                {action == '2' && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Commentaire: <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      rows={3}
-                      value={Commentaire_r}
-                      onChange={(e) => setCommentaire_r(e.target.value)}
-                      required
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="flex justify-end gap-4 mr-2 mb-2">
-                <button
-                  type="button"
-                  className="px-4 py-2 border bg-gray-300 border-gray-300 rounded-md hover:bg-gray-50"
-                  onClick={() => setOpen_v_r(false)}
-                >
-                  Annuler
-                </button>
-
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                  disabled={loading_traite}
-                >
-                  {loading_traite ? 'Enregistrement...' : 'Enregistrer'}
-                </button>
-              </div>
-            </form>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                    disabled={loading_traite}
+                  >
+                    {loading_traite ? "Enregistrement..." : "Enregistrer"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
         </Modal>
       )}
       {/* PJ Dialog */}
       {open_dialog && (
-      
-      <Modal isVisible={open_dialog} onClose={() => setOpen_dialog(false)}>
-
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full">
-            {/* Colored header div */}
-            <div
-              style={{ backgroundColor: color_header_modal }}
-              className=" text-white p-4 rounded-t-lg"
-            >
-              <h3 className="text-lg font-bold">
-                Liste des Pièces Jointes - Avance N°: {num_recu}
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-4 gap-4 mt-10">
-              {pjj?.map((pj) => (
-                <div key={`pj-${pj.id}`} className="flex items-center">
-                  {' '}
-                  {/* Add key here */}
-                  {pj.fichier?.toLowerCase()?.endsWith('.pdf') ? (
-                    <FileText className="w-5 h-5 mr-2 text-red-500" />
-                  ) : (
-                    <div className="relative w-5 h-5 mr-2">
-                      <img
-                        src={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/paiements/${reservationData?.reservation.code_reservation}/${pj.fichier}`}
-                        alt="PJ"
-                        className="object-cover rounded w-full h-full"
-                      />
-                    </div>
-                  )}
-                  <span
-                    className="text-sm hover:text-blue-500 cursor-pointer truncate"
-                    onClick={() => handleFileClick(pj.fichier)}
-                    title={pj.fichier}
-                  >
-                    {pj.fichier}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-end mt-6 mb-2 mr-2">
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                onClick={() => setOpen_dialog(false)}
+        <Modal isVisible={open_dialog} onClose={() => setOpen_dialog(false)}>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full">
+              {/* Colored header div */}
+              <div
+                style={{ backgroundColor: color_header_modal }}
+                className=" text-white p-4 rounded-t-lg"
               >
-                Fermer
-              </button>
+                <h3 className="text-lg font-bold">
+                  Liste des Pièces Jointes - Avance N°: {num_recu}
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-4 gap-4 mt-10">
+                {pjj?.map((pj) => (
+                  <div key={`pj-${pj.id}`} className="flex items-center">
+                    {" "}
+                    {/* Add key here */}
+                    {pj.fichier?.toLowerCase()?.endsWith(".pdf") ? (
+                      <FileText className="w-5 h-5 mr-2 text-red-500" />
+                    ) : (
+                      <div className="relative w-5 h-5 mr-2">
+                        <img
+                          src={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/paiements/${reservationData?.reservation.code_reservation}/${pj.fichier}`}
+                          alt="PJ"
+                          className="object-cover rounded w-full h-full"
+                        />
+                      </div>
+                    )}
+                    <span
+                      className="text-sm hover:text-blue-500 cursor-pointer truncate"
+                      onClick={() => handleFileClick(pj.fichier)}
+                      title={pj.fichier}
+                    >
+                      {pj.fichier}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-end mt-6 mb-2 mr-2">
+                <button
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  onClick={() => setOpen_dialog(false)}
+                >
+                  Fermer
+                </button>
+              </div>
             </div>
           </div>
-        </div>
         </Modal>
-       
       )}
       {/*show detail*/}
       {open_dialog_show && (
@@ -1750,7 +1762,7 @@ export const AvancesTab = ({
             <div className="grid grid-cols-2 gap-4 mt-10 ml-10">
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500 capitalize">
-                  {'Banque:'}
+                  {"Banque:"}
                 </span>
                 <span className="text-base font-medium text-gray-900">
                   {banque_show}
@@ -1758,7 +1770,7 @@ export const AvancesTab = ({
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500 capitalize">
-                  {'Numéro Paiement:'}
+                  {"Numéro Paiement:"}
                 </span>
                 <span className="text-base font-medium text-gray-900">
                   {num_paiement_show}
@@ -1766,7 +1778,7 @@ export const AvancesTab = ({
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500 capitalize">
-                  {'Numéro Remise:'}
+                  {"Numéro Remise:"}
                 </span>
                 <span className="text-base font-medium text-gray-900">
                   {num_rem_show}
@@ -1774,7 +1786,7 @@ export const AvancesTab = ({
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500 capitalize">
-                  {'Date Encaissement:'}
+                  {"Date Encaissement:"}
                 </span>
                 <span className="text-base font-medium text-gray-900">
                   {date_encais_show}
@@ -1802,7 +1814,7 @@ export const AvancesTab = ({
             route={APIURL.PAIEMENTS}
             Id={selectedId}
             type="Avance"
-            message={'Etes-vous sûr de vouloir supprimer cette Avance ?'}
+            message={"Etes-vous sûr de vouloir supprimer cette Avance ?"}
             accessToken={accessToken}
             onClose={() => {
               setShowDeleteModal(false);
@@ -1810,7 +1822,7 @@ export const AvancesTab = ({
             }}
           />
         </Modal>
-      )}{' '}
+      )}{" "}
       {/* Scanner Popup */}
       {popupScanner && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1853,7 +1865,7 @@ export const AvancesTab = ({
                 onClick={scanner_file}
                 disabled={!fichier_scanner || loading_scann}
               >
-                {loading_scann ? 'Enregistrement...' : 'Enregistrer'}
+                {loading_scann ? "Enregistrement..." : "Enregistrer"}
               </button>
             </div>
           </div>
