@@ -132,13 +132,7 @@ export const AvancesTab = ({
 
         channel.bind("AvancesEvent", (data) => {
           console.log("Pusher AvancesEvent received:", data);
-          console.log(
-            "Current reservation ID:",
-            reservationId,
-            "Event reservation ID:",
-            data.reservationId,
-          );
-
+          alert("EVENT RECU");
           toast.success("Mise à jour des avances reçue");
 
           // Always refresh when we receive an event for this channel
