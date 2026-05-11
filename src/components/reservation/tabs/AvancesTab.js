@@ -132,8 +132,6 @@ export const AvancesTab = ({
 
         channel.bind("AvancesEvent", (data) => {
           console.log("Pusher AvancesEvent received:", data);
-          alert("EVENT RECU");
-          toast.success("Mise à jour des avances reçue");
 
           // Always refresh when we receive an event for this channel
           console.log("Refreshing avances data via Pusher");
