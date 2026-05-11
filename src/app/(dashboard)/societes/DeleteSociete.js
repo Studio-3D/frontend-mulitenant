@@ -45,8 +45,7 @@ export default function DeletSociete({
         <button
           className="font-medium px-4 py-2 rounded-lg bg-gray-200"
           onClick={onClose}
-        >              loading={loading_roles}
-
+        >              
           Non, annuler
         </button>
         <button
