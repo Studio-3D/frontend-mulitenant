@@ -2205,7 +2205,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
     const channel = pusher.subscribe("proposition-updates");
     channel.bind("PropositionUpdated", (data) => {
       console.log("Proposal status changed:", data);
-      alert("Proposal status changed");
+
       fetch_bien_ByProjet();
     });
     return () => {
