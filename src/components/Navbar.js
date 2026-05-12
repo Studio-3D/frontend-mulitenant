@@ -48,7 +48,8 @@ export default function CombinedNavbar() {
         pusher.connection.bind("error", (err) => {
           console.error("Pusher error", err);
         });
-       
+                 alert('notification global first')
+
         channel.bind("NotificationEvent", () => {
           console.log("Received notification event pusher by mee");
           alert('notification global')
