@@ -229,7 +229,6 @@ export function CRMPage() {
 
     channel.bind("NotifMenuEvent", (data) => {
       console.log("Pusher event received:", data);
-      alert("Event received in crmPage");
       fetchDataNotiMon(data.NotifMenuId);
     });
 

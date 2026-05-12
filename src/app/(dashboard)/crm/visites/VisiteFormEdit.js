@@ -218,7 +218,7 @@ export default function VisiteFormEdit({ id }) {
 
     const channel = pusher.subscribe('proposition-updates');
 
-    channel.bind('App\\Events\\PropositionUpdated', (data) => {
+    channel.bind("PropositionUpdated", (data) => {
       fetch_bien_ByProjet(
         watch('bien_id'),
         bien_propriete_o,

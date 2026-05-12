@@ -48,13 +48,13 @@ export default function CombinedNavbar() {
         pusher.connection.bind("error", (err) => {
           console.error("Pusher error", err);
         });
-
-        channel.bind("App\\Events\\NotificationEvent", () => {
+       
+        channel.bind("NotificationEvent", () => {
           console.log("Received notification event pusher");
           fetchNotifications();
         });
 
-        channel.bind("App\\Events\\NotificationEvent", (data) => {
+        channel.bind("NotificationEvent", (data) => {
           console.log("Full event reçu", data);
         });
 

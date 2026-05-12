@@ -531,7 +531,7 @@ export function Changement_De_Bien({
     });
 
     const channel = pusher.subscribe('proposition-updates');
-    channel.bind('App\\Events\\PropositionUpdated', (data) => {
+   channel.bind("PropositionUpdated", (data) => {
       console.log('Proposal status changed:', data);
       if (!isEditing) {
         fetch_bien_ByProjet(null);
