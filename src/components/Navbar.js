@@ -50,7 +50,7 @@ export default function CombinedNavbar() {
         });
        
         channel.bind("NotificationEvent", () => {
-          console.log("Received notification event pusher");
+          console.log("Received notification event pusher by mee");
           fetchNotifications();
         });
 

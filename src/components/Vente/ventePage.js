@@ -190,7 +190,7 @@ export function VentePage() {
 
     const channel = pusher.subscribe("NotifMenu");
     channel.bind("NotifMenuEvent", (data) => {
-      console.log("Event Received in ventePage");
+      console.log("Event Received in ventePage meee");
       fetchDataNotifMenu(data.NotifMenuId);
       setParam(data.NotifMenuId);
     });
