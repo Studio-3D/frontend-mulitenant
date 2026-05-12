@@ -192,8 +192,9 @@ const showToast = (message, type = 'success') => {
           // Always refresh when we receive an event for this channel
           console.log('Refreshing contrat vente data via Pusher');
           fetchData();
-        });
+          console.log('Done');
 
+        });
         // Handle connection events
         channel.bind('pusher:subscription_succeeded', () => {
           console.log('✅ Successfully subscribed to channel:', channelName);

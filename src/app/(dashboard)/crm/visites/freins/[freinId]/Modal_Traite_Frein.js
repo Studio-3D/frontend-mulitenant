@@ -434,8 +434,7 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
 
     const channel = pusher.subscribe('proposition-updates');
 
-    channel.bind('App\\Events\\PropositionUpdated', (data) => {
-      console.log('bbbbbbbbbbbbbbbbbbbbb - Pusher event received!');
+    channel.bind("PropositionUpdated", (data) => {
       console.log('Proposal status changed:', data);
       // Refresh the biens data when Pusher event is received
       fetchDataa();
