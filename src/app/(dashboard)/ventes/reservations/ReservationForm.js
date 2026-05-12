@@ -160,22 +160,30 @@ export default function ReservationForm({ id }) {
   ];
 
   // Simple cache et comparaison for return back en cas de changer projet
-       const { selectedSociete } = useSociete();
-      const [oldProjetId, setOldProjetId] = useState(null);
-      const [oldSocieteId, setOldSocieteId] = useState(null);
-    
+  const { selectedSociete } = useSociete();
+  const [oldProjetId, setOldProjetId] = useState(null);
+  const [oldSocieteId, setOldSocieteId] = useState(null);
 
-  	 useEffect(() => {
-  if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId)||(selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
-    if (oldProjetId||oldSocieteId) {
-      // Projet ou société a changé
+  useEffect(() => {
+    if (
+      (selectedProjet?.id && selectedProjet?.id !== oldProjetId) ||
+      (selectedSociete?.id && selectedSociete?.id !== oldSocieteId)
+    ) {
+      if (oldProjetId || oldSocieteId) {
+        // Projet ou société a changé
         console.log(`Projet changé: ${oldProjetId} -> ${selectedProjet?.id}`);
-      router.push('/ventes');
+        router.push("/ventes");
+      }
+      setOldSocieteId(selectedSociete?.id);
+      setOldProjetId(selectedProjet?.id);
     }
-    setOldSocieteId(selectedSociete?.id)
-    setOldProjetId(selectedProjet?.id);
-  }
-}, [selectedProjet?.id, selectedSociete?.id, oldProjetId, oldSocieteId, router]);
+  }, [
+    selectedProjet?.id,
+    selectedSociete?.id,
+    oldProjetId,
+    oldSocieteId,
+    router,
+  ]);
 
   const goToNextStep = () => {
     if (currentStep < steps.length - 1) {
@@ -360,10 +368,10 @@ export default function ReservationForm({ id }) {
     ///
     reste: 0,
     prix_val: "",
-   /* Superficie_balcon_calculer: 0,
+    /* Superficie_balcon_calculer: 0,
     superficie_jardin_calculer: 0,
     superficie_terrasse_calculer: 0,*/
-    superficie_vendable:0,
+    superficie_vendable: 0,
     prix_box: 0,
     prix_parking: 0,
     prix_unitaire: 0,
@@ -453,7 +461,7 @@ export default function ReservationForm({ id }) {
             prix_val: reservation?.prix || "",
             prix_final: reservation?.prix || "",
             prix: reservation?.prix || "",
-           /* Superficie_balcon_calculer:
+            /* Superficie_balcon_calculer:
               reservation?.bien != null
                 ? reservation?.bien?.superficie_balcon_calculer
                 : 0,
@@ -852,13 +860,18 @@ export default function ReservationForm({ id }) {
 
     const channel = pusher.subscribe("proposition-updates");
 
-    channel.bind("App\\Events\\PropositionUpdated", (data) => {
-      if (isEditing) fetch_bien_ByProjet(old_bien_id, "edit");
-      else fetch_bien_ByProjet(null, null);
+    channel.bind("PropositionUpdated", (data) => {
+      if (isEditing) {
+        alert("Event editing received");
+        fetch_bien_ByProjet(old_bien_id, "edit");
+      } else {
+        alert("Event received");
+        fetch_bien_ByProjet(null, null);
+      }
     });
 
     return () => {
-      channel.unbind("App\\Events\\PropositionUpdated");
+      channel.unbind("PropositionUpdated");
       pusher.unsubscribe("proposition-updates");
     };
   };
@@ -2098,42 +2111,43 @@ export default function ReservationForm({ id }) {
 
   // Common calculation logic extracted to a separate function
   const calculateTotalPrice = (values) => {
-  const {
-    prix_remise,
-    prix_unitaire,
-    prix_forfetaire,
-   /* superficie_jardin_calculer,
+    const {
+      prix_remise,
+      prix_unitaire,
+      prix_forfetaire,
+      /* superficie_jardin_calculer,
     superficie_habitable,
     superficie_balcon_calculer,
     superficie_terrasse_calculer,*/
-    superficie_vendable,
-    prix_box,
-    prix_parking,
-  } = values;
+      superficie_vendable,
+      prix_box,
+      prix_parking,
+    } = values;
 
-  /*const superficieTotal =
+    /*const superficieTotal =
     parseSafeFloat(superficie_jardin_calculer) +
     parseSafeFloat(superficie_habitable) +
     parseSafeFloat(superficie_balcon_calculer) +
     parseSafeFloat(superficie_terrasse_calculer);*/
 
-  const superficieVendable =
-    parseSafeFloat(superficie_vendable);
+    const superficieVendable = parseSafeFloat(superficie_vendable);
 
-  // Utilise prix_remise SEULEMENT si c'est un nombre positif (>= 0.01)
-  // Si prix_remise est 0 ou null/undefined, utilise prix_unitaire
-  let basePrice;
-  if (prix_remise && parseSafeFloat(prix_remise) > 0) {
-    basePrice = parseSafeFloat(prix_remise);
-  } else {
-    basePrice = parseSafeFloat(prix_unitaire);
-  }
-  
-  const fixedCosts = parseSafeFloat(prix_box) + parseSafeFloat(prix_parking);
-  return (
-    basePrice * superficieVendable + fixedCosts - parseSafeFloat(prix_forfetaire)
-  );
-};
+    // Utilise prix_remise SEULEMENT si c'est un nombre positif (>= 0.01)
+    // Si prix_remise est 0 ou null/undefined, utilise prix_unitaire
+    let basePrice;
+    if (prix_remise && parseSafeFloat(prix_remise) > 0) {
+      basePrice = parseSafeFloat(prix_remise);
+    } else {
+      basePrice = parseSafeFloat(prix_unitaire);
+    }
+
+    const fixedCosts = parseSafeFloat(prix_box) + parseSafeFloat(prix_parking);
+    return (
+      basePrice * superficieVendable +
+      fixedCosts -
+      parseSafeFloat(prix_forfetaire)
+    );
+  };
 
   const handleChangePrixRemise = (event) => {
     const values = {
@@ -4449,11 +4463,11 @@ export default function ReservationForm({ id }) {
                 backendErrors={backendErrors}
                 defaultValues={defaultValues}
               />
-              
+
               <TextField
                 label="Prix unitaire remisé:"
                 name="prix_remise"
-                 type="number"
+                type="number"
                 control={control}
                 errors={errors}
                 backendErrors={backendErrors}
