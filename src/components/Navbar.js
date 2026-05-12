@@ -47,6 +47,7 @@ export default function CombinedNavbar() {
           console.error("Pusher error", err);
         });
 
+        alert('Notification first!');
         // Bind to the event - remove duplicate bindings
         channel.bind("NotificationEvent", (data) => {
           console.log("Received notification event from pusher:", data);
