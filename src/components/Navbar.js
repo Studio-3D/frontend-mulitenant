@@ -28,7 +28,7 @@ export default function CombinedNavbar() {
       fetchNotifications();
 
       // Use the SAME key that matches PUSHER_APP_KEY_3
-      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF;
+const pusherKey = "520a899cd89c4916b212";
       console.log("PUSHER NOTIF KEY:", pusherKey);
       
       if (pusherKey) {
@@ -47,7 +47,7 @@ export default function CombinedNavbar() {
           console.error("Pusher error", err);
         });
 
-        alert('Notification first!');
+        alert('Notification first! agaaaaaain');
         // Bind to the event - remove duplicate bindings
         channel.bind("NotificationEvent", (data) => {
           console.log("Received notification event from pusher:", data);
