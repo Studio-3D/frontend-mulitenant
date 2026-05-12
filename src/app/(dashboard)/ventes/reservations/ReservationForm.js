@@ -859,7 +859,7 @@ export default function ReservationForm({ id }) {
     });
 
     const channel = pusher.subscribe("proposition-updates");
-
+    console.log('test')
     channel.bind("PropositionUpdated", (data) => {
       if (isEditing) {
         fetch_bien_ByProjet(old_bien_id, "edit");
