@@ -862,10 +862,10 @@ export default function ReservationForm({ id }) {
 
     channel.bind("PropositionUpdated", (data) => {
       if (isEditing) {
-        alert("Event editing received");
+        alert("Event editing received in reservationForm");
         fetch_bien_ByProjet(old_bien_id, "edit");
       } else {
-        alert("Event received");
+        alert("Event received in reservationForm");
         fetch_bien_ByProjet(null, null);
       }
     });
