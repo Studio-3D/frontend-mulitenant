@@ -689,7 +689,6 @@ const fetchNotifications = async ({
       })
       .filter((notification) => notification !== null);
     
-    console.log('Formatted notifications with seen arrays:', formattedNotifications.map(n => ({id: n.id, seen: n.seen})));
     setNotifications((prevNotif) => [...prevNotif, ...formattedNotifications]);
   } catch (error) {
     console.error('Error fetching notifications:', error);
