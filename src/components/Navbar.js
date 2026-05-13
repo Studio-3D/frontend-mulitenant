@@ -27,10 +27,8 @@ export default function CombinedNavbar() {
       console.log("Project selected, fetching notifications for project:", selectedProjet.id);
       fetchNotifications();
 
-      // Use the SAME key that matches PUSHER_APP_KEY_3
-      //const pusherKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF;
-       const pusherKey = "520a899cd89c4916b212";
-      console.log("PUSHER NOTIF KEY:", pusherKey);
+      const pusherKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF;
+      console.log("PUSHER NOTIF KEY GLOBAL:", pusherKey);
       
       if (pusherKey) {
         const pusher = new Pusher(pusherKey, {

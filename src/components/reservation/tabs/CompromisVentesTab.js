@@ -21,7 +21,7 @@ export const CompromisVentesTab = ({
   onCompromisCreated, // Ajouter cette prop
 }) => {
   const pusher_key_attestation_vente =
-    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_ATTESTATION_VENTE;
+    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_DOCUMENT;
 
   const accessToken = propAccessToken || localStorage.getItem('accessToken');
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -148,6 +148,8 @@ const fetchData = async () => {
         console.log('Pusher key or reservation ID missing');
         return () => {};
       }
+      console.log('Pusher key document is '+pusher_key_attestation_vente);
+
 
       Pusher.logToConsole = true;
       console.log(

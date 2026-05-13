@@ -26,7 +26,7 @@ export const ContractTab = ({
   onContratCreated, // AJOUTER CETTE PROP
 }) => {
   const pusher_key_contrat_vente =
-    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_CONTRAT_VENTE;
+    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_DOCUMENT;
   const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
   const data_reservation = reservationData?.reservation;
   const etat_res = reservationData?.reservation?.etat;
@@ -164,6 +164,7 @@ const showToast = (message, type = 'success') => {
         console.log('Pusher key or reservation ID missing');
         return () => {};
       }
+      console.log('Pusher key document is '+pusher_key_contrat_vente);
 
       Pusher.logToConsole = true;
       console.log(

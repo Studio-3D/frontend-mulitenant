@@ -141,7 +141,7 @@ export function CRMPage() {
   });
 
   const pusher_key_NotifMenu =
-    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
+    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF;
 
   // Wrap fetchDataNotiMon in useCallback with project dependency
   const fetchDataNotiMon = useCallback(
@@ -214,6 +214,7 @@ export function CRMPage() {
   // Pusher setup - re-run when project changes
   useEffect(() => {
     if (!pusher_key_NotifMenu || !selectedProjet) return;
+      console.log("PUSHER KEY (unified) CRM:", pusher_key_NotifMenu);
 
     console.log("Setting up Pusher for project:", selectedProjet.id);
 

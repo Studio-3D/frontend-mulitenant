@@ -31,7 +31,7 @@ export function VentePage() {
   const userRole = user?.role;
   const projetId = selectedProjet?.id;
   const pusher_key_NotifMenu =
-    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF_MENU;
+    process.env.NEXT_PUBLIC_PUSHER_APP_KEY_NOTIF;
   const [param, setParam] = useState(0);
 
   // Update URL when tab changes - SIMPLIFIED like CRM
@@ -182,6 +182,7 @@ export function VentePage() {
   // Configuration Pusher
   useEffect(() => {
     if (!pusher_key_NotifMenu || !projetId) return;
+      console.log("PUSHER KEY (unified) VENTE:", pusher_key_NotifMenu);
 
     const pusher = new Pusher(pusher_key_NotifMenu, {
       cluster: "eu",

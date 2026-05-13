@@ -47,7 +47,7 @@ export default function VisiteFormEdit({ id }) {
   const [loading_form, setLoading_form] = useState(false);
   const router = useRouter();
   const accessToken = localStorage.getItem('accessToken');
-  const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
+  const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_REALTIME;
   const [loading, setLoading] = useState({ form: false, visites: false });
   const [loading_tranches, setLoading_tranches] = useState(false);
 

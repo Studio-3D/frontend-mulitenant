@@ -28,7 +28,7 @@ export function Changement_De_Bien({
 
   // prix_reservation
 }) {
-  const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
+  const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_REALTIME;
   const {
     control,
     watch,

@@ -79,7 +79,7 @@ export default function ReservationForm({ id }) {
   const router = useRouter();
   const accessToken = token || localStorage.getItem("accessToken");
   const { selectedProjet } = useProjet();
-  const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
+  const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_REALTIME;
   const [formData, setFormData] = useState(null);
   const isEditing = !!id;
   const [loading_bien, setLoading_bien] = useState(isEditing ? false : true);
