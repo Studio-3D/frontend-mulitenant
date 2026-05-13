@@ -88,7 +88,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
     return [];
   });
 
-  const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
+  const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_REALTIME;
   const [loading, setLoading] = useState(false);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

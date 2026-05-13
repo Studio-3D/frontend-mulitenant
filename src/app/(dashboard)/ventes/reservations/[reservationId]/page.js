@@ -26,7 +26,7 @@ import { useSociete } from '@/context/SocieteContext';
 
 const Res_Show = () => {
   const router = useRouter();
-  const pusher_key_avances = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_AVANCES;
+  //const pusher_key_avances = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_LIST
 
   const { selectedProjet } = useProjet();
   const [activeTab, setActiveTab] = useState('detail');

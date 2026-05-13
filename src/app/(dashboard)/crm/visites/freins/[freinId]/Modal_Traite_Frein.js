@@ -48,7 +48,7 @@ export default function Modal_Traite_Frein({ onClose, id, biens }) {
 
   const [bien_id, setBien_id] = useState(null);
   const [loading_tp_frein, setLoading_tp_frein] = useState(false);
-  const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP;
+  const pusher_key_proposition = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_REALTIME;
 
   /*
    setBiensDispo(

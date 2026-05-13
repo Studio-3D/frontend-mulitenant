@@ -40,7 +40,7 @@ export const AvancesTab = ({
   onAvancesChange,
   updateReservationData,
 }) => {
-  const pusher_key_avances = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_AVANCES;
+  const pusher_key_avances = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_LIST;
 
   //onAvancesChange  ===> to call res show to modify count avances in tabs avances atab
   const color_header_modal = process.env.NEXT_PUBLIC_COLOR_Header_Modal;

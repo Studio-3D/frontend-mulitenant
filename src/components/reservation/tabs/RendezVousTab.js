@@ -67,7 +67,7 @@ const [isAddingRelance, setIsAddingRelance] = useState(false);
   const reservationId = reservationData?.reservation?.id;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const pusher_key_rdv_list = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_RDV_LIST;
+  const pusher_key_rdv_list = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_LIST;
 
   // State variables
   const [rdvs, setRdvs] = useState([]);

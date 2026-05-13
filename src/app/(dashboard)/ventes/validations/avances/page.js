@@ -142,6 +142,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
         
   const handle_valider_rejete = (Id, n_recu, number, text) => {
     setOpen_v_r(!open_v_r);
+    setAction('')
     setID(Id);
     set_num_recu(n_recu);
     set_type_action(text);

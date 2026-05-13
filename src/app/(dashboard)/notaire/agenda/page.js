@@ -34,7 +34,7 @@ const AgendaCreneaux = () => {
   
   const { user} = useAuth();
   const userRole = user?.role;
-  const pusherKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP_Rdv;
+  const pusherKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_REALTIME;
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);

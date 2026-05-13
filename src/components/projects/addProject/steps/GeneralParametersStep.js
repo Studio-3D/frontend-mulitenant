@@ -427,20 +427,20 @@ export const GeneralParametersStep = ({
               )}
             </div>
 
-            {/* Other parameters in edit mode - ALWAYS SHOW ALL FIELDS */}
+            {/* Other parameters in edit mode - ALWAYS SHOW ALL FIELDS 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left Column */}
+              {/* Left Column 
               <div>
                 {renderParameterField('typesDeBien', 'Types de bien')}
                 {renderParameterField('vues', 'Vues')}
                 {renderParameterField('typologies', 'Typologies')}
               </div>
 
-              {/* Right Column */}
+              {/* Right Column
               <div>
                 {renderPartnerField()}
               </div>
-            </div>
+            </div> */}
           </div>
         ) : (
           // Non-edit mode layout - two columns

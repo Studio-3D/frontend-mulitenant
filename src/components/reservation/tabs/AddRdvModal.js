@@ -14,7 +14,7 @@ const AddRdvModal = ({ open, reservation_id, onClose, onRdvAdded }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState(null);
   const [calendarApi, setCalendarApi] = useState(null);
-  const pusherKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_PROP_Rdv;
+  const pusherKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_REALTIME;
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   const types = [
