@@ -233,36 +233,44 @@ export function ProjetProvider({ children }) {
   /*const refreshProjets = useCallback(() => {
     fetchProjets(true);
   }, [fetchProjets]);*/
-  const refreshProjets = useCallback(async (projectId) => {
-  if (!projectId || !selectedSociete) return;
+  // In ProjetContext.js, update the refreshProjets function:
+
+const refreshProjets = useCallback(async (projectId = null) => {
+  if (!selectedSociete) return;
   
-  try {
-    const token = localStorage.getItem('accessToken');
-    const response = await axios.get(`${APIURL.PROJETS}/${projectId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    
-    if (response.data?.projet) {
-      const updatedProject = response.data.projet;
+  // If projectId is provided, refresh that specific project
+  if (projectId) {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.get(`${APIURL.PROJETS}/${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       
-      // Update in projets list
-      setProjets(prev => prev.map(p => 
-        p.id === updatedProject.id ? updatedProject : p
-      ));
-      
-      // Update selected project if it's the same
-      if (selectedProjet?.id == updatedProject.id) {
-        setSelectedProjet(updatedProject);
-        localStorage.setItem('selectedProjet', JSON.stringify(updatedProject));
+      if (response.data?.projet) {
+        const updatedProject = response.data.projet;
+        
+        // Update in projets list
+        setProjets(prev => prev.map(p => 
+          p.id === updatedProject.id ? updatedProject : p
+        ));
+        
+        // Update selected project if it's the same
+        if (selectedProjet?.id === updatedProject.id) {
+          setSelectedProjet(updatedProject);
+          localStorage.setItem('selectedProjet', JSON.stringify(updatedProject));
+        }
+        
+        cacheTimestampRef.current = Date.now();
+        return updatedProject;
       }
-      
-      cacheTimestampRef.current = Date.now();
-      return updatedProject;
+    } catch (err) {
+      console.error('Failed to refresh project:', err);
     }
-  } catch (err) {
-    console.error('Failed to refresh project:', err);
+  } else {
+    // If no projectId, fetch all projects
+    await fetchProjets(true);
   }
-}, [selectedSociete, selectedProjet]);
+}, [selectedSociete, selectedProjet, fetchProjets]);
 
   // ==================== PROVIDER VALUE ====================
   const value = {

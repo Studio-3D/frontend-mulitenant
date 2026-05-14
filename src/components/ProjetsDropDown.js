@@ -124,18 +124,19 @@ export default function ProjetsDropDown() {
                 ))}
 
                 {/* Manage Projects Link */}
-                <li className="p-2 mt-2 border-t border-gray-100">
-                    <Link 
-                        href="/projets"
-                        className="flex items-center justify-center gap-2 w-full text-center text-[#009FFF] hover:text-blue-800 p-2 hover:bg-blue-50 rounded-md transition-colors"
-                        onClick={handleManageProjectsClick}
-                    >
-                        <div className="flex items-center gap-2">
-                            <span>Gérer les Projets</span>
-                            <Eye className="w-4 h-4" />
-                        </div>
-                    </Link>
-                </li>
+               {/* Manage Projects Link */}
+<li className="p-2 mt-2 border-t border-gray-100">
+    <Link 
+        href="/projets"
+        className="flex items-center justify-center gap-2 w-full text-center text-[#009FFF] hover:text-blue-800 p-2 hover:bg-blue-50 rounded-md transition-colors"
+        onClick={() => setIsSelectorOpened(false)}
+    >
+        <div className="flex items-center gap-2">
+            <span>Gérer les Projets</span>
+            <Eye className="w-4 h-4" />
+        </div>
+    </Link>
+</li>
             </>
         );
     }, [loading, filteredProjets, inputValue, selectedProjet, handleSelectProjet, handleManageProjectsClick]);
