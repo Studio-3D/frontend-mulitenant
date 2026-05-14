@@ -7,29 +7,50 @@ import { useAuth } from '../context/AuthContext';
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { RESOURCE_URL } from "@/configs/api";
+import { useState, useEffect } from "react";
 
 const DropdownMenuDemo = () => {
   const { forceLogout, user } = useAuth();
   const router = useRouter();
+  const [photoUrl, setPhotoUrl] = useState(null);
+
+  useEffect(() => {
+    if (user?.photo) {
+      // Construire l'URL de la photo de manière sécurisée
+      const societeName = user?.societe?.raison_sociale_concatene || user?.raison_sociale_concatene;
+      const societeId = user?.societe?.id || user?.societe_id;
+      
+      if (societeName && societeId) {
+        const url = `${RESOURCE_URL.DOCS}/${societeName}_${societeId}/users/${user.photo}`;
+        setPhotoUrl(url);
+      } else {
+        setPhotoUrl(null);
+      }
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     try {
-      // Use forceLogout to bypass LinkedIn protection and ensure logout works
       await forceLogout();
-      // Don't show toast here - the logout function handles the redirect
-      // The toast will be shown after successful redirect
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Erreur lors de la déconnexion.");
-      // Force redirect to login even if logout fails
       try {
         router.push('/login');
       } catch (error) {
-        // Fallback to window.location if router.push fails
-        console.warn("Router.push failed, using window.location:", error);
         window.location.href = '/login';
       }
     }
+  };
+
+  // Fonction pour obtenir le nom de la société
+  const getSocieteName = () => {
+    return user?.societe?.raison_sociale_concatene || user?.raison_sociale_concatene || '';
+  };
+
+  // Fonction pour obtenir l'ID de la société
+  const getSocieteId = () => {
+    return user?.societe?.id || user?.societe_id || '';
   };
 
   return (
@@ -37,27 +58,24 @@ const DropdownMenuDemo = () => {
       {user && ( 
         <DropdownMenu className="">
           <DropdownMenuTrigger asChild>
-            <Avatar>
+            <Avatar className="cursor-pointer">
               <AvatarImage
                 src={
-                  user?.photo?`${RESOURCE_URL.DOCS}/${
-                                              user.societe
-                                                ? user?.societe?.raison_sociale_concatene
-                                                : user?.societe?.raison_sociale_concatene
-                                            }_${user.societe_id ? user.societe_id : user.societe_id}/users/${
-                                              user?.photo
-                                            }`
-                                          :  
-                  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-                                          
+                  user?.photo && getSocieteName() && getSocieteId()
+                    ? `${RESOURCE_URL.DOCS}/${getSocieteName()}_${getSocieteId()}/users/${user.photo}`
+                    : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
                 }
+                onError={(e) => {
+                  // Si l'image ne charge pas, afficher l'image par défaut
+                  e.target.src = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+                }}
               />
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="md:w-56 mt-3 mr-1 bg-white">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span className="font-bold">{user.name}</span>
+                <span className="font-bold">{user.name} {user.prenom}</span>
                 <span className="text-sm !text-gray-500">{user.email}</span>
               </div>
             </DropdownMenuLabel>
@@ -69,12 +87,6 @@ const DropdownMenuDemo = () => {
               >
                 Profil
               </DropdownMenuItem>
-              {/*<DropdownMenuItem 
-                className='p-2 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer' 
-                onClick={() => router.push("/settings")}
-              >
-                Paramètres
-              </DropdownMenuItem>*/}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem 
