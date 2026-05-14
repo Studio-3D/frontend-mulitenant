@@ -17,6 +17,7 @@ import {
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import Document_Contrat from '../../../app/(dashboard)/ventes/reservations/contrat_vente/recu';
 import Pusher from 'pusher-js';
+import { RESOURCE_URL } from '@/configs/api';
 
 export const ContractTab = ({
   reservationData,
@@ -27,7 +28,6 @@ export const ContractTab = ({
 }) => {
   const pusher_key_contrat_vente =
     process.env.NEXT_PUBLIC_PUSHER_APP_KEY_DOCUMENT;
-  const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
   const data_reservation = reservationData?.reservation;
   const etat_res = reservationData?.reservation?.etat;
   const [loading_btn, setLoading_btn] = useState(false);
@@ -150,7 +150,7 @@ const showToast = (message, type = 'success') => {
 
   const handleFileClick = (file) => {
     window.open(
-      `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/contrat_vente/${reservationData?.reservation?.code_reservation}/${file}`,
+      `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/contrat_vente/${reservationData?.reservation?.code_reservation}/${file}`,
       '_blank'
     );
   };
@@ -1033,7 +1033,7 @@ const showToast = (message, type = 'success') => {
                       <File className="text-red-500 text-3xl mr-4" />
                     ) : (
                       <img
-                        src={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/contrat_vente/${reservationData?.reservation?.code_reservation}/${contrat_sign}`}
+                        src={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/contrat_vente/${reservationData?.reservation?.code_reservation}/${contrat_sign}`}
                         alt="Document preview"
                         className="w-12 h-12 object-cover rounded mr-4"
                       />

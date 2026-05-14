@@ -29,6 +29,7 @@ import toast from 'react-hot-toast';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import Document_Compromis from './recu';
 import Modal from '@/components/Modal';
+import { RESOURCE_URL } from '@/configs/api';
 const Compromis_show = ({
   user,
   reservationData,
@@ -38,7 +39,6 @@ const Compromis_show = ({
 }) => {
   // Group by year function
 
-  const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
   const reservationId = reservationData?.reservation.id;
 
   // State management
@@ -353,7 +353,7 @@ const Compromis_show = ({
 };
   const handleFileClick = (file) => {
     window.open(
-      `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/compromis_vente/${reservationData?.reservation?.code_reservation}/${file}`,
+      `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/compromis_vente/${reservationData?.reservation?.code_reservation}/${file}`,
       '_blank'
     );
   };

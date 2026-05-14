@@ -12,7 +12,7 @@ import Button from '@/components/Button';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import Modal from '@/components/Modal';
-import { APIURL } from '@/configs/api';
+import { APIURL, RESOURCE_URL } from '@/configs/api';
 import Input from '@/components/Input';
 
 import { fetchData_Select, fetchData_table_by_id } from '@/configs/api-utils';
@@ -26,7 +26,6 @@ export default function RembTable({ etat }) {
   const { user, token } = useAuth();
   const userRole = user?.role;
   const accessToken = token || localStorage.getItem('accessToken');
-  const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
 
   const initialFilters = {
     responsable: '',
@@ -152,7 +151,7 @@ export default function RembTable({ etat }) {
 
   const handleFileClick = (file, code_reservation) => {
     window.open(
-      `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${file}`,
+      `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/remboursements/cheques_recus/${code_reservation}/${file}`,
       '_blank'
     );
   };

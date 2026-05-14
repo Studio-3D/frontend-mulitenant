@@ -25,7 +25,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 ///remoursment
 
-import { APIURL } from '../../../../../../configs/api';
+import { APIURL, RESOURCE_URL } from '../../../../../../configs/api';
 import axios from 'axios';
 import { data_by_projet_and_params } from '../../../../../../../src/configs/api-utils';
 export function Changement_De_Bien({
@@ -283,7 +283,7 @@ export function Changement_De_Bien({
 
   const handleFileClick = (file) => {
     if (file.fichier) {
-      const fileUrl = `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/paiements/${code_reservation}/${file.fichier}`;
+      const fileUrl = `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/paiements/${code_reservation}/${file.fichier}`;
       window.open(fileUrl, '_blank');
     }
   };
@@ -751,7 +751,7 @@ export function Changement_De_Bien({
                                     <p className="font-medium text-gray-800">
                                       {item.cheque_recu ? (
                                         <a
-                                          href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${item.cheque_recu}`}
+                                          href={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_recus/${code_reservation}/${item.cheque_recu}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"
@@ -786,7 +786,7 @@ export function Changement_De_Bien({
                                       <p className="font-medium text-gray-800">
                                         {item.fichier_autorisation ? (
                                           <a
-                                            href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/fichier_autorisations/${code_reservation}/${item.fichier_autorisation}`}
+                                            href={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/fichier_autorisations/${code_reservation}/${item.fichier_autorisation}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"
@@ -811,7 +811,7 @@ export function Changement_De_Bien({
                                       <p className="font-medium text-gray-800">
                                         {item.cheque_client_signe ? (
                                           <a
-                                            href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_reçus/${code_reservation}/${item.cheque_client_signe}`}
+                                            href={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/remboursements/cheques_recus/${code_reservation}/${item.cheque_client_signe}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-indigo-500 hover:text-indigo-800 flex items-center transition-colors"

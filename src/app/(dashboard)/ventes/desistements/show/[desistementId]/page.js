@@ -5,7 +5,7 @@ import { Desistement_Definitif } from './Desistement_Definitif';
 import { Desistement_Au_Profit } from './Desistement_Au_Profit';
 import { Changement_De_Bien } from './Changement_De_Bien';
 import { useParams } from 'next/navigation';
-import { APIURL } from '../../../../../../configs/api';
+import { APIURL, RESOURCE_URL } from '../../../../../../configs/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import TextField from '@/components/Textfield';
@@ -24,7 +24,6 @@ import { useProjet } from '@/context/ProjetContext';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import { useSociete } from '@/context/SocieteContext';
 export default function Page() {
-  const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
   const router = useRouter();
 
   const params = useParams();
@@ -419,7 +418,7 @@ export default function Page() {
                     <div className="flex items-center mb-2">
                       {getFileIcon(file.fichier)}
                       <a
-                        href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/desistements/${reservationData.codeRes}/${file.fichier}`}
+                        href={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/desistements/${reservationData.codeRes}/${file.fichier}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate"
@@ -649,7 +648,7 @@ export default function Page() {
                           </div>
                           <div className="ml-3 flex-1 min-w-0">
                             <a
-                              href={`${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${reservationData.codeRes}/${file.fichier}`}
+                              href={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${reservationData.codeRes}/${file.fichier}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-sm font-medium text-gray-700 hover:text-blue-600 truncate block"
