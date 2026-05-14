@@ -12,6 +12,7 @@ import {
 } from "@/configs/enum";
 import Button from "@/components/Button";
 import SelectInput from "@/components/SelectInput";
+import { RESOURCE_URL } from "@/configs/api";
 
 const CorrectionForm = ({
   penalite,
@@ -462,7 +463,7 @@ const CorrectionForm = ({
                             <a
                               href={
                                 file.fichier
-                                  ? `${process.env.NEXT_PUBLIC_IMG_URL}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${codeRes}/${file.fichier}`
+                                  ? `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${codeRes}/${file.fichier}`
                                   : URL.createObjectURL(file.file)
                               }
                               target="_blank"

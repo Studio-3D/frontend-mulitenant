@@ -2,16 +2,24 @@ import axios from 'axios';
 
 const APIBASEURL =
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-const BASERESOURCEURL =
-  process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000';
+// utils/urls.js
+const isProduction = process.env.NODE_ENV === 'production';
+
+// URL de base (change selon environnement)
+const BASERESOURCEURL = isProduction 
+    ? process.env.NEXT_PUBLIC_BASE_URL || 'https://api-prod.immogestion.online'
+    : (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000');
+
+// URL S3 pour les fichiers en production
+const S3_URL = 'https://erp-immo-prod-storage.s3.eu-central-1.amazonaws.com';
 
 export const RESOURCE_URL = {
-  DOCS: `${BASERESOURCEURL}/docs`,
+  // En local: http://localhost:8000/docs
+  // En prod: https://bucket.s3.amazonaws.com
+  DOCS: isProduction ? S3_URL : `${BASERESOURCEURL}/docs`,
   BASE: BASERESOURCEURL,
-  FRONTEND_IMAGES: '/images', // Add this for frontend images
-
+  FRONTEND_IMAGES: '/images',
 };
-
 export const APIURL = {
   ROOT: APIBASEURL,
   ME: `${APIBASEURL}/dashboard`,

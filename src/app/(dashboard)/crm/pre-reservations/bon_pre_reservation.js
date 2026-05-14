@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
 } from '@react-pdf/renderer';
+import { RESOURCE_URL } from '@/configs/api';
 
 const styles = StyleSheet.create({
   page: {
@@ -124,7 +125,7 @@ const BonPreReservationDocument = ({ data }) => {
   const societe = user?.societe || {};
 // In your PDF component, use the frontend image path
   //const logoUrl = `/images/${societe.raison_sociale_concatene}_${societe.id}/logos/${societe.logo}`;
-  const logoUrl = `/docs/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
+  const logoUrl = `${RESOURCE_URL.DOCS}/${user.societe.raison_sociale_concatene}_${user.societe.id}/logos/${user.societe.logo}`;
 
 const getOrientationFullName = (abbreviation) => {
   const orientationMap = {

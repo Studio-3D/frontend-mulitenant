@@ -4,7 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
 import format from 'date-fns/format';
 import { useAuth } from '../../../../../../context/AuthContext';
-import { APIURL } from '../../../../../../configs/api';
+import { APIURL, RESOURCE_URL } from '../../../../../../configs/api';
 import {
   MODE_PAIEMENT,
   getModePenaliteLabel,
@@ -640,7 +640,7 @@ const PenaltyDetails = ({
                 <div className="flex items-center mb-2">
                   {getFileIcon(file.fichier)}
                   <a
-                    href={`${process.env.NEXT_PUBLIC_IMG_URL}/docs/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${penalite.desistement.reservation_ancien.code_reservation}/${file.fichier}`}
+                    href={`${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/penalites/${penalite.desistement.reservation_ancien.code_reservation}/${file.fichier}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ml-2 text-sm font-medium text-gray-700 hover:text-blue-600 truncate"

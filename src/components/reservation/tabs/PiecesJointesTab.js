@@ -9,11 +9,11 @@ import {
 } from 'lucide-react';
 import { useRouter } from "next/navigation";
 import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
+import { RESOURCE_URL } from '@/configs/api';
 
 export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => {
   const router = useRouter();
   const { reservation } = reservationData;
-  const FileUrl = process.env.NEXT_PUBLIC_IMG_URL;
 
   const handleEdit_PJ = () => {
     window.localStorage.setItem('step_res_edit', 0);
@@ -21,7 +21,7 @@ export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => 
   };
 
   const handleFileClick = (fileName) => {
-    const fileUrl = `${FileUrl}/docs/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reservations/${reservation.code_reservation}/${fileName}`;
+    const fileUrl = `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reservations/${reservation.code_reservation}/${fileName}`;
     router.push(fileUrl); // opens in same tab
   };
 

@@ -640,25 +640,30 @@ export default function ReservationForm({ id }) {
     }
 
     // For editing mode, handle file updates differently
-    if (isEditing) {
-      const newFiles_rsv = selectedFiles_rsv.filter(
-        (file) => file instanceof File,
-      );
-      const existingFiles_rsv = selectedFiles_rsv.filter(
-        (file) => !(file instanceof File),
-      );
-
-      // Append new files
-      newFiles_rsv.forEach((file, index) => {
-        dataToSend.append(`files_reservation[${index}]`, file);
-      });
-
-      // You might want to handle existing files deletion/keeping here
-      // based on your backend requirements
-
-      dataToSend.append("_method", "PATCH");
-      url = `${url}/${id}`;
+if (isEditing) {
+    const existingFiles = selectedFiles_rsv.filter(
+        (file) => !(file instanceof File) && file?.fichier
+    );
+    const newFiles = selectedFiles_rsv.filter((file) => file instanceof File);
+    
+    // Envoyer la liste des fichiers existants à conserver
+    if (existingFiles.length > 0) {
+        const existingFileNames = existingFiles.map(file => file.fichier);
+        console.log('Sending existing_files:', existingFileNames);
+        dataToSend.append('existing_files', JSON.stringify(existingFileNames));
+    } else {
+        // Si aucun fichier existant, envoyer un tableau vide
+        dataToSend.append('existing_files', JSON.stringify([]));
     }
+    
+    // Append new files
+    newFiles.forEach((file, index) => {
+        dataToSend.append(`files_reservation[${index}]`, file);
+    });
+
+    dataToSend.append("_method", "PATCH");
+    url = `${url}/${id}`;
+}
 
     // Log FormData contents for debugging
     console.log("FormData entries:");
