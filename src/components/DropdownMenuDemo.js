@@ -1,77 +1,89 @@
+"use client";
+
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, 
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { RESOURCE_URL } from "@/configs/api";
+import { User } from "lucide-react";
 
 const DropdownMenuDemo = () => {
   const { forceLogout, user } = useAuth();
   const router = useRouter();
 
+  // Fonction pour obtenir l'URL de la photo
+  const getPhotoUrl = () => {
+    if (!user?.photo) return null;
+    
+    const societeName = user?.societe?.raison_sociale_concatene || user?.raison_sociale_concatene;
+    const societeId = user?.societe?.id || user?.societe_id;
+    
+    if (!societeName || !societeId) return null;
+    
+    return `${RESOURCE_URL.DOCS}/${societeName}_${societeId}/users/${user.photo}`;
+  };
+
+  // Fonction pour obtenir les initiales
+  const getInitials = () => {
+    const firstName = user?.name?.charAt(0) || '';
+    const lastName = user?.prenom?.charAt(0) || '';
+    return `${firstName}${lastName}`.toUpperCase();
+  };
+
   const handleLogout = async () => {
     try {
-      // Use forceLogout to bypass LinkedIn protection and ensure logout works
       await forceLogout();
-      // Don't show toast here - the logout function handles the redirect
-      // The toast will be shown after successful redirect
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Erreur lors de la déconnexion.");
-      // Force redirect to login even if logout fails
-      try {
-        router.push('/login');
-      } catch (error) {
-        // Fallback to window.location if router.push fails
-        console.warn("Router.push failed, using window.location:", error);
-        window.location.href = '/login';
-      }
+      router.push('/login');
     }
   };
 
   return (
     <div>
       {user && ( 
-        <DropdownMenu className="">
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Avatar>
-              <AvatarImage
-                src={
-                 
-                  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-                                          
-                }
-              />
-            </Avatar>
+            <button className="flex items-center gap-2 focus:outline-none">
+              <Avatar className="h-8 w-8 cursor-pointer border border-gray-300">
+                <AvatarImage 
+                  src={getPhotoUrl()} 
+                  alt="Profile"
+                  onError={(e) => {
+                    console.log("Image failed to load, using fallback");
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                <AvatarFallback className="bg-blue-500 text-white text-sm">
+                  {getInitials() || <User className="h-4 w-4" />}
+                </AvatarFallback>
+              </Avatar>
+            </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="md:w-56 mt-3 mr-1 bg-white">
+          <DropdownMenuContent className="w-56 mt-2 mr-1 bg-white shadow-lg rounded-md border">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span className="font-bold">{user.name}</span>
-                <span className="text-sm !text-gray-500">{user.email}</span>
+                <span className="font-bold text-gray-900">{user.name} {user.prenom}</span>
+                <span className="text-sm text-gray-500">{user.email}</span>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup className="">
+            <DropdownMenuSeparator className="bg-gray-200" />
+            <DropdownMenuGroup>
               <DropdownMenuItem 
-                className='p-2 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer' 
+                className="p-2 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer" 
                 onClick={() => router.push("/profile")}
               >
                 Profil
               </DropdownMenuItem>
-              {/*<DropdownMenuItem 
-                className='p-2 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer' 
-                onClick={() => router.push("/settings")}
-              >
-                Paramètres
-              </DropdownMenuItem>*/}
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="bg-gray-200" />
             <DropdownMenuItem 
-              className="p-2 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer !text-red-500" 
+              className="p-2 mt-1 hover:bg-gray-100 hover:rounded-md cursor-pointer text-red-500" 
               onClick={handleLogout}
             >
               Se déconnecter
