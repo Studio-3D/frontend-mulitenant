@@ -18,7 +18,7 @@ export const MultiStepForm = ({
   initialData = null,
   projetId = null,
 }) => {
-const { selectedProjet, refreshProjets, selectProjet } = useProjet();
+const { selectedProjet, refreshProjets, selectProjet,addProjet  } = useProjet();
 const { selectedSociete } = useSociete();
   const { token } = useAuth();
   const router = useRouter();
@@ -389,7 +389,7 @@ useEffect(() => {
             'Content-Type': 'application/json',
           },
         });
-          await refreshProjets(); // This will refresh the projets list
+          await refreshProjets(projetId); // This will refresh the projets list
     // Also fetch and update the selected project specifically
           try {
             const projectResponse = await axios.get(`${APIURL.PROJETS}/${projetId}`, {
@@ -399,14 +399,14 @@ useEffect(() => {
             if (projectResponse.data?.projet) {
               const updatedProject = projectResponse.data.projet;
               // Update the selected project in context
-        if (selectProjet) {
-            selectProjet(updatedProject);
-          }              // Also update localStorage
-              localStorage.setItem('selectedProjet', JSON.stringify(updatedProject));
-            }
-          } catch (error) {
-            console.error('Error refreshing project data:', error);
-          }
+            if (selectProjet) {
+                selectProjet(updatedProject);
+              }              // Also update localStorage
+                  localStorage.setItem('selectedProjet', JSON.stringify(updatedProject));
+                }
+              } catch (error) {
+                console.error('Error refreshing project data:', error);
+              }
           
           toast.success('Projet modifié avec succès');
           } else {
@@ -422,7 +422,15 @@ useEffect(() => {
         // Dispatch custom event to notify about new project
         // Adjust the property name based on your API response structure
         const newProject = response.data.projet || response.data;
-        window.dispatchEvent(
+       
+            // ADD THE NEW PROJECT TO CONTEXT
+          if (addProjet) {
+            addProjet(newProject);
+          } else {
+            // Fallback if addProjet is not available
+            await refreshProjets();
+          }
+       window.dispatchEvent(
           new CustomEvent('projectCreated', {
             detail: { project: newProject },
           })
