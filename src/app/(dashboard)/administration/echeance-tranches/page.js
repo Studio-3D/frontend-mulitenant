@@ -22,7 +22,8 @@ export default function Page() {
       !isRespoCommercial(userRole)&&
       !isNotaire(userRole)&&
       !isRespoLivraison(userRole)&&
-      !isComptable(userRole)
+      !isComptable(userRole)&&
+      !isAgentAdministratif(userRole)
     ) {
       router.push('/');
     }

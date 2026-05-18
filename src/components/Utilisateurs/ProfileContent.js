@@ -307,13 +307,15 @@ const ProfileContent = ({ userId }) => {
               alt="User Avatar"
               className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
             />
-
-            <div
-              className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Edit className="text-gray-600 text-lg" />
-            </div>
+            {user?.role<=2&& (
+                   <div
+                      className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Edit className="text-gray-600 text-lg" />
+                    </div>
+            )}
+           
           </div>
           <div className="flex flex-col p-4 mt-8">
             <div className="font-bold text-2xl !text-gray-900">
@@ -337,14 +339,14 @@ const ProfileContent = ({ userId }) => {
                  : userData.role ===9
                 ? 'Responsable Commercial'
                  : userData.role ===10
-                ? 'Agent Administratif'
+                ? 'Agent de saisie'
                 : 'Utilisateur'}
             </div>
           </div>
         </div>
 
         {/* Top Modifier Button */}
-        {!isEditing && !searchParams.get('edit') && (
+        {!isEditing && !searchParams.get('edit') &&user?.role<=2 && (
           <div className="mt-8">
             <button
               className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
@@ -467,7 +469,7 @@ const ProfileContent = ({ userId }) => {
                 : formik.values.role ===9
                 ? 'Responsable Commercial'
                  : formik.values.role ===10
-                ? 'Agent Administratif'
+                ? 'Agent de saisie'
                 : 'Utilisateur' 
             }
             

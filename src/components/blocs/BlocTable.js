@@ -134,7 +134,7 @@ export default function BlocTable({ projetId, trancheId }) {
   }));
 
   // Check user permissions
-  const canManageBlocs = user?.role === 1 || user?.role === 2;
+  const canManageBlocs = user?.role === 1 || user?.role === 2|| user?.role === 10;
 
   // Table columns
   const columns = [

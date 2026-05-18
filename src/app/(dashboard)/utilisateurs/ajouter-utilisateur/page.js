@@ -128,7 +128,7 @@ useEffect(() => {
             label = 'Responsable Commercial';
             break;
           case 10:
-            label = 'Agent Administratif';
+            label = 'Agent de saisie';
             break;
           default:
             label = `Rôle ${roleValue}`;

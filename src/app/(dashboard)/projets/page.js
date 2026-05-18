@@ -8,7 +8,7 @@ import { useProjet } from '@/context/ProjetContext';
 import { Eye, PencilLine, Trash2 } from 'lucide-react';
 import Table from '@/components/Table';
 import Link from 'next/link';
-import { isAdmin, isSuperAdmin,isCommercial, isRespoLivraison, isRespoCommercial } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial, isRespoLivraison, isRespoCommercial, isAgentAdministratif } from '@/configs/enum';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import Input from '@/components/Input';
@@ -39,7 +39,8 @@ const Page = ({ user_id }) => {
         !isSuperAdmin(userRole) &&
         !isCommercial(userRole)&&
         !isRespoLivraison(userRole)&&
-        !isRespoCommercial(userRole)
+        !isRespoCommercial(userRole)&&
+        !isAgentAdministratif(userRole)
       ) {
         router.push('/');
       }
@@ -325,7 +326,7 @@ const Page = ({ user_id }) => {
             <Eye className="w-4 h-4" />
           </Link>
 
-          {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+          {(isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)) && (
             <>
               <Link
                 href={`/projets/editProject/${row.id}`}
@@ -361,7 +362,7 @@ const Page = ({ user_id }) => {
         error={error}
         addLink={
           user_id == null &&
-          (isSuperAdmin(user?.role) || isAdmin(user?.role)
+          (isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)
             ? '/projets/addProject'
             : undefined)
         }

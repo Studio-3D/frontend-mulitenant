@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isComptable, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isComptable, isSuperAdmin } from '@/configs/enum';
 import CoefficientManager from '@/components/comptabilite/CoefficientManager';
 import ComptabiliteTabsNav from '@/components/comptabilite/ComptabiliteTabsNav';
 import LoadingSpin from '@/components/LoadingSpin';
@@ -14,7 +14,7 @@ const CoefficientPage = () => {
 
   // Check user permissions
   useEffect(() => {
-    if (user && !isAdmin(user.role) && !isSuperAdmin(user.role)&& !isComptable(user.role)) {
+    if (user && !isAgentAdministratif(user.role)&& !isAdmin(user.role) && !isSuperAdmin(user.role)&& !isComptable(user.role)) {
       router.push('/home');
     }
   }, [user, router]);

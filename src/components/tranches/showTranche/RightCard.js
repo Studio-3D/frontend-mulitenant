@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { StatusCard } from './StatusCard';
 import { Download, Eye, PencilLine, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
-import { isAdmin, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import SelectInput from '@/components/SelectInput';
@@ -30,7 +30,7 @@ const TAB_CONFIG = {
     name: 'Blocs',
     apiEndpoint: APIURL.BLOCS,
     addLink: (user, trancheId, projetId) =>
-      isSuperAdmin(user?.role) || isAdmin(user?.role)
+      isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)
         ? `/blocs/ajouter?projet=${projetId}${
             trancheId ? `&tranche=${trancheId}` : ''
           }`
@@ -74,7 +74,7 @@ const TAB_CONFIG = {
               <Eye className="w-4 h-4" />
             </Link>
 
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)) && (
               <>
                 <Link
                   href={`/blocs/${row.id}/modifier/?edit=true`}
@@ -123,7 +123,7 @@ const TAB_CONFIG = {
     name: 'Immeubles',
     apiEndpoint: APIURL.IMMEUBLES,
     addLink: (user, trancheId, projetId, blocId) =>
-      isSuperAdmin(user?.role) || isAdmin(user?.role)
+      isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)
         ? `/immeubles/ajouter?projet=${projetId}${
             blocId ? `&bloc=${blocId}` : ''
           }${trancheId ? `&tranche=${trancheId}` : ''}`
@@ -182,7 +182,7 @@ const TAB_CONFIG = {
               <Eye className="w-4 h-4" />
             </Link>
 
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)) && (
               <>
                 <Link
                   href={`/immeubles/${row.id}/modifier/?edit=true`}
@@ -228,7 +228,7 @@ const TAB_CONFIG = {
     name: 'Biens',
     apiEndpoint: APIURL.BIENS,
     addLink: (user, trancheId, projetId, blocId, immeubleId) =>
-      isSuperAdmin(user?.role) || isAdmin(user?.role)
+      isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)
         ? `/biens/ajouter?projet=${projetId}${blocId ? `&bloc=${blocId}` : ''}${
             immeubleId ? `&immeuble=${immeubleId}` : ''
           }${trancheId ? `&tranche=${trancheId}` : ''}`
@@ -486,7 +486,7 @@ const TAB_CONFIG = {
               <Eye className="w-4 h-4" />
             </Link>
 
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)) && (
               <>
                 <Link
                   href={`/biens/${row.id}/modifier/?edit=true`}
@@ -1704,7 +1704,7 @@ export const RightCard = ({
   const userRole = user?.role;
    // Configuration pour l'action personnalisée de modification en masse
    const massEditAction = useMemo(() => {
-     if (safeActiveTab === 'bien' && (isAdmin(userRole) ||isSuperAdmin(userRole) ))  {
+     if (safeActiveTab === 'bien' && (isAdmin(userRole) ||isSuperAdmin(userRole)|| isAgentAdministratif(user?.role) ))  {
       return {
         label: 'Modifier en masse',
         className: 'bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 h-10 min-h-[40px] text-sm', // Ajouté text-sm
@@ -1720,7 +1720,7 @@ export const RightCard = ({
 
    //7-8 Configuration pour l'action personnalisée du titre foncier
    const massEditTitreAction = useMemo(() => {
-     if (safeActiveTab === 'bien' && (isAdmin(userRole) || isSuperAdmin(userRole)||isRespoLivraison(userRole))) {
+     if (safeActiveTab === 'bien' && (isAdmin(userRole) || isSuperAdmin(userRole)||isRespoLivraison(userRole)|| isAgentAdministratif(user?.role))) {
        return {
          label: 'Titres fonciers', // Texte raccourci
          className: 'bg-black hover:bg-gray-800 text-white px-3 py-2 h-10 min-h-[40px] text-sm whitespace-nowrap', // whitespace-nowrap
@@ -1849,7 +1849,7 @@ export const RightCard = ({
           <Table
             columns={currentColumns}
             data={hasItems ? paginatedItems : []}
-            addLink={(user?.role !=1 && user?.role !=2) ? undefined : {
+            addLink={(user?.role !=1 && user?.role !=2 && user?.role !=10) ? undefined : {
             pathname: TAB_CONFIG[safeActiveTab]?.addLink?.(
               user,
               trancheId,
@@ -1876,7 +1876,7 @@ export const RightCard = ({
             columns_export={exportConfig?.columns_export || []}
             name_file_export={exportConfig?.name_file_export || 'export'}
             enableExport={filteredItems.length > 0}
-            enableImport={user.role <= 2 && safeActiveTab == 'bien'}
+            enableImport={(user.role <= 2 &&  user?.role ==10)&& safeActiveTab == 'bien'}
             onImportClick={() => setShowImportModal(true)}
             customActions={customActions} // Passer les actions personnalisées
           />

@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import RelancesRdvAppelsTable from '../RelancesRdvAppelsTable';
-import { isAdmin, isSuperAdmin, isCommercial, isRespoCommercial } from '../../../../../configs/enum';
+import { isAdmin, isSuperAdmin, isCommercial, isRespoCommercial, isAgentAdministratif } from '../../../../../configs/enum';
 import { useAuth } from '../../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 
@@ -15,7 +15,8 @@ export default function Page() {
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
       !isCommercial(userRole)&&
-      !isRespoCommercial(userRole)
+      !isRespoCommercial(userRole)&&
+      !isAgentAdministratif(userRole)
     ) {
       router.push('/');
     }

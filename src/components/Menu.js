@@ -135,11 +135,12 @@ const Menu = () => {
       });
     }
 
-    if (role <= User_roles.ROLE_ADMIN) {
+     // Check for both ROLE_ADMIN (1) and ROLE_AGENT_ADMINISTRATIF (10)
+    if (role <= User_roles.ROLE_ADMIN || role === User_roles.ROLE_AGENT_ADMINISTRATIF) {
       items.push(...getAdminItems());
     }
     
-    if (role <= User_roles.ROLE_COMMERCIAL) {
+    if (role <= User_roles.ROLE_COMMERCIAL || role === User_roles.ROLE_AGENT_ADMINISTRATIF) {
       items.push({
         label: 'Projets',
         icon: <Briefcase size={20} />,
@@ -148,11 +149,12 @@ const Menu = () => {
       });
     }
 
-    if (role <= User_roles.ROLE_COMMERCIAL) {
+    if (role <= User_roles.ROLE_COMMERCIAL|| role === User_roles.ROLE_AGENT_ADMINISTRATIF) {
       items.push(...getCommercialItems());
     }
 
-    if (role <= User_roles.ROLE_ADMIN) {
+    // Check for both ROLE_ADMIN and ROLE_AGENT_ADMINISTRATIF
+    if (role <= User_roles.ROLE_ADMIN || role === User_roles.ROLE_AGENT_ADMINISTRATIF) {
       items.push(...getAdditionalAdminItems());
     }
     if (role == User_roles.ROLE_SAV) {

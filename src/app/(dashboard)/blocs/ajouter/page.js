@@ -18,7 +18,7 @@ export default function AddBlocPage() {
   const [projet, setProjet] = useState(null);
 
   // Only admins and super admins can add blocs
-  const canCreateBloc = user?.role === 1 || user?.role === 2;
+  const canCreateBloc = user?.role === 1 || user?.role === 2|| user?.role === 10;
 
   // Redirect if user doesn't have permission
   useEffect(() => {

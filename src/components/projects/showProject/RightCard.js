@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { StatusCard } from './StatusCard';
 import { Download, Eye, PencilLine, Trash2, Upload, X } from 'lucide-react';
 import Link from 'next/link';
-import { getOrientationLabel, isAdmin, isRespoLivraison, isSuperAdmin, ORIENTATIONS } from '@/configs/enum';
+import { getOrientationLabel, isAdmin, isAgentAdministratif, isRespoLivraison, isSuperAdmin, ORIENTATIONS } from '@/configs/enum';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import SelectInput from '@/components/SelectInput';
@@ -25,7 +25,7 @@ const TAB_CONFIG = {
     name: 'Tranches',
     apiEndpoint: APIURL.TRANCHES,
     addLink: (user, projectId) =>
-      isSuperAdmin(user?.role) || isAdmin(user?.role)
+      isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)
         ? `/tranches/ajouter?projet=${projectId}`
         : undefined,
 
@@ -87,7 +87,7 @@ const TAB_CONFIG = {
               <Eye className="w-4 h-4" />
             </Link>
 
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)) && (
               <>
                 <Link
                   href={`/tranches/${row.id}/modifier/?edit=true`}
@@ -135,7 +135,7 @@ const TAB_CONFIG = {
     name: 'Blocs',
     apiEndpoint: APIURL.BLOCS,
     addLink: (user, projectId) =>
-      isSuperAdmin(user?.role) || isAdmin(user?.role)
+      isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)
         ? `/blocs/ajouter?projet=${projectId}`
         : undefined,
 
@@ -203,7 +203,7 @@ const TAB_CONFIG = {
               <Eye className="w-4 h-4" />
             </Link>
 
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)) && (
               <>
                 <Link
                   href={`/blocs/${row.id}/modifier/?edit=true`}
@@ -252,7 +252,7 @@ const TAB_CONFIG = {
     name: 'Immeubles',
     apiEndpoint: APIURL.IMMEUBLES,
     addLink: (user, projectId) =>
-      isSuperAdmin(user?.role) || isAdmin(user?.role)
+      isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)
         ? `/immeubles/ajouter?projet=${projectId}`
         : undefined,
     filters: (
@@ -334,7 +334,7 @@ const TAB_CONFIG = {
               <Eye className="w-4 h-4" />
             </Link>
 
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)) && (
               <>
                 <Link
                   href={`/immeubles/${row.id}/modifier/?edit=true`}
@@ -381,7 +381,7 @@ const TAB_CONFIG = {
     name: 'Biens',
     apiEndpoint: APIURL.BIENS,
     addLink: (user, projectId) =>
-      isSuperAdmin(user?.role) || isAdmin(user?.role)
+      isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)
         ? `/biens/ajouter?projet=${projectId}`
         : undefined,
 
@@ -670,7 +670,7 @@ const TAB_CONFIG = {
               <Eye className="w-4 h-4" />
             </Link>
 
-            {(isSuperAdmin(user?.role) || isAdmin(user?.role)) && (
+            {(isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)) && (
               <>
                 <Link
                   href={`/biens/${row.id}/modifier/?edit=true`}
@@ -1934,7 +1934,7 @@ export const RightCard = ({
   const userRole = user?.role;
   // Configuration pour l'action personnalisée de modification en masse
   const massEditAction = useMemo(() => {
-    if (safeActiveTab === 'bien' && (isAdmin(userRole) || isSuperAdmin(userRole))) {
+    if (safeActiveTab === 'bien' && (isAdmin(userRole) || isSuperAdmin(userRole)|| isAgentAdministratif(user?.role))) {
       return {
         label: 'Modifier en masse', // Gardé tel quel
         className: 'bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 h-10 min-h-[40px] text-sm', // Ajouté text-sm
@@ -1953,7 +1953,7 @@ export const RightCard = ({
       console.log('DEBUGj - useHrRole:', userRole, 'isRespoLivraison:', isRespoLivraison(userRole));
 
  if (safeActiveTab === 'bien' && 
-      (isRespoLivraison(userRole) || isAdmin(userRole) || isSuperAdmin(userRole))) {
+      (isRespoLivraison(userRole) || isAdmin(userRole) || isSuperAdmin(userRole)|| isAgentAdministratif(user?.role))) {
         return {
         label: 'Titres fonciers', // Texte raccourci
         className: 'bg-black hover:bg-gray-800 text-white px-3 py-2 h-10 min-h-[40px] text-sm whitespace-nowrap', // whitespace-nowrap
@@ -2097,7 +2097,7 @@ export const RightCard = ({
             totalRows={totalRows}
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
-            enableImport={user.role <= 2 && safeActiveTab == 'bien'} // Only enable import for bien tab
+            enableImport={(user.role <= 2 || user.role ==10) && safeActiveTab == 'bien'} // Only enable import for bien tab
             onImportClick={() => setShowImportModal(true)}
             data_to_export={exportConfig?.data_to_export || []}
             columns_export={exportConfig?.columns_export || []}

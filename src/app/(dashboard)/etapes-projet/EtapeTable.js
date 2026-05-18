@@ -10,7 +10,7 @@ import { useProjet } from '../../../context/ProjetContext';
 import { APIURL, ENDPOINTS } from '../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../configs/api-utils';
-import { isAdmin, isCommercial, isSuperAdmin } from '../../../configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isSuperAdmin } from '../../../configs/enum';
 import Input from '@/components/Input';
 import Link from 'next/link';
 import format from 'date-fns/format';
@@ -265,13 +265,13 @@ const EtapeTable = ({ searchParams }) => {
     },
     {
       key: 'actions',
-      label: 'Actiddons',
+      label: 'Actions',
       render: (row) => {
         const statusButtonProps = getStatusButtonProps(row);
 
         return (
           <div className="flex gap-3 items-center">
-            {(isAdmin(user.role)||isSuperAdmin(user.role))&& (
+            {(isAdmin(user.role)||isSuperAdmin(user.role)||isAgentAdministratif(user.role))&& (
               <>
                 {statusButtonProps && (
                   <button
@@ -492,7 +492,8 @@ const EtapeTable = ({ searchParams }) => {
           onFilterToggle={handleFilterToggle}
           addLink={
             isSuperAdmin(user.role) ||
-            isAdmin(user.role)
+            isAdmin(user.role)||
+            isAgentAdministratif(user.role)
               ? `${ENDPOINTS.ETAPESPROJET}?action=add`
               : undefined
           }

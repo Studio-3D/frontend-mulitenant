@@ -22,7 +22,7 @@ import { useAuth } from "../../../../context/AuthContext";
 import { APIURL, ENDPOINTS } from "../../../../configs/api";
 import { useRouter } from "next/navigation";
 import { formatDate, formatDateTime } from "../../../../utils/dateUtils";
-import { isAdmin, isCommercial,  isRespoCommercial,  isRespoLivraison, isSuperAdmin } from "../../../../configs/enum";
+import { isAdmin, isAgentAdministratif, isCommercial,  isRespoCommercial,  isRespoLivraison, isSuperAdmin } from "../../../../configs/enum";
 import {  fetchData_table_by_projet } from "../../../../configs/api-utils";
 import Link from "next/link";
 import Input from "@/components/Input";
@@ -159,8 +159,10 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
   
   useEffect(() => {
     if(isSuperAdmin(userRole) ||
-            isAdmin(userRole) ||
-            isRespoLivraison(userRole)){
+      isAdmin(userRole) ||
+      isRespoLivraison(userRole)||
+      isAgentAdministratif(userRole)
+    ){
     fetchNotaires();
             }
   }, []);
@@ -272,7 +274,7 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
       key: "cc",
       label: "Responsable",
       render: (row) => {
-        return isSuperAdmin(userRole) || isAdmin(userRole) ? (
+        return (isSuperAdmin(userRole) || isAdmin(userRole)||isAgentAdministratif(userRole)) ? (
           <>
             {row.data_res.user && (
               <>
@@ -364,9 +366,10 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
             {(isSuperAdmin(userRole) ||
             isAdmin(userRole) ||
             isCommercial(userRole)||
-            isRespoCommercial(userRole)) && (
+            isRespoCommercial(userRole)||
+            isAgentAdministratif(userRole)) && (
               <>
-              {(isSuperAdmin(userRole) || isAdmin(userRole)) && row.data_res.contrat_vente == null && (
+              {(isSuperAdmin(userRole) || isAdmin(userRole)|| isAgentAdministratif(userRole)) && row.data_res.contrat_vente == null && (
             
                 <Link
                 href={`/ventes/reservations/${row.id}?id=${row.id}&action=edit`}
@@ -378,34 +381,39 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
               )}
                 {row.statut == 3 ? (
                 <>
-                  {isSuperAdmin(userRole) || isAdmin(userRole) ? (
+                  {(isSuperAdmin(userRole) || isAdmin(userRole) || isAgentAdministratif(userRole)) ? (
                     <>
-                      {/* Approve Button */}
-                      <ThumbsUp
-                        className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
-                        title="Valider"
-                        onClick={() =>
-                          handle_valider(
-                            row.id,
-                            row.code_reservation,
-                            row.data_res.first_avance?.num_recu,
-                            row.data_res.first_avance?.id,
-                            row.data_res.first_avance?.statut,
-                            row.data_res.user.name + " " + row.data_res.user.prenom,
-                            row.data_res.aquereurs,
-                            row.data_res.date_reservation,
-                            row.data_res.prix,
-                            row.first_avance?.montant
-                          )
-                        }
-                      />
+                      {(isSuperAdmin(userRole) || isAdmin(userRole) ) && (
+                        <>
+                        {/* Approve Button */}
+                        <ThumbsUp
+                          className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"
+                          title="Valider"
+                          onClick={() =>
+                            handle_valider(
+                              row.id,
+                              row.code_reservation,
+                              row.data_res.first_avance?.num_recu,
+                              row.data_res.first_avance?.id,
+                              row.data_res.first_avance?.statut,
+                              row.data_res.user.name + " " + row.data_res.user.prenom,
+                              row.data_res.aquereurs,
+                              row.data_res.date_reservation,
+                              row.data_res.prix,
+                              row.first_avance?.montant
+                            )
+                          }
+                        />
 
-                      {/* Reject Button */}
-                      <ThumbsDown
-                        className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
-                        title="Refuser"
-                        onClick={() => handle_rejeter(row.id, row.code_reservation)}
-                      />
+                        {/* Reject Button */}
+                        <ThumbsDown
+                          className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
+                          title="Refuser"
+                          onClick={() => handle_rejeter(row.id, row.code_reservation)}
+                        />
+                        </>
+                      ) }
+                    
                       <Trash2
                         className="w-4 h-4 !text-red-500 hover:text-red-700 cursor-pointer"
                         onClick={() => {
@@ -480,7 +488,8 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
         
            {(isSuperAdmin(userRole) ||
             isAdmin(userRole) ||
-            isRespoLivraison(userRole)) &&
+            isRespoLivraison(userRole) ||
+            isAgentAdministratif(userRole)) &&
             row.statut == 1 && 
             row.avances_sum_montant > 0 && 
             notaires?.length > 0 && (
@@ -684,7 +693,8 @@ const ReservationTable = ({ dataClient, user_id,searchParams }) => {
             (isSuperAdmin(user?.role) ||
               isAdmin(user?.role) ||
               isCommercial(user?.role)||
-              isRespoCommercial(userRole)) &&
+              isRespoCommercial(userRole)||
+              isAgentAdministratif(userRole)) &&
             !user_id
               ? getAddLinkForReservation()
               : undefined

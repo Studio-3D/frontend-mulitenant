@@ -10,7 +10,7 @@ import SelectInput from '@/components/SelectInput';
 
 import { APIURL, ENDPOINTS, RESOURCE_URL } from '@/configs/api';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
-import { isAdmin, isSav, isSuperAdmin, Statuts_Prospect } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isSav, isSuperAdmin, Statuts_Prospect } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
 
@@ -584,7 +584,7 @@ const ReclamationTable = (prestId) => {
         enableExport={true}
         enableImport={false}
         addLink={
-          (isSuperAdmin(user?.role) || isAdmin(user?.role)|| isSav(user?.role)) && isPrestIdEmpty
+          (isSuperAdmin(user?.role) || isAdmin(user?.role)|| isSav(user?.role)|| isAgentAdministratif(user?.role)) && isPrestIdEmpty
             ? `${ENDPOINTS.ReclamationsSav}?action=add`
             : undefined
         }

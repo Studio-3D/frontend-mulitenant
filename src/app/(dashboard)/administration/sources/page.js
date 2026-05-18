@@ -6,7 +6,7 @@ import SourceForm from './SourceForm';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isSuperAdmin } from '@/configs/enum';
 
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' };
@@ -18,7 +18,8 @@ export default function Page() {
     if (
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
-      !isCommercial(userRole)
+   
+      !isAgentAdministratif(userRole)
     ) {
       router.push('/');
     }

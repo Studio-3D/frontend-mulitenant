@@ -6,7 +6,7 @@ import TypeProjetForm from './TypeProjetForm';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isSuperAdmin } from '@/configs/enum';
 
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' };
@@ -17,7 +17,8 @@ export default function Page() {
   useEffect(() => {
     if (
       !isAdmin(userRole) &&
-      !isSuperAdmin(userRole)
+      !isSuperAdmin(userRole)&&
+      !isAgentAdministratif(userRole)
     ) {
       router.push('/');
     }

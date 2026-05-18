@@ -10,7 +10,7 @@ import axios from 'axios';
 import Modal_select_type_dst from './Modal_select_type_dst';
 import Modal from '@/components/Modal';
 import SelectInput from '@/components/SelectInput';
-import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isRespoCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import {
   fetchData_Select,
@@ -100,7 +100,8 @@ export default function Page() {
         !isAdmin(userRole) &&
         !isSuperAdmin(userRole) &&
         !isCommercial(userRole)&&
-        !isRespoCommercial(userRole)
+        !isRespoCommercial(userRole)&&
+        !isAgentAdministratif(userRole)
       ) {
         router.push('/');
       }
@@ -504,7 +505,7 @@ export default function Page() {
 
       if (response.status == 201 || response.status == 200) {
         const { data: responseData } = response;
-        if (user?.role <= 2) {
+        if (user?.role <= 2||user?.role ==10) {
           /* localStorage.setItem('etat_dst', '1');
           router.push('/ventes?tab=desistements');*/
           if (activeModel == 1) {

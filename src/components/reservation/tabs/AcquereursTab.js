@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Table from '@/components/Table';
 import { Eye, Pencil, Edit, PencilLine } from 'lucide-react';
 import Link from 'next/link';
-import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
 
 const AcquereursTabComponent = ({
   statut,
@@ -89,7 +89,7 @@ const AcquereursTabComponent = ({
             >
               <Eye className="w-4 h-4" />
             </Link>
-            {etat == 1 && (user_role <= 3 || user_role==9)&& (
+            {etat == 1 && (user_role <= 3 || user_role==9 || user_role==10)&& (
               <Link
                 href={`/ventes/clients/?id=${row.client_id}&action=edit`}
                 className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
@@ -113,7 +113,7 @@ const AcquereursTabComponent = ({
   // Check if user can see the "Modifier aquéreurs" action
   const canEditAcquereurs = 
     // For Admin/SuperAdmin: etat == 1 && contrat_vente == null
-    ((isSuperAdmin(user_role) || isAdmin(user_role)) &&
+    ((isSuperAdmin(user_role) || isAdmin(user_role)|| isAgentAdministratif(user_role)) &&
       etat == 1 &&
       contrat_vente == null) ||
     // For Commercial: statut == 0 AND etat == 1 && contrat_vente == null

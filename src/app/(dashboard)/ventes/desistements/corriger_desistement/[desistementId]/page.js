@@ -7,7 +7,7 @@ import { Changement_De_Bien } from '../../../desistements/ajouter_desistement/[r
 import { useRouter, useParams } from 'next/navigation';
 import { APIURL } from '../../../../../../configs/api';
 import axios from 'axios';
-import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isRespoCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import {
   fetchData_Select,
@@ -110,7 +110,8 @@ export default function Page() {
           !isAdmin(userRole) &&
           !isSuperAdmin(userRole) &&
           !isCommercial(userRole)&&
-                !isRespoCommercial(userRole)
+          !isRespoCommercial(userRole)&&
+          !isAgentAdministratif(userRole)
         ) {
           router.push('/');
         }
@@ -565,7 +566,7 @@ export default function Page() {
         },
       });
       if (response.status == 201 || response.status == 200) {
-        if (user?.role <= 2) {
+        if (user?.role <= 2||user?.role == 10) {
           router.push('/ventes/desistements/show' + desistementId);
           /* localStorage.setItem('etat_dst', '1');
           router.push('/ventes?tab=desistements');*/

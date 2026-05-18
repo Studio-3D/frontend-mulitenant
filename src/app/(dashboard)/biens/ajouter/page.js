@@ -19,7 +19,7 @@ export default function AddBienPage() {
   const [projet, setProjet] = useState(null);
 
   // Only admins and super admins can add biens
-  const canCreateBien = user?.role === 1 || user?.role === 2;
+  const canCreateBien = user?.role === 1 || user?.role === 2|| user?.role === 10;
 
   // Redirect if user doesn't have permission
   useEffect(() => {

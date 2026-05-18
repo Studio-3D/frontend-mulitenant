@@ -709,7 +709,7 @@ export default function VisiteFormEdit({ id }) {
 
   useEffect(() => {
     if (watch('avance_res') !== '') {
-      if (watch('avance_res') == 0 && user?.role > 2) {
+      if (watch('avance_res') == 0 && (user?.role > 2 && user?.role !=10)) {
         setError('avance_res', {
           type: 'manual',
           message: 'Le montant ne peut pas être 0 pour votre rôle',
@@ -832,12 +832,12 @@ export default function VisiteFormEdit({ id }) {
           errors.push("Montant d'avance invalide");
         }
 
-        if (avance == 0 && user?.role > 2) {
+        if (avance == 0 && (user?.role > 2&& user?.role !=10)) {
           errors.push('Le montant ne peut pas être 0 pour votre rôle');
         }
 
         const avanceMinimale = parseFloat(watch('avance_minimale') || 0);
-        if (avance < avanceMinimale  && user?.role > 2) {
+        if (avance < avanceMinimale  && (user?.role > 2 && user?.role !=10)) {
           errors.push(`Le montant doit être au moins ${avanceMinimale} MAD`);
         }
 
@@ -2399,7 +2399,7 @@ useEffect(() => {
                                 )}
                             </>
                           )}
-                        {user.role <= 2 && watch('montant_suivi') > 0 && (
+                        {(user.role <= 2 || user?.role ==10) && watch('montant_suivi') > 0 && (
                           <>
                             <div className="col-span-3">
                               <h2
@@ -2889,7 +2889,7 @@ useEffect(() => {
                               width="w-full" // Optionally set width, default is 'w-80'
                               height="h-500" // Optionally set height, default is 'h-10'
                             />
-                            {user.role <= 2 && watch('avance_res') > 0 && (
+                            {(user.role <= 2|| user?.role ==10) && watch('avance_res') > 0 && (
                               <>
                                 <div className="col-span-3">
                                   <h2

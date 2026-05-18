@@ -18,7 +18,7 @@ export default function EditBienPage() {
   const [error, setError] = useState(null);
 
   // Only admins and super admins can edit biens
-  const canEditBien = user?.role === 1 || user?.role === 2;
+  const canEditBien = user?.role === 1 || user?.role === 2|| user?.role === 10;
 
   // Fetch bien details
   useEffect(() => {

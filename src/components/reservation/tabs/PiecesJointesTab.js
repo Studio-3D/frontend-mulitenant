@@ -8,7 +8,7 @@ import {
   PlusIcon,
 } from 'lucide-react';
 import { useRouter } from "next/navigation";
-import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
 import { RESOURCE_URL } from '@/configs/api';
 
 export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => {
@@ -21,8 +21,10 @@ export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => 
   };
 
   const handleFileClick = (fileName) => {
-    const fileUrl = `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user?.societe?.id}/reservations/${reservation.code_reservation}/${fileName}`;
-    router.push(fileUrl); // opens in same tab
+ window.open(
+          `${RESOURCE_URL.DOCS}/${user?.societe?.raison_sociale_concatene}_${user.societe?.id}/reservations/${reservationData?.reservation.code_reservation}/${fileName}`,
+          "_blank",
+        );
   };
 
   // Function to extract file extension and type
@@ -38,7 +40,7 @@ export const PiecesJointesTab = ({ reservationData, user,piecesJointesData}) => 
     <div className="space-y-6 min-h-[50vh]">
       {/* Header with add button */}
       <div className="flex justify-end">
-      {(isAdmin(user?.role) || isSuperAdmin(user?.role)) ? (
+      {(isAdmin(user?.role) || isSuperAdmin(user?.role)|| isAgentAdministratif(user?.role)) ? (
         <>
           {reservation?.etat == 1 && reservation?.contrat_vente == null && (
             <button

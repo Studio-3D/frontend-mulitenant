@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import CommissionTableParType from '../commissionCumul/CommissionTableParType';
-import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isSuperAdmin } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Page() {
@@ -15,7 +15,7 @@ export default function Page() {
     if (
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
-      !isCommercial(userRole)
+      !isAgentAdministratif(userRole)
     ) {
       router.push('/');
     }

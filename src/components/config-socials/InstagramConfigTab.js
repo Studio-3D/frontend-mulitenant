@@ -89,7 +89,7 @@ export default function InstagramConfigTab() {
   // Fetch existing Instagram configurations and webhooks
   useEffect(() => {
     const loadData = async () => {
-      if (user && (user.role === 1 || user.role === 2)) {
+      if (user && (user.role === 1 || user.role === 2|| user.role === 10)) {
         try {
           setLoading(true);
           await fetchData();

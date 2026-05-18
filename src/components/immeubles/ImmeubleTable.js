@@ -146,7 +146,7 @@ export default function ImmeubleTable({ projetId, trancheId, blocId }) {
   }));
 
   // Check user permissions
-  const canManageImmeubles = user?.role === 1 || user?.role === 2;
+  const canManageImmeubles = user?.role === 1 || user?.role === 2 || user?.role === 10;
 
   // Table columns
   const columns = [

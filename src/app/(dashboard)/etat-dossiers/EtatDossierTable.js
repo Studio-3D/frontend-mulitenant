@@ -6,7 +6,7 @@ import { Eye } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/utils/dateUtils";
-import { isSuperAdmin, isAdmin } from "@/configs/enum";
+import { isSuperAdmin, isAdmin, isAgentAdministratif } from "@/configs/enum";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
 import Link from "next/link";
 import Input from "@/components/Input";
@@ -127,7 +127,7 @@ const EtatDossierTable = () => {
       key: "cc",
       label: "Responsable",
       render: (row) => {
-        return isSuperAdmin(userRole) || isAdmin(userRole) ? (
+        return isSuperAdmin(userRole) || isAdmin(userRole)|| isAgentAdministratif(userRole) ? (
           <>
             {row.data_item.user && (
               <Link

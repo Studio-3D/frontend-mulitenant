@@ -20,7 +20,7 @@ import {
   endOfDay,
   format,
 } from "date-fns";
-import { isAdmin, isSuperAdmin,isCommercial,isRespoCommercial} from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial,isRespoCommercial, isAgentAdministratif} from '@/configs/enum';
 import { useRouter } from 'next/navigation';
 import { useSociete } from '@/context/SocieteContext';
 
@@ -80,7 +80,7 @@ export default function ActualitesPage() {
           user && 
           !isAdmin(userRole) &&
           !isSuperAdmin(userRole) &&
-          !isCommercial(userRole) &&!isRespoCommercial(userRole)
+          !isCommercial(userRole) &&!isRespoCommercial(userRole)&&!isAgentAdministratif(userRole)
         ) {
           router.push('/');
         }
@@ -142,7 +142,7 @@ export default function ActualitesPage() {
   useEffect(() => {
     if (!selectedProjet?.id) return;
 
-    if (user.role <= 2 ||user.role ==9 ) {
+    if (user.role <= 2 ||user.role ==9 ||user.role ==10) {
       fetchCommercials();
     }
   }, [selectedProjet?.id,selectedSociete]);
@@ -321,7 +321,7 @@ export default function ActualitesPage() {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Welcome card - expand to full width */}
         <div className="md:col-span-12 bg-gradient-to-r from-blue-500 to-[#009FFF] text-white p-6 rounded-lg shadow">
-          {user.role <= 2 && (
+          {(user.role <= 2||user.role ==10) && (
             <h2 className="text-xl font-bold mb-4">{commercialName}</h2>
           )}
           <p className="mb-2">

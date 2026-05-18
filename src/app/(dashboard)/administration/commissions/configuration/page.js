@@ -10,7 +10,7 @@ import Button from '@/components/Button';
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import { useProjet } from '@/context/ProjetContext';
-import { isAdmin, isCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isSuperAdmin } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 import { useSociete } from '@/context/SocieteContext';
 
@@ -82,7 +82,7 @@ export default function CommissionConfigForm({ onClose, onSuccess }) {
   const { user } = useAuth();
   const userRole = user?.role;
   useEffect(() => {
-    if (!isAdmin(userRole) && !isSuperAdmin(userRole)) {
+    if (!isAdmin(userRole) && !isAgentAdministratif(userRole) && !isSuperAdmin(userRole)) {
       router.push('/');
     } else {
       fetchData_Configuration();

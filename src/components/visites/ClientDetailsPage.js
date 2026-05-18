@@ -9,7 +9,7 @@ import LoadingSpin from '@/components/LoadingSpin';
 import { useProjet } from '@/context/ProjetContext';
 import { useRouter } from 'next/navigation';
 import { isAdmin, isCommercial, isSuperAdmin } from '../user-utils';
-import { isRespoCommercial } from '@/configs/enum';
+import { isAgentAdministratif, isRespoCommercial } from '@/configs/enum';
 import { useSociete } from '@/context/SocieteContext';
 
 export function ClientDetailsPage(visiteId) {
@@ -28,7 +28,8 @@ export function ClientDetailsPage(visiteId) {
         !isAdmin(userRole) &&
         !isSuperAdmin(userRole) &&
         !isCommercial(userRole)&&
-        !isRespoCommercial(userRole)
+        !isRespoCommercial(userRole)&&
+        !isAgentAdministratif(userRole)
       
       ) {
         router.push('/');

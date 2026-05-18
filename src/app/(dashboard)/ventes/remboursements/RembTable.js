@@ -16,7 +16,7 @@ import { APIURL, RESOURCE_URL } from '@/configs/api';
 import Input from '@/components/Input';
 
 import { fetchData_Select, fetchData_table_by_id } from '@/configs/api-utils';
-import { isAdmin, isComptable, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isComptable, isSuperAdmin } from '@/configs/enum';
 
 import { useProjet } from '@/context/ProjetContext';
 export default function RembTable({ etat }) {
@@ -273,7 +273,7 @@ export default function RembTable({ etat }) {
   ];
 
  const adminColumns =
-  userRole <= 2 || userRole == 7
+  userRole <= 2 || userRole == 7|| userRole == 10
     ? [
         {
           key: 'responsable',
@@ -372,7 +372,7 @@ export default function RembTable({ etat }) {
             >
               <Eye className="w-4 h-4" />
             </Link>
-            {(userRole<=3 ||userRole==7) && (   
+            {(userRole<=3 ||userRole==7|| userRole == 10) && (   
               <Check
               onClick={() => handleTraiterDemande(row.id, row.client, row.bien)}
               className="w-4 h-4 text-green-500 hover:text-green-700"
@@ -392,7 +392,7 @@ export default function RembTable({ etat }) {
             >
               <Eye className="w-4 h-4" />
             </Link>
-             {(userRole<=3 ||userRole==7) && (   
+             {(userRole<=3 ||userRole==7|| userRole == 10) && (   
             <button
               onClick={() => handleTraiterAccuse(row.id, row.client, row.bien)}
               className="w-4 h-4 text-red-500 hover:text-red-700"
@@ -698,7 +698,7 @@ export default function RembTable({ etat }) {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
-                {(isSuperAdmin(userRole) || isAdmin(userRole)||isComptable(userRole)) && (
+                {(isSuperAdmin(userRole) || isAdmin(userRole)||isComptable(userRole)||isAgentAdministratif(userRole)) && (
                   <Input
                     type="text"
                     label="Responsable"

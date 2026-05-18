@@ -10,7 +10,7 @@ import { useProjet } from '../../../../context/ProjetContext';
 import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../configs/api-utils';
-import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
 import { useSociete } from '@/context/SocieteContext';
 
@@ -162,7 +162,8 @@ const VueTable = () => {
           addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
-            isCommercial(user.role)
+            isCommercial(user.role)||
+            isAgentAdministratif(user.role)
               ? `${ENDPOINTS.VUES}?action=add`
               : undefined
           }

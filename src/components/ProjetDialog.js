@@ -4,7 +4,7 @@ import { useProjet } from "@/context/ProjetContext";
 import { useRouter } from "next/navigation";
 import SelectInput from "./SelectInput";
 import Link from "next/link";
-import { isAdmin } from '../configs/enum';
+import { isAdmin, isAgentAdministratif } from '../configs/enum';
 import { useAuth } from '../context/AuthContext';
 
 const ProjetDialog = ({
@@ -110,7 +110,7 @@ const ProjetDialog = ({
         </div>
 
         {/* Show "Créer un projet" link only if user is NOT commercial */}
-        { isAdmin(user?.role) && (
+        { isAdmin(user?.role) ||isAgentAdministratif(user?.role) && (
           <div className="text-center pb-4">
             <Link 
               href="/projets/addProject" 

@@ -30,7 +30,7 @@ import DeleteData from '@/components/DeleteData';
 import { APIURL, RESOURCE_URL } from '@/configs/api';
 import AddRdvModal from './AddRdvModal';
 import Pusher from 'pusher-js';
-import { isAdmin, isCommercial, isNotaire, isRespoCommercial, isRespoLivraison } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isNotaire, isRespoCommercial, isRespoLivraison } from '@/configs/enum';
 
 const StatusBadge = ({ status }) => {
   const statusConfig = {
@@ -460,7 +460,7 @@ const loadRelancesHistory = async (rdvId) => {
           <CalendarIcon className="h-5 w-5 mr-2 text-blue-500" />
           Rendez-vous
         </h2>
-        {(isAdmin(user?.role)||isCommercial(user?.role)||isRespoCommercial(user.role)||isNotaire(user?.role)||isRespoLivraison(user.role)) && (
+        {(isAdmin(user?.role)||isCommercial(user?.role)||isRespoCommercial(user.role)||isNotaire(user?.role)||isRespoLivraison(user.role)||isAgentAdministratif(user.role)) && (
           <>
            {reservationData?.reservation?.statut==1 && etatRes == 1 && contratVente == null && (
           <button
@@ -599,7 +599,7 @@ const loadRelancesHistory = async (rdvId) => {
                          
                         </>
                       )}*/}
-                      {(isAdmin(user?.role)||isCommercial(user?.role)||isRespoCommercial(user.role)||isNotaire(user?.role)||isRespoLivraison(user.role))  &&rdv.statut==1 && (
+                      {(isAdmin(user?.role)||isCommercial(user?.role)||isRespoCommercial(user.role)||isNotaire(user?.role)||isRespoLivraison(user.role)||isAgentAdministratif(user.role))  &&rdv.statut==1 && (
                       <button
                         className="p-2 text-gray-500 hover:text-red-500 transition-colors"
                         onClick={() => handleDeleteRdv(rdv.id, rdv.rdv)}

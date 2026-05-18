@@ -41,7 +41,7 @@ import {
   SIDEBAR_ITEMS,
 } from './calendar-constants';
 import LoadingSpin from '@/components/LoadingSpin';
-import { isAdmin, isSuperAdmin,isCommercial } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial, isAgentAdministratif } from '@/configs/enum';
 import { useRouter } from 'next/navigation';
 const toTitleCase = (str) =>
   str.replace(
@@ -98,7 +98,7 @@ const userRole = user?.role;
           user && 
           !isAdmin(userRole) &&
           !isSuperAdmin(userRole) &&
-          !isCommercial(userRole)
+          !isCommercial(userRole)&&!isAgentAdministratif(userRole) 
         ) {
           router.push('/');
         }else{
@@ -391,17 +391,17 @@ const userRole = user?.role;
           <LoadingSpin />
         </div>
       )}
-  {(isAdmin(userRole) ||isCommercial(userRole)) && (
+  {(isAdmin(userRole) ||isCommercial(userRole)||isAgentAdministratif(userRole)) && (
     <>
     
     
       {/* User tabs for role >= 2 */}
-      {user?.role >= 2 && (
+      {(user?.role >= 2) && (
         <div className="w-full mb-4">
           <div className="w-full">
             <div className="w-full">
               <div className="flex overflow-x-auto border-b border-gray-200">
-                {user?.role <= 2 && (
+                {(user?.role >= 2)&& (
                   <>
                     <button
                       onClick={() => handleChange(null, 0)}

@@ -1170,7 +1170,7 @@ if (isEditing) {
         // Special validation for zero amount
         if (avance == 0) {
           // Users with role > 2 CANNOT create reservation with amount 0 AT ALL
-          if (user?.role > 2) {
+          if (user?.role > 2 && user?.role!=10) {
             errors.push(
               "Le montant ne peut pas être 0 pour votre rôle. Veuillez saisir un montant positif.",
             );
@@ -1226,7 +1226,7 @@ if (isEditing) {
         }
 
         // Minimum amount validation (only when amount > 0)
-        if (avance > 0 && avance_minimale && avance < avance_minimale  && user?.role > 2) {
+        if (avance > 0 && avance_minimale && avance < avance_minimale  && user?.role > 2  && user?.role!=10) {
           errors.push(`Le montant doit être au moins ${avance_minimale}`);
         }
       }
@@ -2317,7 +2317,7 @@ if (isEditing) {
                   error={
                     errors["bien_id"]?.message || backendErrors["bien_id"]?.[0]
                   }
-                  disabled={isEditing && user?.role > 2 ? true : false}
+                  disabled={isEditing && user?.role > 2 && user?.role!=10 ? true : false}
                   placeholder="Sélectionnez un bien"
                 />
                 {showStepErrors && !watch("bien_id") && (
@@ -4528,14 +4528,14 @@ if (isEditing) {
                     />
                     {watch("avance") != "" &&
                       watch("avance") == 0 &&
-                      user?.role > 2 && (
+                     ( user?.role > 2  && user?.role!=10) && (
                         <p style={{ color: "red" }}>
                           Votre rôle ne vous permet pas de créer une réservation
                           avec un montant de 0. Veuillez saisir un montant
                           positif.{" "}
                         </p>
                       )}
-                    {(watch("avance") > 0 && watch("avance") < watch("avance_minimale"))&& user?.role > 2 && (
+                    {(watch("avance") > 0 && watch("avance") < watch("avance_minimale"))&& user?.role > 2  && user?.role!=10 && (
                         <p style={{ color: "red" }}>
                           Le montant doit être au moins{" "}
                           {watch("avance_minimale")}
@@ -4685,7 +4685,7 @@ if (isEditing) {
                   {/* Only show the checkbox for users with role ≤ 2 when amount is 0 */}
                   {watch("avance") != "" &&
                     watch("avance") == 0 &&
-                    user?.role <= 2 && (
+                    (user?.role <= 2||user?.role ==10) && (
                       <Controller
                         name="check_montant"
                         control={control}
@@ -4828,7 +4828,7 @@ if (isEditing) {
                             </div>
                           </div>
                         )}
-                        {user?.role <= 2 && watch("avance") > 0 && (
+                        {(user?.role <= 2 ||(user?.role ==10 && watch("prix")==watch("prix_final")))&& watch("avance") > 0 && (
                           <>
                             <div className="col-span-3">
                               <h2

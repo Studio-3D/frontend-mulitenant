@@ -22,7 +22,7 @@ import {
   Image,
   EyeIcon,
 } from 'lucide-react';
-import { getEtatLabel, getFullOrientation, isNotaire, isRespoCommercial, isRespoLivraison } from '@/configs/enum';
+import { getEtatLabel, getFullOrientation, isAgentAdministratif, isNotaire, isRespoCommercial, isRespoLivraison } from '@/configs/enum';
 import BienSuperficies from './BienSuperficies';
 import BienComposition from './BienComposition';
 import BienDescriptionGenerator from './BienDescriptionGenerator';
@@ -46,7 +46,7 @@ export default function BienDetails({ id }) {
   const { selectedProjet } = useProjet();
    const { selectedSociete } = useSociete();
   // Only admins and super admins can edit properties
-  const canEditBien = user?.role === 1 || user?.role === 2;
+  const canEditBien = user?.role === 1 || user?.role === 2|| user?.role === 10;
 
   const userRole = user?.role;
       
@@ -59,7 +59,8 @@ export default function BienDetails({ id }) {
             !isComptable(userRole)&&
             !isRespoLivraison(userRole)&&
             !isRespoCommercial(userRole)&&
-            !isNotaire(userRole)
+            !isNotaire(userRole)&&
+            !isAgentAdministratif(userRole)
           ) {
             router.push('/');
           }
