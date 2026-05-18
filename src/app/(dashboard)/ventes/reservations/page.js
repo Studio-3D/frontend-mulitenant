@@ -7,7 +7,7 @@ import ReservationForm from './ReservationForm';
 
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { isAdmin, isSuperAdmin, isCommercial } from '../../../../configs/enum';
+import { isAdmin, isSuperAdmin, isCommercial, isAgentAdministratif } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 
 export default function Page(dataClient) {
@@ -26,7 +26,7 @@ export default function Page(dataClient) {
     const id = searchParams.get('id');
     const action = searchParams.get('action');
 
-    if ((action == ACTION.ADD && !isSuperAdmin(userRole) && !isAdmin(userRole)&& !isCommercial(userRole)) || (action == ACTION.EDIT && isNaN(parseInt(id)))) {
+    if ((action == ACTION.ADD&& !isAgentAdministratif(userRole)&& !isSuperAdmin(userRole) && !isAdmin(userRole)&& !isCommercial(userRole)) || (action == ACTION.EDIT && isNaN(parseInt(id)))) {
       router.push('/')
 
       return

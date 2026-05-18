@@ -206,7 +206,7 @@ const MobileMenuItem = ({
         <div className="bg-gray-50">
           {tab.id === 'validation' && (
             <>
-              {userRole <= 3 && (
+              {(userRole <= 3||userRole ==10) && (
                 <MobileMenuItem
                   tab={{
                     id: 'desistements-attente-encours',
@@ -240,7 +240,7 @@ const MobileMenuItem = ({
                 activeSubTab={activeSubTab}
                 userRole={userRole}
               />
-              {userRole <= 3 && (
+              {(userRole <= 3 ||userRole ==10) && (
                 <MobileMenuItem
                   tab={{
                     id: 'reservations-validation',
@@ -278,7 +278,7 @@ const MobileMenuItem = ({
           )}
           {tab.id === 'rejet' && (
             <>
-              {userRole <= 3 && (
+              {(userRole <= 3 ||userRole ==10) && (
                 <MobileMenuItem
                   tab={{
                     id: 'desistements-rejet',
@@ -312,7 +312,7 @@ const MobileMenuItem = ({
                 activeSubTab={activeSubTab}
                 userRole={userRole}
               />
-              {userRole <= 3 && (
+              {(userRole <= 3 ||userRole ==10)  && (
                 <MobileMenuItem
                   tab={{
                     id: 'reservations-rejet',
@@ -382,7 +382,7 @@ const MobileMenuItem = ({
                 activeSubTab={activeSubTab}
                 userRole={userRole}
               />
-              {(userRole <= 2 || userRole === 7) ? (
+              {(userRole <= 2 || userRole == 7  || userRole ==10) ? (
                 <>
                   <MobileMenuItem
                     tab={{
@@ -479,7 +479,7 @@ const VenteTabsNavigation = ({
   const [mobileExpanded, setMobileExpanded] = useState({});
   
   const [displayedLabels, setDisplayedLabels] = useState({
-    validation: (userRole <= 2 || userRole == 7) ? 'Validation' : 'En cours',
+    validation: (userRole <= 2 || userRole == 7|| userRole == 10) ? 'Validation' : 'En cours',
     rejet: 'Rejet',
     remboursements: 'Remboursements',
   });
@@ -497,7 +497,7 @@ const VenteTabsNavigation = ({
     if (activeTab !== 'validation') {
       setDisplayedLabels(prev => ({
         ...prev,
-        validation: (userRole <= 2 || userRole == 7) ? 'Validation' : 'En cours',
+        validation: (userRole <= 2 || userRole == 7|| userRole == 10) ? 'Validation' : 'En cours',
       }));
     }
     if (activeTab !== 'rejet') {
@@ -701,7 +701,7 @@ const getDisplayedNotificationCount = (tabId) => {
 const tabs = [
   { id: 'reservations', label: 'Reservations', icon: 'user', count: notifications.reservations },
   { id: 'clients', label: 'Clients', icon: 'users', count: notifications.clients },
-  ...((userRole <= 3|| userRole==9)? [{ id: 'desistements', label: 'Désistements', icon: 'repeat', count: notifications.desistements }] : []),
+  ...((userRole <= 3|| userRole==9|| userRole==10)? [{ id: 'desistements', label: 'Désistements', icon: 'repeat', count: notifications.desistements }] : []),
   { id: 'penalites', label: 'Penalités', icon: 'euro', count: notifications.penalites },
   { 
     id: 'remboursements', 
@@ -798,7 +798,7 @@ const getActiveTabNotification = () => {
                   >
                     {tab.id === 'validation' ? (
                       <>
-                        {(userRole <= 3 ||userRole ==9)&& (
+                        {(userRole <= 3 ||userRole ==9||userRole ==10)&& (
                           <DropdownItem
                             label="Désistements"
                             count={notifications['desistements-attente-encours']}
@@ -829,7 +829,7 @@ const getActiveTabNotification = () => {
                       </>
                     ) : tab.id === 'rejet' ? (
                       <>
-                        {(userRole <= 3 ||userRole ==9) && (
+                        {(userRole <= 3 ||userRole ==9||userRole ==10) && (
                           <DropdownItem
                             label="Désistements"
                             count={notifications['desistements-rejet']}
@@ -843,7 +843,7 @@ const getActiveTabNotification = () => {
                           active={activeTab === 'rejet' && activeSubTab.rejet === 'penalites-rejet'}
                           onClick={() => handleSubTabSelect('rejet', 'penalites-rejet', 'Pénalités')}
                         />
-                        {(userRole <= 3 ||userRole ==9) && (
+                        {(userRole <= 3 ||userRole ==9||userRole ==10) && (
                           <DropdownItem
                             label="Réservations"
                             count={notifications['reservations-rejet']}
@@ -873,7 +873,7 @@ const getActiveTabNotification = () => {
                           active={activeTab === 'remboursements' && activeSubTab.remboursements === 'att-accuse-cheque'}
                           onClick={() => handleSubTabSelect('remboursements', 'att-accuse-cheque', 'Attente Accusé')}
                         />
-                        {(userRole <= 2 || userRole === 7) ? (
+                        {(userRole <= 2 || userRole === 7||userRole ==10) ? (
                           <>
                             <DropdownItem
                               label="Attente Décaissement"

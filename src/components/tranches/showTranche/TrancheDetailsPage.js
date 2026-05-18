@@ -7,7 +7,7 @@ import { RightCard } from './RightCard';
 import { APIURL } from '@/configs/api';
 import { useProjet } from '@/context/ProjetContext';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin ,isCommercial,isRespoLivraison, isComptable, isRespoCommercial} from '@/configs/enum';
+import { isAdmin, isSuperAdmin ,isCommercial,isRespoLivraison, isComptable, isRespoCommercial, isAgentAdministratif} from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -61,7 +61,8 @@ export const TrancheDetailsPage = () => {
           !isCommercial(userRole)&&
           !isRespoLivraison(userRole)&&
           !isComptable(userRole)&&
-          !isRespoCommercial(userRole)
+          !isRespoCommercial(userRole)&&
+          !isAgentAdministratif(userRole)
         ) {
           router.push('/');
         }
@@ -478,7 +479,7 @@ export const TrancheDetailsPage = () => {
             type="tranche"
             onEdit={handleEdit}
             onDelete={handleDelete}
-            canEdit={isSuperAdmin(user?.role) || isAdmin(user?.role)}
+            canEdit={isSuperAdmin(user?.role) || isAdmin(user?.role) || isAgentAdministratif(user?.role)}
           />
         </div>
         <div className="w-full lg:w-2/3">

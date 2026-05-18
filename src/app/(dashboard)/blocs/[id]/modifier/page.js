@@ -17,7 +17,7 @@ export default function EditBlocPage() {
   const [error, setError] = useState(null);
 
   // Only admins and super admins can edit blocs
-  const canEditBloc = user?.role === 1 || user?.role === 2;
+  const canEditBloc = user?.role === 1 || user?.role === 2|| user?.role === 10;
 
   // Redirect if user doesn't have permission
   useEffect(() => {

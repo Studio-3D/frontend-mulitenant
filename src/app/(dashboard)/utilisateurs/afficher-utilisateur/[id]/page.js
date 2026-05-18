@@ -8,7 +8,7 @@ import { User, Briefcase, Map, Handshake } from "lucide-react";
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isSuperAdmin } from '@/configs/enum';
 import { useProjet } from '@/context/ProjetContext';
 import { useSociete } from '@/context/SocieteContext';
 
@@ -45,7 +45,8 @@ export default function UserDetailsPage() { // Renamed to PascalCase
     useEffect(() => {
           if (
             !isAdmin(user?.role) &&
-            !isSuperAdmin(user?.role) 
+            !isSuperAdmin(user?.role)  &&
+            !isAgentAdministratif(user?.role) 
           ) {
             router.push('/');
           }

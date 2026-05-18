@@ -8,7 +8,7 @@ const DashboardPage = () => {
   const userRole = user?.role;
   {/* n'est pas admin commercial sup admin*/}
   return (
-     (userRole>3)? (
+     (userRole>3 &&userRole!=10 )? (
      <Dashboard_Menu userRole={userRole} name={user?.name+' '+user?.prenom}/>
      ):(
      <Dashboard/>

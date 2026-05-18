@@ -316,14 +316,14 @@ export function VentePage() {
         localStorage.setItem("etat_av", "3");
         break;
       case "penalites-validation":
-        if (userRole <= 2 || userRole == 7) {
+        if (userRole <= 2 || userRole == 7 || userRole == 10) {
           localStorage.setItem("etat_penalite", "5");
         } else {
           localStorage.setItem("etat_penalite", "0");
         }
         break;
       case "desistements-attente-encours":
-        if (userRole <= 2) {
+        if (userRole <= 2|| userRole == 10) {
           localStorage.setItem("etat_dst", "5");
         } else {
           localStorage.setItem("etat_dst", "0");
@@ -585,7 +585,7 @@ export function VentePage() {
           )}
         </div>
 
-        {userRole <= 2 || userRole === 7 ? (
+        {(userRole <= 2 || userRole === 7|| userRole == 10) ? (
           <>
             <div
               style={{

@@ -6,7 +6,7 @@ import axios from 'axios';
 import PrestataireTable from '../../../prestataires/PrestataireTable';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin,isSav } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isSav, isAgentAdministratif } from '@/configs/enum';
 const ViewService = ({ serviceId }) => {
   const [Details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,8 @@ const ViewService = ({ serviceId }) => {
                   user && 
                   !isAdmin(userRole) &&
                   !isSuperAdmin(userRole) &&
-                  !isSav(userRole)
+                  !isSav(userRole) &&
+                  !isAgentAdministratif(userRole)
                 ) {
                   router.push('/');
                 }

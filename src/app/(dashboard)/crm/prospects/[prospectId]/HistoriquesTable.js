@@ -6,7 +6,7 @@ import { useAuth } from '../../../../../context/AuthContext';
 import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import format from 'date-fns/format';
 import { Eye } from 'lucide-react';
-import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
 
 // Importez les nouvelles fonctions
 import {
@@ -230,7 +230,8 @@ const columns = [
            {(isAdmin(user?.role) ||
             isSuperAdmin(user?.role) ||
             isCommercial(user?.role)||
-            isRespoCommercial(user?.role))
+            isRespoCommercial(user?.role)||
+            isAgentAdministratif(user?.role))
             && (
               <>
               {row.type_source == 'prospect' ? (

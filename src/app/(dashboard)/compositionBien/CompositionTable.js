@@ -12,7 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { isAdmin, isSuperAdmin,isCommercial,isRespoCommercial} from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial,isRespoCommercial, isAgentAdministratif} from '@/configs/enum';
 
 export default function Composition({ bien, reloadTrigger }) {
   const [loading, setLoading] = useState(false);
@@ -200,7 +200,7 @@ export default function Composition({ bien, reloadTrigger }) {
           >
             <Eye className="w-4 h-4" />
           </button>
-          { isAdmin(user.role)&&(
+          {(isAdmin(user.role) ||isAgentAdministratif(user.role))&&(
             <>
               <button
             className="text-blue-500 hover:text-blue-700"

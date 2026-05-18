@@ -11,7 +11,7 @@ import { useProjet } from "../../../../context/ProjetContext";
 import { APIURL, ENDPOINTS } from "../../../../configs/api";
 import { useRouter } from "next/navigation";
 import { fetchData_table_by_projet } from "../../../../configs/api-utils";
-import { isAdmin, isCommercial, isSuperAdmin } from "../../../../configs/enum";
+import { isAdmin, isAgentAdministratif, isCommercial, isSuperAdmin } from "../../../../configs/enum";
 import Input from "@/components/Input";
 import { format } from "date-fns";
 import { formatDate } from "@/utils/dateUtils";
@@ -227,7 +227,7 @@ const ObjectifTable = () => {
           addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
-            isCommercial(user.role)
+            isAgentAdministratif(user.role)
               ? `${ENDPOINTS.OBJECTIFS}?action=add`
               : undefined
           }

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { APIURL, ENDPOINTS, RESOURCE_URL } from "@/configs/api";
 import { fetchData_table_by_projet } from "@/configs/api-utils";
-import { isAdmin, isRespoLivraison, isSuperAdmin } from "@/configs/enum";
+import { isAdmin, isAgentAdministratif, isRespoLivraison, isSuperAdmin } from "@/configs/enum";
 import { useAuth } from "@/context/AuthContext";
 import Input from "@/components/Input";
 import { useProjet } from "@/context/ProjetContext";
@@ -281,7 +281,7 @@ const getLineCounts = (messageEchou, ligneEchou, dataLength) => {
             <Eye className="w-4 h-4" />
           </Link>
 
-          {row.statut == 0 && (isAdmin(user?.role) || isSuperAdmin(user?.role) || isRespoLivraison(user?.role)) && (
+          {row.statut == 0 && (isAdmin(user?.role) || isSuperAdmin(user?.role)|| isAgentAdministratif(user?.role) || isRespoLivraison(user?.role)) && (
             <button
               className="text-red-500 hover:text-red-700 transition-colors"
               onClick={() => {

@@ -52,10 +52,10 @@ export default function Modal_Relance({ id, onClose }) {
         </div>
       </div>
       <p className="text-center text-[#878484] mt-2">
-        {user.role == 3 && 'Voulez-vous Relancer cette Réservation'}
+        {(user.role == 3|| user.role == 10)&& 'Voulez-vous Relancer cette Réservation'}
       </p>
       <div className="flex justify-center gap-4 mt-4 mb-4">
-        {user.role == 3 ? (
+        {(user.role == 3|| user.role == 10) ? (
           <>
             <button
               className="font-medium px-4 py-2 rounded-lg bg-gray-200"

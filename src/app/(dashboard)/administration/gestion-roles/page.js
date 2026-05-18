@@ -26,7 +26,7 @@ import {
   Users, // Pour RESPO_COMMERCIAL
   Clipboard, // Pour AGENT_ADMINISTRATIF
 } from 'lucide-react';
-import { isAdmin, isSuperAdmin } from '../../../../configs/enum';
+import { isAdmin, isAgentAdministratif, isSuperAdmin } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 import { useSociete } from '@/context/SocieteContext';
 import { useProjet } from '@/context/ProjetContext';
@@ -53,7 +53,7 @@ const GestionRoles = () => {
 
   // Vérifier les permissions
   useEffect(() => {
-    if (!isAdmin(userRole) && !isSuperAdmin(userRole)) {
+    if (!isAdmin(userRole) && !isSuperAdmin(userRole)&& !isAgentAdministratif(userRole)) {
       router.push('/');
     }
   }, [userRole, router]);
@@ -91,7 +91,7 @@ const GestionRoles = () => {
     7: 'Comptable',
     8: 'SAV',
     9: 'Responsable Commercial',
-   // 10: 'Agent Administratif',
+    10: 'Agent Saisie',
   };
 
   // Descriptions pour chaque rôle
@@ -103,7 +103,7 @@ const GestionRoles = () => {
     7: 'Service Comptable',
     8: 'Service Après-Vente (SAV)',
     9: 'Service Commercial (Responsable)',
-    //10: 'Service Administratif',
+    10: 'Service Administratif',
   };
 
   // Couleurs de fond pour Tailwind
@@ -224,7 +224,7 @@ const GestionRoles = () => {
         .filter((role) => !role.exists)
         .map((role) => ({
           value: role.value.toString(),
-          label: `${role.label === 'RESPO_LIVRAISON' ? 'Responsable Livraison' : role.label === 'RESPO_COMMERCIAL' ? 'Responsable Commercial' : role.label === 'AGENT_ADMINISTRATIF' ? 'Agent Administratif' : role.label} - ${role.description}`,
+          label: `${role.label === 'RESPO_LIVRAISON' ? 'Responsable Livraison' : role.label === 'RESPO_COMMERCIAL' ? 'Responsable Commercial' : role.label === 'AGENT_ADMINISTRATIF' ? 'Agent de saisie' : role.label} - ${role.description}`,
         }));
     }
     
@@ -235,7 +235,7 @@ const GestionRoles = () => {
       { value: 7, label: 'Comptable - Service Comptable' },
       { value: 8, label: 'SAV - Service Après-Vente (SAV)' },
       { value: 9, label: 'Responsable Commercial - Service Commercial (Responsable)' },
-      {/* value: 10, label: 'Agent Administratif - Service Administratif'*/ },
+      {/* value: 10, label: 'Agent de saisie - Service Administratif'*/ },
     ].filter(option => !existingRoleValues.includes(Number(option.value)))
      .map(option => ({ value: option.value, label: option.label }));
   };
@@ -369,10 +369,10 @@ const GestionRoles = () => {
                       onClick={() => handleDeleteRole(role.id, role.role)}
                       className="text-red-600 hover:text-red-800 p-1"
                       title="Supprimer"
-                      disabled={roleNumber === 2 || roleNumber === 3}
+                      disabled={roleNumber === 2}/*|| roleNumber === 3*/
                     >
                       <Trash2
-                        className={`h-5 w-5 ${roleNumber === 2 || roleNumber === 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`h-5 w-5 ${roleNumber === 2 ? 'opacity-50 cursor-not-allowed' : ''}`}/*|| roleNumber === 3*/
                       />
                     </button>
                   </div>

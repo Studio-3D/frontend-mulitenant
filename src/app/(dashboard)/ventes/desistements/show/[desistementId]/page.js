@@ -9,7 +9,7 @@ import { APIURL, RESOURCE_URL } from '../../../../../../configs/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import TextField from '@/components/Textfield';
-import { isAdmin, isCommercial, isComptable, isRespoCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isComptable, isRespoCommercial, isSuperAdmin, type_dst } from '@/configs/enum';
 import { useAuth } from '../../../../../../context/AuthContext';
 import { fetchData_Select } from '../../../../../../../src/configs/api-utils';
 import { type_dst_dp } from '@/configs/enum';
@@ -123,7 +123,8 @@ export default function Page() {
             !isSuperAdmin(userRole) &&
             !isCommercial(userRole) &&
             !isComptable(userRole)&&
-            !isRespoCommercial(userRole)
+            !isRespoCommercial(userRole)&&
+            !isAgentAdministratif(userRole)
           ) {
             router.push('/');
           }
@@ -667,7 +668,7 @@ export default function Page() {
           )}
 
           {/* Form actions - kept for validation/rejection */}
-          {statut_des == 0 && user?.role <= 2 && (
+          {statut_des == 0 && (user?.role <= 2 ||user?.role ==10)&& (
             <div className="p-6 border-t border-gray-200">
               {showRejectComment && (
                 <div className="py-1 ">

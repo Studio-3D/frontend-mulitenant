@@ -14,7 +14,7 @@ export const CalendarHeaderObjectif = ({
     <>
       <h5 style={{ color: '#666CFF', marginTop: '10px', marginLeft: '25px' }}>
         Ce Mois :{' '}
-        {user_role <= 2 ? 'Chiffres/Objectifs' : 'Vos Chiffres/ Vos Objectifs'}
+        {(user_role <= 2 ||user_role ==10)? 'Chiffres/Objectifs' : 'Vos Chiffres/ Vos Objectifs'}
       </h5>
       <div className="px-6 py-4 flex flex-wrap gap-4">
         <StatCard

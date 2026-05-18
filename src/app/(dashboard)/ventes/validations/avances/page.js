@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { formatDate } from '../../../../../utils/dateUtils';
 import {
   isAdmin,
+  isAgentAdministratif,
   isCommercial,
   isComptable,
   isRespoCommercial,
@@ -134,7 +135,8 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
             !isSuperAdmin(userRole) &&
             !isCommercial(userRole) &&
             !isComptable(userRole)&&
-            !isRespoCommercial(userRole)
+            !isRespoCommercial(userRole)&&
+            !isAgentAdministratif(userRole)
           ) {
             router.push('/');
           }
@@ -284,7 +286,7 @@ const PageTraitement_Validation_rejets_av_or_echeance = () => {
             label: 'Actions',
             render: (row) => {
               const isAdminOrSuperAdmin =
-                (isAdmin(userRole) || isSuperAdmin(userRole)|| isComptable(userRole)) &&
+                (isAdmin(userRole) || isSuperAdmin(userRole)|| isComptable(userRole)|| isAgentAdministratif(userRole)) &&
                 (etat_av == 2 || etat_av == 3);
 
               return (

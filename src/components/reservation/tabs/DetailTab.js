@@ -75,7 +75,8 @@ const DetailTabComponent = ({
     useEffect(() => {
       if(isSuperAdmin(user.role) ||
               isAdmin(user.role) ||
-              isRespoLivraison(user.role)){
+              isRespoLivraison(user.role)||
+              isAgentAdministratif(user.role)){
               fetchNotaires();
               }
     }, []);
@@ -228,7 +229,7 @@ const DetailTabComponent = ({
                     </Button>
                   )}
                 </>
-              ) : reservation.statut == 2 && isCommercial(user.role) ? (
+              ) : reservation.statut == 2 && (isCommercial(user.role)||isAgentAdministratif(user.role) )? (
                 <Button
                   type="rejeter"
                   onClick={() => handle_show_comment_rejete()}
@@ -239,7 +240,7 @@ const DetailTabComponent = ({
               ) : null}
               {(isSuperAdmin(user.role) ||
                 isAdmin(user.role) ||
-                isCommercial(user.role)||isRespoCommercial(user?.role)) &&
+                isCommercial(user.role)||isRespoCommercial(user?.role)||isAgentAdministratif(user?.role)) &&
                 reservation.statut == 1 && (
                   <Button
                     type="desister"
@@ -282,7 +283,7 @@ const DetailTabComponent = ({
                 )}
                 
 
-              {((isSuperAdmin(user.role) || isAdmin(user.role)) &&
+              {((isSuperAdmin(user.role) || isAdmin(user.role|| isAgentAdministratif(user.role))) &&
                 reservation?.etat == 1 &&
                 reservation?.contrat_vente == null) ||
                 ((isCommercial(user.role)||isRespoCommercial(user.role)) &&
@@ -298,6 +299,7 @@ const DetailTabComponent = ({
 
              {(isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
+            isAgentAdministratif(user.role) ||
             isRespoLivraison(user.role)) &&
             reservation.statut == 1 &&
             sum_avances_valides > 0 &&
@@ -419,7 +421,7 @@ const DetailTabComponent = ({
                         </p>
                         <p className="font-medium">
                           {' '}
-                          {isSuperAdmin(user.role) || isAdmin(user.role) ? (
+                          {isSuperAdmin(user.role) || isAdmin(user.role)|| isAgentAdministratif(user.role) ? (
                             <>
                               {reservation.user && (
                                 <>
@@ -456,7 +458,7 @@ const DetailTabComponent = ({
                         </p>
                         <p className="font-medium">
                           {' '}
-                          {isSuperAdmin(user.role) || isAdmin(user.role) ? (
+                          {isSuperAdmin(user.role) || isAdmin(user.role)|| isAgentAdministratif(user.role)? (
                             <>
                               {reservation?.notaire && (
                                 <>
@@ -566,7 +568,7 @@ const DetailTabComponent = ({
                       </p>
                                      
 
-                      {(isSuperAdmin(user.role) || isAdmin(user.role)) &&reservation?.etat == 1 &&
+                      {(isSuperAdmin(user.role) || isAdmin(user.role)|| isAgentAdministratif(user.role)) &&reservation?.etat == 1 &&
                         reservation?.contrat_vente == null && (
                           <button
                             onClick={() => handleEdit_Prix(reservation.id)}
@@ -699,7 +701,7 @@ const DetailTabComponent = ({
             )}
       {open_r && (
         <>
-          <Modal isVisible={true} onClose={() => setOpen_r(false)}>
+          <Modal isVisible={true} onClose={() => setOpen_r(false)}  maxWidth="max-w-xl">
             <Modal_Rejeter_Reservation
               res_show={true} // Add this
               onReservationUpdate={onReservationUpdate} // Add this

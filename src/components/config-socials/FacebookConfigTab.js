@@ -59,7 +59,7 @@ export default function FacebookConfigTab() {
   // Fetch configurations and webhooks
   useEffect(() => {
     const fetchData = async () => {
-      if (user && (user.role === 1 || user.role === 2)) {
+      if (user && (user.role === 1 || user.role === 2|| user.role === 10)) {
         try {
           setLoading(true);
           const token = localStorage.getItem('accessToken');

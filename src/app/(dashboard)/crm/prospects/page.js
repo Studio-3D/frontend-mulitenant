@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import ProspectTable from './ProspectTable';
 import ProspectForm from './ProspectForm';
 import { useSearchParams } from 'next/navigation';
-import { isAdmin, isSuperAdmin, isCommercial, isRespoCommercial } from '../../../../configs/enum';
+import { isAdmin, isSuperAdmin, isCommercial, isRespoCommercial, isAgentAdministratif } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 
@@ -23,7 +23,8 @@ export default function Page() {
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
       !isCommercial(userRole)&&
-      !isRespoCommercial(userRole)
+      !isRespoCommercial(userRole)&&
+      !isAgentAdministratif(userRole)
     ) {
       router.push('/');
     }

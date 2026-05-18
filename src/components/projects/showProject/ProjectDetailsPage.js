@@ -6,7 +6,7 @@ import { RightCard } from './RightCard';
 import { APIURL } from '@/configs/api';
 import { useProjet } from '@/context/ProjetContext';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin,isCommercial, isRespoLivraison, isRespoCommercial } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isCommercial, isRespoLivraison, isRespoCommercial, isAgentAdministratif } from '@/configs/enum';
 import axios from 'axios';
 import Modal from '@/components/Modal';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
@@ -67,7 +67,8 @@ export const ProjectDetailsPage = () => {
           !isSuperAdmin(userRole) &&
           !isCommercial(userRole)&&
           !isRespoLivraison(userRole)&&
-          !isRespoCommercial(userRole)
+          !isRespoCommercial(userRole)&&
+          !isAgentAdministratif(userRole)
         ) {
           router.push('/');
         }
@@ -417,7 +418,7 @@ export const ProjectDetailsPage = () => {
             project={{ ...projectData.projet }}
             onEdit={handleEdit}
             onDelete={handleDelete}
-            canEdit={isSuperAdmin(user?.role) || isAdmin(user?.role)}
+            canEdit={isSuperAdmin(user?.role) || isAdmin(user?.role)|| isAgentAdministratif(user?.role)}
           />
         </div>
         <div className="w-full lg:w-2/3">

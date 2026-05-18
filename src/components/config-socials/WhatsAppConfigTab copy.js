@@ -71,7 +71,7 @@ export default function WhatsAppConfigTab() {
       }
     };
 
-    if (user && (user.role === 1 || user.role === 2)) {
+    if (user && (user.role === 1 || user.role === 2|| user.role === 10)) {
       fetchData();
     } else {
       setLoading(false);
@@ -321,7 +321,7 @@ export default function WhatsAppConfigTab() {
     );
   }
 
-  if (!user || (user.role !== 1 && user.role !== 2)) {
+  if (!user || (user.role !== 1 && user.role !== 2 && user.role !== 10)) {
     return (
       <div className="flex items-center justify-center p-8">
         <AlertCircleIcon className="h-8 w-8 text-red-500 mr-2" />

@@ -33,7 +33,7 @@ export default function Desistement_dd_list() {
     1: { id: 2, label: 'Rejeté' },
     2: { id: 1, label: 'Validé' },
     3:
-     (user_role <= 2)
+     (user_role <= 2||user_role ==10)
         ? { id: 5, label: 'En Attente' }
         : { id: 0, label: 'En cours' },
   };
@@ -167,7 +167,7 @@ export default function Desistement_dd_list() {
 
   const columns = [
     { key: 'date', label: 'Date' },
-    ...((user_role <= 2)
+    ...((user_role <= 2||user_role ==10)
       ? [{ key: 'cc', label: 'Responsable', width: '100px' }]
       : []),
     { key: 'code_reservation', label: 'Code Réservation' },
@@ -195,7 +195,7 @@ export default function Desistement_dd_list() {
     },
     { key: 'motif', label: 'Motif' },
     { key: 'penalite', label: 'Pénalité' },
-    ...((user_role <= 2) && !(etat_desistement == 5 || etat_desistement == 0)
+    ...((user_role <= 2||user_role ==10) && !(etat_desistement == 5 || etat_desistement == 0)
       ? [
           {
             key: 'date_validation',
@@ -359,7 +359,7 @@ export default function Desistement_dd_list() {
               }}
             >
               {/* Regular inputs */}
-              {(user_role <= 2) && (
+              {(user_role <= 2||user_role ==10) && (
                 <Input
                   type="text"
                   label="Responsable"
@@ -377,7 +377,7 @@ export default function Desistement_dd_list() {
                 }
                 className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
               />
-              {(user_role <= 2) &&
+              {(user_role <= 2||user_role ==10) &&
                 !(etat_desistement == 5 || etat_desistement == 0) && (
                   <Input
                     type="text"
@@ -439,7 +439,7 @@ export default function Desistement_dd_list() {
                 onChange={handleFilterChange}
                 label="Choisir une Date"
               />
-              {(user_role <= 2) &&
+              {(user_role <= 2||user_role ==10) &&
                 !(etat_desistement == 5 || etat_desistement == 0) && (
                   <DateRangePicker
                     startName="de_date_respo_req"

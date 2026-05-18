@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import HistoImpoTable from './HistoImpoTable';
 import { useRouter } from 'next/navigation';
-import { isAdmin, isSuperAdmin, isCommercial, isRespoLivraison } from '../../../configs/enum';
+import { isAdmin, isSuperAdmin, isCommercial, isRespoLivraison, isAgentAdministratif } from '../../../configs/enum';
 import { useAuth } from '../../../context/AuthContext';
 
 export default function Page() {
@@ -15,7 +15,7 @@ export default function Page() {
     if (
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
-      !isCommercial(userRole)&&
+      !isCommercial(userRole)&&!isAgentAdministratif(userRole) &&
       !isRespoLivraison(userRole)
     ) {
       router.push('/');

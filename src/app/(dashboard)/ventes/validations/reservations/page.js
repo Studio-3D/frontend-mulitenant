@@ -8,7 +8,7 @@ import { useAuth } from "../../../../../context/AuthContext";
 
 import { useRouter } from "next/navigation";
 import format from "date-fns/format";
-import { isAdmin, isRespoCommercial, isSuperAdmin } from "../../../../../configs/enum";
+import { isAdmin, isAgentAdministratif, isRespoCommercial, isSuperAdmin } from "../../../../../configs/enum";
 import { fetchData_table_by_id } from "../../../../../configs/api-utils";
 import Link from "next/link";
 import Input from "@/components/Input";
@@ -189,7 +189,7 @@ const PageTraitement_Validation_rejets = () => {
         key: "cc",
         label: "Responsable",
         render: (row) => {
-            return isSuperAdmin(userRole) || isAdmin(userRole) ? (
+            return isSuperAdmin(userRole) || isAdmin(userRole)|| isAgentAdministratif(userRole) ? (
                 <>
                     {row.data_res.user && (
                         <>
@@ -266,7 +266,7 @@ const PageTraitement_Validation_rejets = () => {
         ),
     },
     // Fixed the actions column - removed the extra spread and comma
-    ...((isSuperAdmin(userRole) || isAdmin(userRole)) ? [
+    ...((isSuperAdmin(userRole) || isAdmin(userRole)|| isAgentAdministratif(userRole)) ? [
         {
             key: "actions",
             label: "Actions",
@@ -280,7 +280,7 @@ const PageTraitement_Validation_rejets = () => {
                         />
 
                         {etat_res == 3 &&
-                        (isSuperAdmin(userRole) || isAdmin(userRole)) ? (
+                        (isSuperAdmin(userRole) || isAdmin(userRole)|| isAgentAdministratif(userRole)) ? (
                             <>
                                 <ThumbsUp
                                     className="w-4 h-4 !text-green-500 hover:text-green-700 cursor-pointer"

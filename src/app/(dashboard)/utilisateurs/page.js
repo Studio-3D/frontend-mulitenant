@@ -24,7 +24,7 @@ import {
   USER_TYPES,
 } from '@/components/user-utils';
 import format from 'date-fns/format';
-import { isAdmin, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isSuperAdmin } from '@/configs/enum';
 
 const Page = () => {
   const [roles, setRoles] = useState([]);
@@ -104,7 +104,7 @@ const Page = () => {
             label = 'Responsable Commercial';
             break;
           case 10:
-            label = 'Agent Administratif';
+            label = 'Agent de saisie';
             break;
           default:
             label = `Rôle ${roleValue}`;
@@ -223,7 +223,8 @@ const Page = () => {
       useEffect(() => {
           if (
             !isAdmin(user?.role) &&
-            !isSuperAdmin(user?.role) 
+            !isSuperAdmin(user?.role)&&
+            !isAgentAdministratif(user?.role) 
           ) {
             router.push('/');
           }
@@ -256,7 +257,7 @@ const Page = () => {
       case 9:
         return 'Responsable Commercial';
       case 10:
-        return 'Agent Administratif';
+        return 'Agent de saisie';
       default:
         return 'Utilisateur';
     }
@@ -356,7 +357,7 @@ const Page = () => {
       Comptable: 'bg-red-100 !text-red-600',
       'Service Après-Vente': 'bg-indigo-100 !text-indigo-600',
       'Responsable Commercial': 'bg-cyan-100 !text-cyan-600',
-      'Agent Administratif': 'bg-slate-100 !text-slate-600',
+      'Agent de saisie': 'bg-slate-100 !text-slate-600',
       Utilisateur: 'bg-gray-100 !text-gray-600',
     };
 
@@ -402,49 +403,56 @@ const Page = () => {
           >
             <Eye className="w-4 h-4" />
           </Link>
+        {user?.role <=2 && (
+          <>
+              <Link
+                href={`/utilisateurs/afficher-utilisateur/${row.id}?edit=true`}
+                className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
+                title="Modifier l'utilisateur"
+              >
+                <PencilLine className="w-4 h-4" />
+              </Link>
+              {row.status === 'Actif' ? (
+                <button
+                  onClick={() => {
+                    setSelectedUserId(row.id);
+                    setShowBlockModal(true);
+                  }}
+                  className="flex items-center gap-1 text-red-500 hover:text-red-700"
+                  title="Bloquer l'utilisateur"
+                >
+                  <ShieldX className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setSelectedUserId(row.id);
+                    setShowUnblockModal(true);
+                  }}
+                  className="flex items-center gap-1 text-green-500 hover:text-green-700"
+                  title="Débloquer l'utilisateur"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                </button>
+              )}
 
-          <Link
-            href={`/utilisateurs/afficher-utilisateur/${row.id}?edit=true`}
-            className="flex items-center gap-1 text-yellow-500 hover:text-yellow-700"
-            title="Modifier l'utilisateur"
-          >
-            <PencilLine className="w-4 h-4" />
-          </Link>
-
-          {row.status === 'Actif' ? (
-            <button
-              onClick={() => {
-                setSelectedUserId(row.id);
-                setShowBlockModal(true);
-              }}
-              className="flex items-center gap-1 text-red-500 hover:text-red-700"
-              title="Bloquer l'utilisateur"
-            >
-              <ShieldX className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                setSelectedUserId(row.id);
-                setShowUnblockModal(true);
-              }}
-              className="flex items-center gap-1 text-green-500 hover:text-green-700"
-              title="Débloquer l'utilisateur"
-            >
-              <ShieldCheck className="w-4 h-4" />
-            </button>
+              <button
+                onClick={() => {
+                  setSelectedUserId(row.id);
+                  setShowDeleteModal(true);
+                }}
+                className="flex items-center gap-1 text-red-500 hover:text-red-700"
+                title="Supprimer l'utilisateur"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              </>
           )}
+     
+  
+        
 
-          <button
-            onClick={() => {
-              setSelectedUserId(row.id);
-              setShowDeleteModal(true);
-            }}
-            className="flex items-center gap-1 text-red-500 hover:text-red-700"
-            title="Supprimer l'utilisateur"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+         
         </div>
       ),
     },

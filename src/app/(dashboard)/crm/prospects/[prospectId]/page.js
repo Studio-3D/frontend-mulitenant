@@ -17,7 +17,7 @@ import VisiteTable from '../../visites/VisiteTable';
 import { format } from 'date-fns';
 import JournalTable from '../../appels/[appelId]/JournalTable';
 import Modal_Traite from '../Modal_Traite';
-import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
 import { useSociete } from '@/context/SocieteContext';
 import VisiteTableShow from './VisitesTableShow';
 import {
@@ -119,7 +119,8 @@ const ProspectDetails = () => {
       !isAdmin(user?.role) &&
       !isSuperAdmin(user?.role) &&
       !isCommercial(user?.role) &&
-      !isRespoCommercial(user?.role)
+      !isRespoCommercial(user?.role)&&
+      !isAgentAdministratif(user?.role)
     ) {
       router.push('/');
     }

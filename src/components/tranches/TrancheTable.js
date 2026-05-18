@@ -27,7 +27,7 @@ export default function TrancheTable({ projetId }) {
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const canManageTranches = user?.role === 1 || user?.role === 2;
+  const canManageTranches = user?.role === 1 || user?.role === 2|| user?.role === 10;
 
   const columns = [
     { key: 'nom', label: 'Tranche' },

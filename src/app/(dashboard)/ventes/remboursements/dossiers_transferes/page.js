@@ -6,7 +6,7 @@ import { useAuth } from '../../../../../context/AuthContext';
 import { useProjet } from '../../../../../context/ProjetContext';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { isAdmin, isComptable, isSuperAdmin } from '../../../../../configs/enum';
+import { isAdmin, isAgentAdministratif, isComptable, isSuperAdmin } from '../../../../../configs/enum';
 import Link from 'next/link';
 import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import Input from '@/components/Input';
@@ -127,7 +127,7 @@ const RemboDosTable = () => {
       </span>
     ),
   },
-  ...(isSuperAdmin(userRole) || isAdmin(userRole) || isComptable(userRole)
+  ...(isSuperAdmin(userRole) || isAdmin(userRole) || isComptable(userRole)||isAgentAdministratif(userRole)
     ? [
         {
           key: 'responsable',

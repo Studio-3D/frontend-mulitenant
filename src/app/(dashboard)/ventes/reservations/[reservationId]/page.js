@@ -253,7 +253,7 @@ const Res_Show = () => {
         id: 'historiques',
         label: 'Historiques',
         icon: 'history',
-        visible: isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)
+        visible: isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isAgentAdministratif(userRole)
       },
       { id: 'acquereurs', label: 'Acquéreurs', icon: 'users' },
       { id: 'piecesJointes', label: 'Pièces jointes', icon: 'paperclip' },
@@ -265,34 +265,34 @@ const Res_Show = () => {
        visible: (
         reservationData?.reservation?.etat == 2 &&
         reservationData?.reservation?.remboursement_dd_with_transfert != null
-      ) && (isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole))
+      ) && (isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isAgentAdministratif(userRole))
       },
       {
         id: 'historiqueDesistement',
         label: 'Historique Désistement',
         icon: 'repeat',
          visible: reservationData?.reservation?.code_desistement != null &&
-        (isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole))
+        (isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isAgentAdministratif(userRole))
      },
       {
         id: 'rendezVous',
         label: 'Rendez-vous',
         icon: 'calendar',
-        visible:(isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isNotaire(userRole)|| isRespoLivraison(userRole)) ,
+        visible:(isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isNotaire(userRole)|| isRespoLivraison(userRole)|| isAgentAdministratif(userRole)) ,
       },
       {
         id: 'compromisVentes',
         label: 'Attestation de vente',
         icon: 'file-signature',
         // Condition corrigée - afficher si user a le droit ET (il y a des avances OU un compromis existe déjà)
-        visible:(isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isNotaire(userRole)|| isRespoLivraison(userRole)) && reservationData.sum_avances_valides > 0,
+        visible:(isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isNotaire(userRole)|| isRespoLivraison(userRole)|| isAgentAdministratif(userRole)) && reservationData.sum_avances_valides > 0,
       },
       {
         id: 'contract',
         label: 'Contrat de vente',
         icon: 'file-text',
         visible:
-         (isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isNotaire(userRole)|| isRespoLivraison(userRole)) &&
+         (isAdmin(userRole) || isSuperAdmin(userRole) || isCommercial(userRole) || isRespoCommercial(userRole)|| isNotaire(userRole)|| isRespoLivraison(userRole)|| isAgentAdministratif(userRole)) &&
           reservationData.sum_avances_valides >=
             reservationData?.reservation?.prix,
       },

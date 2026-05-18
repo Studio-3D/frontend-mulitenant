@@ -9,6 +9,7 @@ import {
   MODE_PAIEMENT,
   getModePenaliteLabel,
   isAdmin,
+  isAgentAdministratif,
   isCommercial,
   isComptable,
   isRespoCommercial,
@@ -73,7 +74,8 @@ const ShowPenalite = () => {
             !isSuperAdmin(userRole) &&
             !isCommercial(userRole)&&
             !isComptable(userRole)&&
-                  !isRespoCommercial(userRole)
+                  !isRespoCommercial(userRole)&&
+                  !isAgentAdministratif(userRole)
           ) {
             router.push('/');
           }
@@ -677,7 +679,7 @@ const PenaltyDetails = ({
       )}
     </div>
 
-    {penalite.statut == 0 && (user?.role <= 2 ||user?.role==7) && (
+    {penalite.statut == 0 && (user?.role <= 2 ||user?.role==7||user?.role==10) && (
       <div className="flex justify-end pt-4">
         <Button
           type="submit"

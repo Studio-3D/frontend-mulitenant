@@ -553,7 +553,7 @@ export const AvancesTab = ({
         await fetchData(); // This will trigger the callback
         // Check if reste is 0 and user is admin
         // for not reload page and show contrat
-        if (reste == 0 && user.role <= 2) {
+        if (reste == 0 && (user.role <= 2||user.role==10)) {
           // Update reservation data to show contract tab
           if (updateReservationData) {
             updateReservationData({
@@ -808,11 +808,11 @@ export const AvancesTab = ({
       key: "actions",
       label: "Actions",
       render: (row) => {
-        const isAdminOrEditor = user?.role == 1 || user?.role == 2;
+        const isAdminOrEditor = user?.role == 1 || user?.role == 2|| user?.role == 10;
         const isLastRow = row.number == last_row_number;
         const canShowScan =
           etat_res == 1 &&
-          (user?.role <= 3 || user?.role == 9) &&
+          (user?.role <= 3 || user?.role == 9|| user?.role == 10) &&
           !row.recu_scanne;
 
         return (
@@ -887,7 +887,8 @@ export const AvancesTab = ({
                 ) : (user?.role == 3 ||
                     user?.role == 5 ||
                     user?.role == 6 ||
-                    user?.role == 9) &&
+                    user?.role == 9 ||
+                    user?.role == 10) &&
                   Number(row.statut != 1) ? (
                   <button
                     className="p-1 text-yellow-500 hover:text-yellow-700"
@@ -1139,7 +1140,8 @@ export const AvancesTab = ({
           {(user?.role <= 3 ||
             user?.role == 9 ||
             user?.role == 5 ||
-            user?.role == 6) &&
+            user?.role == 6||
+            user?.role == 10) &&
             reste_first > 0 && (
               <button
                 onClick={handleAdd}
@@ -1495,7 +1497,7 @@ export const AvancesTab = ({
                   />
                 </div>
                 {/* Encaisse Section */}
-                {user?.role <= 2 && formData.montant > 0 && (
+                {(user?.role <= 2 || user?.role ==10)  && formData.montant > 0 && (
                   <div className="border-t pt-4 mt-4">
                     <h3 className="text-lg font-semibold mb-3">Encaissement</h3>
 

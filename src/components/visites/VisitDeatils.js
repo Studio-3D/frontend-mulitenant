@@ -429,7 +429,7 @@ export function VisitDetails({
             if (interet == '3') {
               const frein = response?.data?.historiques[k]?.freins;
               fr_autre =
-                response?.data?.historiques[k]?.frein?.description_autre;
+                response?.data?.historiques[k]?.freins?.description_autre;
               const concatNames = (array, keyPath) => {
                 if (!Array.isArray(array) || array.length === 0) return '';
 

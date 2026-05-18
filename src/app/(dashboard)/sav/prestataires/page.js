@@ -6,7 +6,7 @@ import PrestataireForm from './PrestataireForm'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin,isSav } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isSav, isAgentAdministratif } from '@/configs/enum';
 export default function Page() {
   const ACTION = { EDIT: 'edit', ADD: 'add' }
   const [child, setChild] = useState(null)
@@ -20,7 +20,8 @@ export default function Page() {
             user && 
             !isAdmin(userRole) &&
             !isSuperAdmin(userRole) &&
-            !isSav(userRole)
+            !isSav(userRole) &&
+            !isAgentAdministratif(userRole)
           ) {
             router.push('/');
           }

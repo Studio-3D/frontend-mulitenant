@@ -17,7 +17,7 @@ export default function EditImmeublePage() {
   const [error, setError] = useState(null);
 
   // Only admins and super admins can edit immeubles
-  const canEditImmeuble = user?.role === 1 || user?.role === 2;
+  const canEditImmeuble = user?.role === 1 || user?.role === 2|| user?.role === 10;
 
   // Redirect if user doesn't have permission
   useEffect(() => {

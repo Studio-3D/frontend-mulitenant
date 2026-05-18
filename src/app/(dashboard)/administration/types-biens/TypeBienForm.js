@@ -160,7 +160,7 @@ const TypeBienForm = ({ id = null, onComplete }) => {
       <div className="flex items-center justify-start">
         <BreadCrumb
           baseUrl={ENDPOINTS.TYPEBIENS}
-          step={`${id ? 'Modifier' : 'Ajouter'} une  type de bien`}
+          step={`${id ? 'Modifier' : 'Ajouter'} un  type de bien`}
         />
       </div>
       <div className="p-6 mt-4 bg-white shadow-md rounded-md">

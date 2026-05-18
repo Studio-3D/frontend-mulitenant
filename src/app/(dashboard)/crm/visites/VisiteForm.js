@@ -957,12 +957,12 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
         if (isNaN(avance) || avance < 0) {
           errors.push(`Bien ${index + 1}: Montant d'avance invalide`);
         }
-        if (avance == 0 && user?.role > 2) {
+        if (avance == 0 && (user?.role > 2 && user?.role != 10)) {
           errors.push(
             `Bien ${index + 1}: Le montant ne peut pas être 0 pour votre rôle`,
           );
         }
-        if (avance < parseFloat(x.avance_minimale || 0) && user?.role > 2) {
+        if (avance < parseFloat(x.avance_minimale || 0) && (user?.role > 2 && user?.role != 10)) {
           errors.push(
             `Bien ${index + 1}: Le montant doit être au moins ${x.avance_minimale} MAD`,
           );
@@ -1029,12 +1029,12 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
         if (isNaN(avance) || avance < 0) {
           errors.push(`Bien vendu ${index + 1}: Montant d'avance invalide`);
         }
-        if (avance == 0 && user?.role > 2) {
+        if (avance == 0 &&(user?.role > 2 && user?.role != 10)) {
           errors.push(
             `Bien vendu ${index + 1}: Le montant ne peut pas être 0 pour votre rôle`,
           );
         }
-        if (avance < parseFloat(x.avance_minimale || 0) && user?.role > 2) {
+        if (avance < parseFloat(x.avance_minimale || 0) && (user?.role > 2 && user?.role != 10)) {
           errors.push(
             `Bien vendu ${index + 1}: Le montant doit être au moins ${x.avance_minimale} MAD`,
           );
@@ -2927,7 +2927,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                       )}
                                   </>
                                 )}
-                              {user.role <= 2 && watch("montant_suivi") > 0 && (
+                              {(user.role <= 2 ||user.role==10)&& watch("montant_suivi") > 0 && (
                                 <>
                                   <div className="col-span-3">
                                     <h2
@@ -3268,11 +3268,11 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                         error={
                                           x.avance_res != "" &&
                                           x.avance_res == 0 &&
-                                          user?.role > 2
+                                         (user?.role > 2 && user?.role != 10)
                                             ? "Le montant ne peut pas être 0 pour votre rôle"
                                             : x.avance_res <
                                                   x.avance_minimale &&
-                                                user?.role > 2
+                                               (user?.role > 2 && user?.role != 10)
                                               ? `Le montant doit être au moins ${x.avance_minimale}`
                                               : null
                                         }
@@ -3448,14 +3448,14 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                           handleinputchange_bien_vendu(e, j)
                                         }
                                       />
-                                      {user.role <= 2 && x.avance_res > 0 && (
+                                      {(user.role <= 2 ||(user?.role == 10 && x.prix == x.prix_final)) && x.avance_res > 0 && (
                                         <>
                                           <div className="col-span-3">
                                             <h2
                                               className="text-lg font-medium border-b pb-2 mb-4"
                                               style={{ color: "#231651" }}
                                             >
-                                              Informations Encaissement
+                                              Informations Encaissement 
                                             </h2>
                                           </div>
                                           <InputField_Biens
@@ -3900,11 +3900,11 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                           error={
                                             x.avance_res != "" &&
                                             x.avance_res == 0 &&
-                                            user?.role > 2
+                                           (user?.role > 2 && user?.role != 10)
                                               ? "Le montant ne peut pas être 0 pour votre rôle"
                                               : x.avance_res <
                                                     x.avance_minimale &&
-                                                  user?.role > 2
+                                                  (user?.role > 2 && user?.role != 10)
                                                 ? `Le montant doit être au moins ${x.avance_minimale}`
                                                 : null
                                           }
@@ -4089,7 +4089,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                             handleinputchange(e, i)
                                           }
                                         />
-                                        {user.role <= 2 && x.avance_res > 0 && (
+                                        {(user.role <= 2 ||(user?.role == 10 && x.prix == x.prix_final))&& x.avance_res > 0 && (
                                           <>
                                             <div className="col-span-3">
                                               <h2

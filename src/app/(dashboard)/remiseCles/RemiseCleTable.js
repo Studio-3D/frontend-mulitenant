@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 
 import { APIURL, ENDPOINTS, RESOURCE_URL } from '@/configs/api';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
-import { isAdmin, isCommercial, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { Pencil, Trash2, Eye } from 'lucide-react';
@@ -327,7 +327,8 @@ const RemiseCleTable = ({searchParams}) => {
           isSuperAdmin(user.role) ||
           isAdmin(user.role) ||
           isCommercial(user.role)||
-          isRespoLivraison(user.role)
+          isRespoLivraison(user.role)||
+          isAgentAdministratif(user.role)
             ? `${ENDPOINTS.REMISECLES}?action=add`
             : undefined
         }

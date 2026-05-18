@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { isAdmin, isSuperAdmin,isSav } from '@/configs/enum';
+import { isAdmin, isSuperAdmin,isSav, isAgentAdministratif } from '@/configs/enum';
 
 import {
   UserIcon,
@@ -26,7 +26,8 @@ const PrestataireDetail = ({ Details }) => {
                     user && 
                     !isAdmin(userRole) &&
                     !isSuperAdmin(userRole) &&
-                    !isSav(userRole)
+                    !isSav(userRole) &&
+                    !isAgentAdministratif(userRole)
                   ) {
                     router.push('/');
                   }

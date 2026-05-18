@@ -31,6 +31,7 @@ import {
   VISITE_INTERETS,
   getRelance_label,
   TYPES_APPELS,
+  isAgentAdministratif,
 } from '../../../../../../src/configs/enum';
 import Input from '@/components/Input';
 import Link from 'next/link';
@@ -322,7 +323,8 @@ const JournalTable = ({ id, prospect, client = null }) => {
         <div className="flex gap-3 items-center">
           {(isSuperAdmin(user.role) ||
               isAdmin(user.role) ||
-              isCommercial(user.role)) && (
+              isCommercial(user.role)||
+              isAgentAdministratif(user.role)) && (
                 <>
                 <Link
             href={`${ENDPOINTS.APPELS}?id=${row.id}&action=edit`}
@@ -490,7 +492,8 @@ const JournalTable = ({ id, prospect, client = null }) => {
           addLink={
             (isSuperAdmin(user.role) ||
               isAdmin(user.role) ||
-              isCommercial(user.role)) &&
+              isCommercial(user.role)||
+              isAgentAdministratif(user.role)) &&
             getAddLinkForAppel()
           }
           filterComponent={

@@ -9,7 +9,7 @@ import { Pencil, Trash2, Eye } from 'lucide-react';
 import axios from 'axios';
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
-import { isAdmin, isSav, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isSav, isSuperAdmin } from '@/configs/enum';
 import { useAuth } from '@/context/AuthContext';
 import Input from '@/components/Input';
 import InputSelect from '@/components/inputSelect';
@@ -398,7 +398,7 @@ const PrestataireTable = (serviceId) => {
         enableExport={true}
         enableImport={false}
         addLink={
-          (isSuperAdmin(user.role) || isAdmin(user.role)|| isSav(user.role)) && selectedProjet
+          (isSuperAdmin(user.role) || isAdmin(user.role)|| isSav(user.role)|| isAgentAdministratif(user.role)) && selectedProjet
             ? `${ENDPOINTS.Prestataires}?action=add`
             : undefined
         }

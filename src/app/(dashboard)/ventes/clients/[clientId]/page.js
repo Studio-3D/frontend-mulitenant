@@ -16,7 +16,7 @@ import ClientPDF from '../ClientImprimer';
 import JournalTable from '@/app/(dashboard)/crm/appels/[appelId]/JournalTable';
 import HistoriquesTable from '@/app/(dashboard)/crm/prospects/[prospectId]/HistoriquesTable';
 import { useProjet } from '@/context/ProjetContext';
-import { isAdmin, isCommercial, isComptable, isNotaire, isRespoCommercial, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isComptable, isNotaire, isRespoCommercial, isRespoLivraison, isSuperAdmin } from '@/configs/enum';
 import { useSociete } from '@/context/SocieteContext';
 import VisiteTableShow from '@/app/(dashboard)/crm/prospects/[prospectId]/VisitesTableShow';
 import {
@@ -105,7 +105,8 @@ const ClientDetails = () => {
       !isRespoCommercial(userRole) &&
       !isNotaire(userRole) &&
       !isRespoLivraison(userRole) &&
-      !isComptable(userRole)
+      !isComptable(userRole)&&
+      !isAgentAdministratif(userRole)
     ) {
       router.push('/');
     }

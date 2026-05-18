@@ -34,7 +34,7 @@ const createSchema = (userRole) => {
   };
 
   // Add user_id_remise validation only for users with role <= 2
-  if (userRole <= 2) {
+  if (userRole <= 2||userRole==10) {
     baseSchema.user_id_remise = yup
       .string()
       .required('Le Commercial est obligatoire');
@@ -244,7 +244,7 @@ const RemiseCleForm = ({ id = null }) => {
       formData.append('date_remise', data.date_remise);
 
       // Only append user_id_remise if user role is <= 2
-      if (user?.role <= 2) {
+      if (user?.role <= 2 ||user?.role==10) {
         formData.append('user_id_remise', data.user_id_remise);
       }
 
@@ -313,7 +313,7 @@ const RemiseCleForm = ({ id = null }) => {
           {/* Ligne 1 : Date, Bien, Responsable (conditionnel) */}
           <div
             className={`grid gap-6 ${
-              user?.role <= 2
+              (user?.role <= 2||user?.role ==10)
                 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
                 : 'grid-cols-1 sm:grid-cols-2'
             }`}
@@ -352,7 +352,7 @@ const RemiseCleForm = ({ id = null }) => {
             )}
 
             {/* Only show Responsable field for users with role <= 2 */}
-            {user?.role <= 2 && (
+            {(user?.role <= 2 ||user?.role ==10)&& (
               <SelectInput
                 label="Responsable"
                 name="user_id_remise"

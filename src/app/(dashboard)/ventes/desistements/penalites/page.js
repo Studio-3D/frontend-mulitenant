@@ -6,7 +6,7 @@ import { fetchData_table_by_id } from '../../../../../../src/configs/api-utils';
 import { Eye, Check, Upload, Clock } from 'lucide-react';
 import Table from '@/components/Table';
 import { format } from 'date-fns';
-import { isComptable, isRespoCommercial, MODE_PAIEMENT, type_dst, type_dst_dp } from '@/configs/enum';
+import { isAgentAdministratif, isComptable, isRespoCommercial, MODE_PAIEMENT, type_dst, type_dst_dp } from '@/configs/enum';
 import { isAdmin, isSuperAdmin ,isCommercial} from '../../../../../configs/enum';
 import { APIURL } from '@/configs/api';
 import Link from 'next/link';
@@ -84,7 +84,8 @@ export default function PenalitesTable() {
             !isSuperAdmin(userRole) &&
             !isCommercial(userRole)&&
             !isComptable(userRole)&&
-            !isRespoCommercial(userRole)
+            !isRespoCommercial(userRole)&&
+            !isAgentAdministratif(userRole)
           ) {
             router.push('/');
           }
@@ -232,7 +233,7 @@ export default function PenalitesTable() {
   ];
 
   const adminColumns =
-  isSuperAdmin(userRole) || isAdmin(userRole) || isComptable(userRole)
+  isSuperAdmin(userRole) || isAdmin(userRole) || isComptable(userRole)|| isAgentAdministratif(userRole)
     ? [
         {
           key: 'cc',
@@ -285,7 +286,7 @@ export default function PenalitesTable() {
   };
 
   const validationColumns =
-    (isSuperAdmin(userRole) || isAdmin(userRole)||isComptable(userRole)) &&
+    (isSuperAdmin(userRole) || isAdmin(userRole)||isComptable(userRole)||isAgentAdministratif(userRole)) &&
     [1, 2].includes(etat_penalite)
       ? [
           {
@@ -303,7 +304,7 @@ export default function PenalitesTable() {
       : [];
 
   const actionColumn =
-    isAdmin(userRole) || isSuperAdmin(userRole) ||isComptable(userRole)||isCommercial(userRole) ? (
+    isAdmin(userRole) || isSuperAdmin(userRole) ||isAgentAdministratif(userRole)||isComptable(userRole)||isCommercial(userRole) ? (
       {
         key: 'actions',
         label: 'ACTIONS',

@@ -47,7 +47,7 @@ export default function LinkedInConfigTab() {
       }
     };
 
-    if (user && (user.role === 1 || user.role === 2)) {
+    if (user && (user.role === 1 || user.role === 2|| user.role === 10)) {
       fetchData();
     } else {
       setLoading(false);

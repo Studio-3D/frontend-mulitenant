@@ -12,7 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
 import { ENDPOINTS } from '@/configs/api';
 import { fetchData_table_by_projet } from '@/configs/api-utils';
-import { isAdmin, isCommercial, isRespoCommercial, isSuperAdmin, VISITE_INTERETS, VISITE_STATUT } from '@/configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isRespoCommercial, isSuperAdmin, VISITE_INTERETS, VISITE_STATUT } from '@/configs/enum';
 
 // Don't import formatDate directly, create our own formatter
 const formatDateSafe = (dateString) => {
@@ -210,7 +210,7 @@ const VisiteTableShow = ({ user_id, dataProspect, dataClient ,searchParams}) => 
       label: 'Actions',
       render: (row) => (
         <div className="flex gap-3 items-center">
-          {(isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role) || isRespoCommercial(user.role)) && (
+          {(isSuperAdmin(user.role) || isAdmin(user.role) || isCommercial(user.role) || isRespoCommercial(user.role)|| isAgentAdministratif(user.role)) && (
             <Link
               href={`/crm/visites/${row.origin_id}`}
               className="flex items-center gap-1 text-blue-500 hover:text-blue-700"

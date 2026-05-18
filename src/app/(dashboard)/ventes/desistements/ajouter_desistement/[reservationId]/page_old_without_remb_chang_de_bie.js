@@ -472,7 +472,7 @@ export default function Page() {
 
       if (response.status == 201 || response.status == 200) {
         const { data: responseData } = response;
-        if (user?.role <= 2) {
+        if (user?.role <= 2||user?.role ==10) {
           /* localStorage.setItem('etat_dst', '1');
           router.push('/ventes?tab=desistements');*/
           if (activeModel == 1) {

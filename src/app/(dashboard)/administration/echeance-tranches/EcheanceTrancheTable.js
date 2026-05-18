@@ -10,7 +10,7 @@ import { useProjet } from '../../../../context/ProjetContext';
 import { APIURL } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../configs/api-utils';
-import { isAdmin, isCommercial, isSuperAdmin } from '../../../../configs/enum';
+import { isAdmin, isAgentAdministratif, isCommercial, isSuperAdmin } from '../../../../configs/enum';
 import Input from '@/components/Input';
 import Link from 'next/link';
 import { useSociete } from '@/context/SocieteContext';
@@ -141,7 +141,7 @@ const EcheanceTrancheTable = ({ searchParams }) => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          {isAdmin(user.role)||isSuperAdmin(user.role)&& (
+          {(isAdmin(user.role)||isSuperAdmin(user.role)||isAgentAdministratif(user.role))&& (
           <> 
            <Link
             href={`/administration/echeance-tranches?id=${row.id}&action=edit`}
@@ -225,7 +225,7 @@ const EcheanceTrancheTable = ({ searchParams }) => {
           onFilterToggle={handleFilterToggle}
           addLink={
             isSuperAdmin(user.role) ||
-            isAdmin(user.role) 
+            isAdmin(user.role) ||isAgentAdministratif(user.role)
               ? `/administration/echeance-tranches?action=add`
               : undefined
           }

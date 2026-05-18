@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import AppelsTable from './AppelsTable';
 import AppelsForm from './AppelsForm';
 import { useSearchParams } from 'next/navigation';
-import { isAdmin, isSuperAdmin, isCommercial, isRespoCommercial } from '../../../../configs/enum';
+import { isAdmin, isSuperAdmin, isCommercial, isRespoCommercial, isAgentAdministratif } from '../../../../configs/enum';
 import { useAuth } from '../../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 
@@ -19,7 +19,8 @@ export default function Page() {
       !isAdmin(userRole) &&
       !isSuperAdmin(userRole) &&
       !isCommercial(userRole)&&
-      !isRespoCommercial(userRole)
+      !isRespoCommercial(userRole)&&
+      !isAgentAdministratif(userRole)
     ) {
       router.push('/');
     }
