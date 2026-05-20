@@ -15,13 +15,16 @@ import TextField from '@/components/Textfield';
 import Button from '@/components/Button';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import DocuPenaliteDesistementDocumentment from './recu';
+//import { PDFDownloadLink } from '@react-pdf/renderer';
+//import DocuPenaliteDesistementDocumentment from './recu';
 import Input from '@/components/Input';
+import { Loader2 } from 'lucide-react';
 
 import { useProjet } from '@/context/ProjetContext';
 export default function PenalitesTable() {
   // Authentication and state management
+  const [loadingPdfId, setLoadingPdfId] = useState(null);
+
   const { user, token } = useAuth();
   const userRole = user?.role;
   const accessToken = token || localStorage.getItem('accessToken');
@@ -39,7 +42,64 @@ export default function PenalitesTable() {
 
   const [filters, setFilters] = useState(initialFilters);
   const [tempFilters, setTempFilters] = useState(initialFilters);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
+  const handleDownloadPenalitePDF = async (row) => {
+  try {
+    setLoadingPdfId(row.id);
+    
+    // Préparer les clients
+    const clientsFormatted = row.pen?.desistement?.reservation_ancien?.aquereurs_ancien?.map(
+      (aq, i, arr) => {
+        return `${aq.client.cin} ${aq.client.nom} ${aq.client.prenom}${arr.length - 1 === i ? '' : ' et '}`;
+      }
+    ) || [];
+    
+    const pdfData = {
+      code_dossier: row.pen?.desistement?.reservation_ancien?.code_reservation || '',
+      num_recu: row.num_recu,
+      montant_penalite: row.pen?.montant || 0,
+      mode_paiement: row.pen?.mode_paiement || '',
+      numero_paiement: row.pen?.numero_paiement || '',
+      bien: row.pen?.desistement?.reservation_ancien?.bien || null,
+      commercial_nom: row.pen?.desistement?.user?.name || '',
+      commercial_prenom: row.pen?.desistement?.user?.prenom || '',
+      clients: clientsFormatted,
+      user: {
+          //...user,
+          societe: JSON.parse(localStorage.getItem('authUser'))?.societe || {}
+        },
+    };
+
+    const response = await axios.post(
+       `${apiUrl}/generate_penalite_pdf`,
+      { data: pdfData },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        responseType: 'blob'
+      }
+    );
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `recu_penalite_${row.num_recu}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success('PDF généré avec succès');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    toast.error('Erreur lors de la génération du PDF');
+  } finally {
+    setLoadingPdfId(null);
+  }
+};
   // Single optimized handler for all filter changes
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({
@@ -333,7 +393,19 @@ export default function PenalitesTable() {
                 </button>
               )}
               {row.sr == 0 && (
-                <PDFDownloadLink
+                <button
+                  onClick={() => handleDownloadPenalitePDF(row)}
+                  disabled={loadingPdfId === row.id}
+                  className={`text-indigo-500 hover:text-indigo-700 ${loadingPdfId === row.id ? 'opacity-50' : ''}`}
+                  title="Télécharger PDF"
+                >
+                  {loadingPdfId === row.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                </button>
+                /*<PDFDownloadLink
                   document={
                     <DocuPenaliteDesistementDocumentment
                       data={[
@@ -375,7 +447,8 @@ export default function PenalitesTable() {
                       {loading ? '...' : <Upload className="w-4 h-4" />}
                     </button>
                   )}
-                </PDFDownloadLink>
+                </PDFDownloadLink>*/
+                
               )}
             </div>
           );

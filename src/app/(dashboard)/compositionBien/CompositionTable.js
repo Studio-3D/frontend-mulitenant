@@ -321,69 +321,76 @@ export default function Composition({ bien, reloadTrigger }) {
         </div>
       )}
       {showEditModal && selectedRow && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white w-full max-w-xl p-6 rounded-lg shadow-xl">
-            <div className="w-full h-[60px] bg-blue-600 px-4 mb-5">
-              <div className="flex items-center justify-center h-full">
-                <h1 className="text-3xl font-bold text-center text-white">
-                  Modifier les piéces
-                </h1>
-              </div>
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                onUpdate(selectedRow); // 🔁 utilise onUpdate ici
-              }}
-            >
-              <div className="grid grid-cols-2 gap-4">
-                {Object.entries(selectedRow)
-                  .filter(([key]) => key.startsWith('nbre_'))
-                  .map(([key, value]) => (
-                    <div key={key} className="flex flex-col">
-                      <label
-                        htmlFor={key}
-                        className="text-sm text-gray-600 capitalize mb-1"
-                      >
-                        {key.replace('nbre_', '').replace('_', ' ')}
-                      </label>
-                      <input
-                        type="number"
-                        name={key}
-                        id={key}
-                        value={selectedRow[key]}
-                        onChange={(e) =>
-                          setSelectedRow((prev) => ({
-                            ...prev,
-                            [key]: parseInt(e.target.value, 10),
-                          }))
-                        }
-                        className="border rounded px-3 py-2 text-sm"
-                      />
-                    </div>
-                  ))}
-              </div>
-
-              <div className="mt-6 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  Enregistrer
-                </button>
-              </div>
-            </form>
-          </div>
+  <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="bg-white w-full max-w-xl p-6 rounded-lg shadow-xl">
+      <div className="w-full h-[60px] bg-blue-600 px-4 mb-5">
+        <div className="flex items-center justify-center h-full">
+          <h1 className="text-3xl font-bold text-center text-white">
+            Modifier les piéces
+          </h1>
         </div>
-      )}
+      </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onUpdate(selectedRow);
+        }}
+      >
+        <div className="grid grid-cols-2 gap-4">
+          {Object.entries(selectedRow)
+            .filter(([key]) => key.startsWith('nbre_'))
+            .map(([key, value]) => {
+              // Ensure value is a valid number or empty string
+              const inputValue = (value !== null && value !== undefined && !isNaN(value)) 
+                ? value 
+                : '';
+              
+              return (
+                <div key={key} className="flex flex-col">
+                  <label
+                    htmlFor={key}
+                    className="text-sm text-gray-600 capitalize mb-1"
+                  >
+                    {key.replace('nbre_', '').replace('_', ' ')}
+                  </label>
+                  <input
+                    type="number"
+                    name={key}
+                    id={key}
+                    value={inputValue}
+                    onChange={(e) =>
+                      setSelectedRow((prev) => ({
+                        ...prev,
+                        [key]: e.target.value === '' ? '' : parseInt(e.target.value, 10),
+                      }))
+                    }
+                    className="border rounded px-3 py-2 text-sm"
+                  />
+                </div>
+              );
+            })}
+        </div>
+
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setShowEditModal(false)}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 }

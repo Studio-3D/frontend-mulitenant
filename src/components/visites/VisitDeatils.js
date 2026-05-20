@@ -9,7 +9,9 @@ import DeleteWarningModal from '@/components/visites/DeleteWarningModal';
 import DeleteData from '@/components/DeleteData';
 import { APIURL, ENDPOINTS } from '../../configs/api';
 import Button from '@/components/Button'; // adjust the path as needed
-
+// Ajouter dans les imports
+import axios from 'axios';
+import { Loader2 } from 'lucide-react';
 import {
   UserIcon,
   TagIcon,
@@ -46,7 +48,6 @@ import BonPreReservationDocument from '../../../src/app/(dashboard)/crm/pre-rese
 import { useRouter } from 'next/navigation';
 import Modal_Historique_rel_rdv from './Modal_Historique_rel_rdv';
 import Modal_Historique from './Modal_Historique';
-import axios from 'axios';
 import Modal_Traite from '../../../src/app/(dashboard)/crm/Modal_Traite';
 import useClear_visite_cadre from '@/app/(dashboard)/crm/hook/useClear_visite_cadre';
 export function VisitDetails({
@@ -55,6 +56,8 @@ export function VisitDetails({
   origin_id,
   last_related_id,
 }) {
+  const [loadingPdfId, setLoadingPdfId] = useState(null);
+
   //when reload remove item v_id_cadre
   useClear_visite_cadre();
   const cadre_selected = `${localStorage.getItem('v_id_cadre')}`;
@@ -92,7 +95,57 @@ export function VisitDetails({
     setText(text);
     setID_rel_rdv(Id);
   };
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
+  const handleDownloadBonPreReservation = async (visite) => {
+  try {
+    setLoadingPdfId(visite.id);
+    
+    const pdfData = {
+      code_pre_reservation: visite.pre_reservation_visite?.code_pre_reserve,
+      date_pre_reserve: visite.pre_reservation_visite?.date_pre_reserve,
+      rdv: visite.rdv_relation?.rdv,
+      propriete_dite_bien: visite.bien?.propriete_dite_bien,
+      niveau: visite.bien?.niveau,
+      superficie: visite.bien?.superficie_architecte,
+      orientation: visite.bien?.orientation,
+      prix: visite.bien?.prix,
+      commercial_nom: visite?.user?.name,
+      commercial_prenom: visite?.user?.prenom,
+     user: {
+          //...user,
+          societe: JSON.parse(localStorage.getItem('authUser'))?.societe || {}
+        },
+    
+    };
+
+    const response = await axios.post(
+       `${apiUrl}/generate_bon_pre_reservation_pdf`,
+      { data: pdfData },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        responseType: 'blob'
+      }
+    );
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `bon_pre_reservation_${visite.pre_reservation_visite?.code_pre_reserve}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+  } finally {
+    setLoadingPdfId(null);
+  }
+};
   // ✅ Get current visit's order
   const currentVisitIndex = visites_all_show.findIndex(
     (v) => v.related_show_id == activeVisit
@@ -979,75 +1032,7 @@ export function VisitDetails({
                                 )}
                             </div>
 
-                            {/* Add this new row below the Traiter buttons *
-                            <div className="flex items-center space-x-4 mt-3">
-                              {/* Status tag 
-                              {visite.interet == 1 && (
-                                <div className="flex items-center">
-                                  {getStatutBadge(visite.statut)}
-                                </div>
-                              )}
-
-                              {/* Action buttons *
-                              <div className="flex space-x-2">
-                                {/* View Reservation button *
-                                {visite.reservation != null && (
-                                  <button
-                                    title="Détail du Réservation"
-                                    onClick={() =>
-                                      handleView_Reservation(
-                                        visite?.reservation?.id
-                                      )
-                                    }
-                                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-                                  >
-                                    <EyeIcon className="h-5 w-5 text-gray-700" />
-                                  </button>
-                                )}
-
-                                {/* Download PDF button *
-                                {(visite.statut == 1 ||
-                                  visite.statut == 3 ||
-                                  visite.statut == 5) && (
-                                  <PDFDownloadLink
-                                    document={
-                                      <Document
-                                        data={[
-                                          visite.id,
-                                          visite.pre_reservation_visite
-                                            ?.code_pre_reserve,
-                                          visite.rdv_relation?.rdv,
-                                          visite.pre_reservation_visite
-                                            ?.date_pre_reserve,
-                                          visite.bien.propriete_dite_bien,
-                                          visite.bien.niveau,
-                                          visite.bien.superficie_architecte,
-                                          visite.bien.orientation,
-                                          visite.bien.prix,
-                                          visite?.user?.name,
-                                          visite?.user?.prenom,
-                                        ]}
-                                      />
-                                    }
-                                    fileName="bon_pre_reservation.pdf"
-                                  >
-                                    {({ loading }) => (
-                                      <button
-                                        className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-                                        disabled={loading}
-                                      >
-                                        {loading ? (
-                                          <span>Loading...</span>
-                                        ) : (
-                                          <DownloadIcon className="h-5 w-5 text-gray-700" />
-                                        )}
-                                      </button>
-                                    )}
-                                  </PDFDownloadLink>
-                                )}
-                              </div>
-                            </div>
-                            {/* ... rest of the code ... */}
+                           
                           </div>
                         </div>
 
@@ -1102,45 +1087,18 @@ export function VisitDetails({
                               {(visite.statut == 1 ||
                                 visite.statut == 3 ||
                                 visite.statut == 5) && (
-                                <PDFDownloadLink
-                                  document={
-                                    <BonPreReservationDocument
-                                      data={[
-                                        visite.id,
-                                        visite.pre_reservation_visite
-                                          ?.code_pre_reserve,
-                                        visite.rdv_relation?.rdv,
-                                        visite.pre_reservation_visite
-                                          ?.date_pre_reserve,
-                                        visite.bien.propriete_dite_bien,
-                                        visite.bien.niveau,
-                                        visite.bien.superficie_architecte,
-                                        visite.bien.orientation,
-                                        visite.bien.prix,
-                                        visite?.user?.name,
-                                        visite?.user?.prenom,
-                                        JSON.parse(
-                                          localStorage.getItem('authUser')
-                                        ),
-                                      ]}
-                                    />
-                                  }
-                                  fileName="bon_pre_reservation.pdf"
-                                >
-                                  {({ loading }) => (
-                                    <button
-                                      title="Télecharger Bon de Pré Réservation"
-                                      className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-                                      disabled={loading}
-                                    >
-                                      {loading ? (
-                                        <span>Loading...</span>
-                                      ) : (
-                                        <DownloadIcon className="h-5 w-5 text-gray-700" />
-                                      )}
-                                    </button>
-                                  )}
-                                </PDFDownloadLink>
+                               <button
+                              onClick={() => handleDownloadBonPreReservation(visite)}
+                              disabled={loadingPdfId === visite.id}
+                              title="Télécharger Bon de Pré Réservation"
+                              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                            >
+                              {loadingPdfId === visite.id ? (
+                                <Loader2 className="h-5 w-5 text-gray-700 animate-spin" />
+                              ) : (
+                                <DownloadIcon className="h-5 w-5 text-gray-700" />
+                              )}
+                            </button>
                               )}
                               {visite.interet == 3 && (
                                 <>
@@ -1359,69 +1317,7 @@ export function VisitDetails({
                               }
                             />
 
-                            {/* <InfoCard
-                              icon={<BadgeCheckIcon className="h-5 w-5" />}
-                              title="Statut"
-                              value={getStatutBadge(visite.statut)}
-                              url={
-                                <>
-                                  {visite.reservation != null && (
-                                    <button
-                                      title="Détail du Réservation"
-                                      onClick={() =>
-                                        handleView_Reservation(
-                                          visite?.reservation?.id
-                                        )
-                                      }
-                                      className="ml-2 !text-red hover:text-red transition-colors mt-1"
-                                    >
-                                      <div title="Voir Réservation">
-                                        <EyeIcon className="h-5 w-5" />
-                                      </div>
-                                    </button>
-                                  )}
-
-                                  {(visite.statut == 1 ||
-                                    visite.statut == 3 ||
-                                    visite.statut == 5) && (
-                                    <>
-                                      <PDFDownloadLink
-                                        document={
-                                          <Document
-                                            data={[
-                                              visite.id,
-                                              visite.pre_reservation_visite
-                                                ?.code_pre_reserve,
-                                              visite.rdv_relation?.rdv,
-                                              visite.pre_reservation_visite
-                                                ?.date_pre_reserve,
-                                              visite.bien.propriete_dite_bien,
-                                              visite.bien.niveau,
-                                              visite.bien.superficie_architecte,
-                                              visite.bien.orientation,
-                                              visite.bien.prix,
-                                              visite?.user?.name,
-                                              visite?.user?.prenom,
-                                            ]}
-                                          />
-                                        }
-                                        fileName="bon_pre_reservation.pdf"
-                                      >
-                                        {({ loading }) =>
-                                          loading ? (
-                                            'Loading document...'
-                                          ) : (
-                                            <div title="Télécharger Bon de Préservation">
-                                              <DownloadIcon className="h-5 w-5" />
-                                            </div>
-                                          )
-                                        }
-                                      </PDFDownloadLink>
-                                    </>
-                                  )}
-                                </>
-                              }
-                            />*/}
+                         
                             <>
                               {visite.relance_relation != null && (
                                 <>

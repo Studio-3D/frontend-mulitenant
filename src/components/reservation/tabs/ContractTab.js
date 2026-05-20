@@ -14,10 +14,11 @@ import {
   X,
   File,
 } from 'lucide-react';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import Document_Contrat from '../../../app/(dashboard)/ventes/reservations/contrat_vente/recu';
+//import { PDFDownloadLink } from '@react-pdf/renderer';
+//import Document_Contrat from '../../../app/(dashboard)/ventes/reservations/contrat_vente/recu';
 import Pusher from 'pusher-js';
 import { RESOURCE_URL } from '@/configs/api';
+import { Loader2 } from 'lucide-react';
 
 export const ContractTab = ({
   reservationData,
@@ -26,6 +27,8 @@ export const ContractTab = ({
   updateReservationData,
   onContratCreated, // AJOUTER CETTE PROP
 }) => {
+  const [loadingPdf, setLoadingPdf] = useState(false);
+
   const pusher_key_contrat_vente =
     process.env.NEXT_PUBLIC_PUSHER_APP_KEY_DOCUMENT;
   const data_reservation = reservationData?.reservation;
@@ -58,6 +61,53 @@ export const ContractTab = ({
 
   const color_var = '#5A5FE0';
 
+  const handleDownloadContratPDF = async () => {
+  try {
+    setLoadingPdf(true);
+    
+    const pdfData = {
+      reservation: {
+        ...data_reservation,
+        date_sign_client: date_sign_client,
+        date_sign_mo: date_sign_mo,
+        date_enreg: date_enreg,
+        commentaire: commentaire,
+        sum_avances_valides: sum_avances_valides,
+        num_recu: num_recu || 'temp'
+      },
+      societe: user?.societe,
+      num_recu: num_recu || 'temp'
+    };
+
+    const response = await axios.post(
+      `${apiUrl}/generate_contrat_vente_pdf`,
+      { data: pdfData },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        responseType: 'blob'
+      }
+    );
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `contrat_vente_${num_recu || 'temp'}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success('PDF généré avec succès');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    toast.error('Erreur lors de la génération du PDF');
+  } finally {
+    setLoadingPdf(false);
+  }
+};
   const modifierErreur = (message) => {
     setErrors(message);
     setTimeout(() => setErrors(''), 5000);
@@ -978,7 +1028,7 @@ const showToast = (message, type = 'success') => {
                       </button>
                     )*/}
 
-                    <PDFDownloadLink
+                  {/*<PDFDownloadLink
                       document={
                         <Document_Contrat
                           data={{
@@ -1012,7 +1062,24 @@ const showToast = (message, type = 'success') => {
                           )}
                         </>
                       )}
-                    </PDFDownloadLink>
+                    </PDFDownloadLink>*/}
+                    <button
+                    onClick={handleDownloadContratPDF}
+                    disabled={loadingPdf}
+                    className="px-4 py-2 bg-gray-800 text-white rounded-lg flex items-center text-sm hover:bg-gray-900 transition-colors"
+                  >
+                    {loadingPdf ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Génération...
+                      </>
+                    ) : (
+                      <>
+                        <Printer className="w-4 h-4 mr-2" />
+                        Télécharger le Pdf
+                      </>
+                    )}
+                  </button>
                     {etat_res == 1 && (
                       <button
                         onClick={handleEdit}
