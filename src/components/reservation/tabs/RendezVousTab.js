@@ -22,8 +22,8 @@ import {
 import axios from 'axios';
 import format from 'date-fns/format';
 import isToday from 'date-fns/isToday';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import ReceiptDocument from '../../../app/(dashboard)/ventes/reservations/rdv/recu_rdv';
+//import { PDFDownloadLink } from '@react-pdf/renderer';
+//import ReceiptDocument from '../../../app/(dashboard)/ventes/reservations/rdv/recu_rdv';
 import toast from 'react-hot-toast';
 import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
@@ -31,8 +31,10 @@ import { APIURL, RESOURCE_URL } from '@/configs/api';
 import AddRdvModal from './AddRdvModal';
 import Pusher from 'pusher-js';
 import { isAdmin, isAgentAdministratif, isCommercial, isNotaire, isRespoCommercial, isRespoLivraison } from '@/configs/enum';
+import { Loader2 } from 'lucide-react';
 
 const StatusBadge = ({ status }) => {
+
   const statusConfig = {
     Traite: {
       icon: <CheckCircleIcon className="h-4 w-4 mr-1" />,
@@ -62,6 +64,8 @@ const StatusBadge = ({ status }) => {
 
 export const RendezVousTab = ({ reservationData, user, onRdvChange }) => {
 const [isAddingRelance, setIsAddingRelance] = useState(false);
+const [loadingPdfId, setLoadingPdfId] = useState(null);
+
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const accessToken = localStorage.getItem('accessToken');
   const reservationId = reservationData?.reservation?.id;
@@ -89,6 +93,51 @@ const [isAddingRelance, setIsAddingRelance] = useState(false);
 
   ]);
 
+  const handleDownloadRdvPDF = async (rdv) => {
+  try {
+    setLoadingPdfId(rdv.id);
+    
+    const pdfData = {
+      code_reservation: rdv.reservation?.code_reservation || '',
+      bien_propriete:NomBienComplet( rdv.reservation?.bien )|| '',
+      type_rdv: rdv.type == 1 ? 'Attestation de vente' : 'Contrat de vente',
+      date_rdv: rdv.rdv,
+      num_recu: rdv.num_recu || '',
+      user: {
+          //...user,
+          societe: JSON.parse(localStorage.getItem('authUser'))?.societe || {}
+        },
+    };
+
+    const response = await axios.post(
+      `${apiUrl}/generate_rdv_pdf`,
+      { data: pdfData },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        responseType: 'blob'
+      }
+    );
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `recu_rdv_${rdv.num_recu || rdv.id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success('PDF généré avec succès');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    toast.error('Erreur lors de la génération du PDF');
+  } finally {
+    setLoadingPdfId(null);
+  }
+};
 // Fonction simple pour formater l'heure
 const formatTimeFromBackend = (dateString) => {
   if (!dateString) return '';
@@ -440,6 +489,19 @@ const loadRelancesHistory = async (rdvId) => {
     setIsLoadingHistory(false);
   }
 };
+ const NomBienComplet = (bien) => {
+    if (!bien || typeof bien === 'string') {
+      return '';
+    }
+    
+    const noms = [];
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+    if (bien.propriete_dite_bien) noms.push(bien.propriete_dite_bien);
+    
+    return noms.length > 0 ? noms.join(' - ') : '';
+  };
 
 
 
@@ -649,7 +711,24 @@ const loadRelancesHistory = async (rdvId) => {
                 {rdv.statut == 1 && (
                   <p className="flex items-center text-gray-600 mb-1">
                     <span className="font-medium w-24">Fiche:</span>
-                    <PDFDownloadLink
+                     <button
+                        onClick={() => handleDownloadRdvPDF(rdv)}
+                        disabled={loadingPdfId === rdv.id}
+                        className="inline-flex items-center text-sm text-blue-500 hover:text-blue-800 disabled:opacity-50"
+                      >
+                        {loadingPdfId === rdv.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                            Génération...
+                          </>
+                        ) : (
+                          <>
+                            <PrinterIcon className="h-4 w-4 mr-1" />
+                            Télécharger
+                          </>
+                        )}
+                      </button>
+                   {/*<PDFDownloadLink
                       document={
                         <ReceiptDocument
                           data={[
@@ -675,7 +754,7 @@ const loadRelancesHistory = async (rdvId) => {
                           {loading ? 'Génération...' : 'Télecharger'}
                         </button>
                       )}
-                    </PDFDownloadLink>
+                    </PDFDownloadLink>*/}
                   </p>
                 )}
                

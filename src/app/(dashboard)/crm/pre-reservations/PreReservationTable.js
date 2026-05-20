@@ -13,8 +13,12 @@ import { format, parseISO, isValid } from 'date-fns';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import BonPreReservationDocument from './bon_pre_reservation.js';
 import Input from '@/components/Input';
-
+import { Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import axios from 'axios';
 const PreReservationTable = () => {
+  const [loadingPdfId, setLoadingPdfId] = useState(null);
+
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,6 +48,7 @@ const PreReservationTable = () => {
   const applyFilters = () => {
     setFilters(tempFilters);
   };
+
 
   const { token } = useAuth();
   const { selectedProjet } = useProjet();
@@ -172,7 +177,73 @@ const PreReservationTable = () => {
       };
     });
   };
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
+  // Ajouter cette fonction
+const handleDownloadBonPreReservation = async (row) => {
+  try {
+    setLoadingPdfId(row.id);
+    
+    const pdfData = {
+      visite_id: row.visite_id,
+      code_pre_reservation: row.code,
+      rdv: row.t_appel != null
+        ? row.t_appel.rdv?.rdv
+        : row?.visite != null
+        ? row.visite?.rdv_relation?.rdv
+        : null,
+      date_pre_reserve: row.date_pre_reserve,
+      propriete_dite_bien: row.bien?.propriete_dite_bien,
+      niveau: row.bien?.niveau,
+      superficie: row.bien?.superficie_architecte,
+      orientation: row.bien?.orientation,
+      prix: row.bien?.prix,
+      commercial_nom: row.t_appel != null
+        ? row.t_appel.user?.name
+        : row?.visite != null
+        ? row.visite?.user?.name
+        : null,
+      commercial_prenom: row.t_appel != null
+        ? row.t_appel.user?.prenom
+        : row?.visite != null
+        ? row.visite?.user?.prenom
+        : null,
+      user: {
+          //...user,
+          societe: JSON.parse(localStorage.getItem('authUser'))?.societe || {}
+        },
+     // bien: row.bien
+    };
+
+    const response = await axios.post(
+      `${apiUrl}/generate_bon_pre_reservation_pdf`,
+      { data: pdfData },
+      {
+        headers: {
+          Authorization: `Bearer ${accesstoken}`,
+          'Content-Type': 'application/json'
+        },
+        responseType: 'blob'
+      }
+    );
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `bon_pre_reservation_${row.code}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success('PDF généré avec succès');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    toast.error('Erreur lors de la génération du PDF');
+  } finally {
+    setLoadingPdfId(null);
+  }
+};
   // Table columns configuration
   const columns = [
     {
@@ -250,51 +321,19 @@ const PreReservationTable = () => {
             <Eye className="w-4 h-4" />
           </Link>
 
-<PDFDownloadLink
-  document={
-    <BonPreReservationDocument
-      data={[
-        row.visite_id,
-        row.code,
-        row.t_appel != null
-          ? row.t_appel.rdv.rdv
-          : row?.visite != null
-          ? row.visite?.rdv_relation?.rdv
-          : null,
-        row.date_pre_reserve,
-        row.bien?.propriete_dite_bien,
-        row.bien?.niveau,
-        row.bien?.superficie_architecte,
-        row.bien?.orientation,
-        row.bien?.prix,
-        row.t_appel != null
-          ? row.t_appel.user?.name
-          : row?.visite != null
-          ? row.visite?.user?.name
-          : null,
-        row.t_appel != null
-          ? row.t_appel.user?.prenom
-          : row?.visite != null
-          ? row.visite?.user?.prenom
-          : null,
-        JSON.parse(localStorage.getItem('authUser'))
-      ]}
-    />
-  }
-  fileName={`bon_pre_reservation_${row.code}.pdf`}
+
+<button
+  onClick={() => handleDownloadBonPreReservation(row)}
+  disabled={loadingPdfId === row.id}
+  className="text-indigo-500 hover:text-indigo-700"
+  title="Télécharger PDF"
 >
-  {({ loading, error }) => (
-    <button
-      className={`text-indigo-500 hover:text-indigo-700 ${
-        loading ? 'opacity-50' : ''
-      }`}
-      title="Télécharger PDF"
-      disabled={loading }
-    >
-      {loading  ? '...' : <Download className="w-4 h-4" />}
-    </button>
+  {loadingPdfId === row.id ? (
+    <Loader2 className="w-4 h-4 animate-spin" />
+  ) : (
+    <Download className="w-4 h-4" />
   )}
-</PDFDownloadLink>
+</button>
         </div>
       ),
     },

@@ -36,7 +36,8 @@ import {
   Edit,
   ExternalLink,
 } from 'lucide-react';
-
+import { Printer, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 // Reusable Components from template
 const Badge = ({ children, variant = 'default' }) => {
   const variants = {
@@ -68,10 +69,10 @@ const InfoRow = ({ icon: Icon, label, value, valueNode }) => (
   </div>
 );
 
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import { Printer } from 'lucide-react';
-import ProspectPDF from './ProspectPdf';
+//import { PDFDownloadLink } from '@react-pdf/renderer';
+//import ProspectPDF from './ProspectPdf';
 const ProspectDetails = () => {
+  const [loadingPdf, setLoadingPdf] = useState(false);
   const [appels, setAppels] = useState([]);
   const [visiteDetails, setVisiteDetails] = useState([]);
   const [refreshHistoriques, setRefreshHistoriques] = useState(0);
@@ -213,7 +214,54 @@ const ProspectDetails = () => {
       minute: '2-digit',
     });
   };
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  // Add this function before the return statement
+const handleDownloadProspectPDF = async () => {
+  try {
+    setLoadingPdf(true);
+    
+    // Prepare the data to send to backend
+    const pdfData = {
+      prospect: prospectDetails,
+      appels: appels || [],
+      visites: visiteDetails || [],
+      user: {
+        ...user,
+        societe: user?.societe || {}
+      },
+      currentDate: new Date().toISOString(),
+    };
 
+    const response = await axios.post(
+       `${apiUrl}/generate-prospect-pdf`,
+      { data: pdfData },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        responseType: 'blob'
+      }
+    );
+
+    // Create blob link to download
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `fiche_prospect_${prospectDetails?.nom || ''}_${prospectDetails?.prenom || ''}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success('PDF généré avec succès');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    toast.error('Erreur lors de la génération du PDF');
+  } finally {
+    setLoadingPdf(false);
+  }
+};
   return (
     <>
       {loading ? (
@@ -296,7 +344,24 @@ const ProspectDetails = () => {
                       <Edit className="w-4 h-4" />
                       Modifier
                     </button>
-                    <PDFDownloadLink
+                      <button
+                        onClick={handleDownloadProspectPDF}
+                        disabled={loadingPdf}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-500 shadow-sm"
+                      >
+                        {loadingPdf ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Génération...
+                          </>
+                        ) : (
+                          <>
+                            <Printer className="w-4 h-4" />
+                            Imprimer
+                          </>
+                        )}
+                      </button>
+                    {/*<PDFDownloadLink
                         document={
                           <ProspectPDF
                             prospect={prospectDetails}
@@ -314,7 +379,7 @@ const ProspectDetails = () => {
                             {loading ? 'Préparation...' : 'Imprimer'}
                           </>
                         )}
-                      </PDFDownloadLink>
+                      </PDFDownloadLink>*/}
                   </div>
                 </div>
               </div>

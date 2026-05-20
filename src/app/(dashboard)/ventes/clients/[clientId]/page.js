@@ -11,8 +11,8 @@ import LoadingSpin from '@/components/LoadingSpin';
 import EncaissementTable from '@/app/(dashboard)/encaissements/EncaissementTable';
 import ReservationTable from '../../reservations/ReservationTable';
 import { getSituationLabel } from '@/components/client-utils';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import ClientPDF from '../ClientImprimer';
+//import { PDFDownloadLink } from '@react-pdf/renderer';
+//import ClientPDF from '../ClientImprimer';
 import JournalTable from '@/app/(dashboard)/crm/appels/[appelId]/JournalTable';
 import HistoriquesTable from '@/app/(dashboard)/crm/prospects/[prospectId]/HistoriquesTable';
 import { useProjet } from '@/context/ProjetContext';
@@ -46,8 +46,10 @@ import {
   Globe,
   UserCheck,
 } from 'lucide-react';
-
-// Reusable Components
+// Ajouter cet import
+import { Loader2 } from 'lucide-react';
+// Ajouter cet import
+import toast from 'react-hot-toast';// Reusable Components
 const Badge = ({ children, variant = 'default' }) => {
   const variants = {
     default: 'bg-slate-100 text-slate-700 border-slate-200',
@@ -81,6 +83,8 @@ const InfoRow = ({ icon: Icon, label, value, valueNode }) => (
 );
 
 const ClientDetails = () => {
+  // Ajouter cet état
+const [loadingPdf, setLoadingPdf] = useState(false)
   const { token, user } = useAuth();
   const { selectedProjet } = useProjet();
   const router = useRouter();
@@ -129,6 +133,76 @@ const ClientDetails = () => {
   const { selectedSociete } = useSociete();
   const [oldProjetId, setOldProjetId] = useState(null);
   const [oldSocieteId, setOldSocieteId] = useState(null);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  const handleDownloadClientPDF = async () => {
+    try {
+      setLoadingPdf(true);
+      
+      const pdfData = {
+        client: {
+          id: clientDetails?.id,
+          code_client: clientDetails?.code_client,
+          civilite: clientDetails?.civilite,
+          nom: clientDetails?.nom,
+          prenom: clientDetails?.prenom,
+          cin: clientDetails?.cin,
+          email: clientDetails?.email,
+          telephone_num1: clientDetails?.telephone_num1,
+          telephone_num2: clientDetails?.telephone_num2,
+          adresse: clientDetails?.adresse,
+          ville: clientDetails?.ville,
+          pays: clientDetails?.pays,
+          nationalite: clientDetails?.nationalite,
+          profession: clientDetails?.profession,
+          date_naissance: clientDetails?.date_naissance,
+          lieu_naissance: clientDetails?.lieu_naissance,
+          situation_familliale: clientDetails?.situation_familliale,
+          nom_mari: clientDetails?.nom_mari,
+          lieu_mariage: clientDetails?.lieu_mariage,
+          date_mariage: clientDetails?.date_mariage,
+          nom_pere: clientDetails?.nom_pere,
+          nom_mere: clientDetails?.nom_mere,
+          notifie: clientDetails?.notifie,
+          partenaire: clientDetails?.partenaire,
+        },
+        reservations: clientDetails?.reservations || [],
+        visites: visiteDetails || [],
+        user: {
+          //...user,
+          societe: user?.societe || {}
+        }
+      };
+
+      const response = await axios.post(
+        `${apiUrl}/generate-client-pdf`,
+        { data: pdfData },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          responseType: 'blob'
+        }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `client_${clientDetails?.code_client || clientId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('PDF généré avec succès');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Erreur lors de la génération du PDF');
+    } finally {
+      setLoadingPdf(false);
+    }
+  };
 
   useEffect(() => {
     if ((selectedProjet?.id && selectedProjet?.id !== oldProjetId) || (selectedSociete?.id && selectedSociete?.id !== oldSocieteId)) {
@@ -223,7 +297,7 @@ const ClientDetails = () => {
 
                 <div className="p-4 bg-slate-50/50 flex flex-col gap-3">
                   <div className="grid grid-cols-2 gap-3">
-                    <PDFDownloadLink
+                    {/*<PDFDownloadLink
                       document={
                         <ClientPDF
                           client={clientDetails}
@@ -241,8 +315,25 @@ const ClientDetails = () => {
                           {loading ? 'Préparation...' : 'Fiche client'}
                         </>
                       )}
-                    </PDFDownloadLink>
-                    {(isSuperAdmin(userRole) || isAdmin(userRole)) && (
+                    </PDFDownloadLink>*/}
+                        <button
+                          onClick={handleDownloadClientPDF}
+                          disabled={loadingPdf}
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-emerald-500 shadow-sm"
+                        >
+                          {loadingPdf ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Génération...
+                            </>
+                          ) : (
+                            <>
+                              <Printer className="w-4 h-4" />
+                              Fiche client
+                            </>
+                          )}
+                        </button>
+                    {(isSuperAdmin(userRole) || isAdmin(userRole)|| isAgentAdministratif(userRole)) && (
                       <button
                         onClick={() => handleEdit(clientDetails?.id)}
                         className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-emerald-500 shadow-sm"

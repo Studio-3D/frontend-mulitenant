@@ -20,7 +20,7 @@ import {
 } from '@/configs/enum';
 import toast from 'react-hot-toast';
 
-import { AlertCircle, Printer, X } from 'lucide-react';
+import { AlertCircle, Loader2, Printer, Upload, X } from 'lucide-react';
 import LoadingSpin from '@/components/LoadingSpin';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
 import Button from '@/components/Button'; // Import the component
@@ -32,8 +32,8 @@ import CorrectionForm from './CorrectionForm';
 
 import { useProjet } from '@/context/ProjetContext';
 import { useSociete } from '@/context/SocieteContext';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import DocuPenaliteDesistementDocumentment from '../recu';
+//import { PDFDownloadLink } from '@react-pdf/renderer';
+//import DocuPenaliteDesistementDocumentment from '../recu';
 
 const STATUS_BADGES = {
   0: { text: 'Attente Validation', color: 'bg-yellow-100 text-yellow-800' },
@@ -42,6 +42,8 @@ const STATUS_BADGES = {
 };
 
 const ShowPenalite = () => {
+    const [loadingPdfId, setLoadingPdfId] = useState(null);
+  
   const { selectedProjet } = useProjet();
   const { user, token } = useAuth();
   const params = useParams();
@@ -240,7 +242,63 @@ const ShowPenalite = () => {
       {STATUS_BADGES[status]?.text || 'Unknown'}
     </span>
   );
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
+ const handleDownloadPenalitePDF = async (penaliteData) => {
+  try {
+    setLoadingPdfId(penaliteData.id);
+    
+    // Préparer les clients
+    const clientsFormatted = penaliteData.desistement?.reservation_ancien?.aquereurs_ancien?.map(
+      (aq, i, arr) => {
+        return `${aq.client.cin} ${aq.client.nom} ${aq.client.prenom}${arr.length - 1 === i ? '' : ' et '}`;
+      }
+    ) || [];
+    
+    const pdfData = {
+      code_dossier: penaliteData.desistement?.reservation_ancien?.code_reservation || '',
+      num_recu: penaliteData.num_recu || '',
+      montant_penalite: penaliteData.montant || 0,
+      mode_paiement: penaliteData.mode_paiement || '',
+      numero_paiement: penaliteData.numero_paiement || '',
+      bien: penaliteData.desistement?.reservation_ancien?.bien || null,
+      commercial_nom: penaliteData.desistement?.user?.name || '',
+      commercial_prenom: penaliteData.desistement?.user?.prenom || '',
+      clients: clientsFormatted,
+      user: {
+        societe: JSON.parse(localStorage.getItem('authUser'))?.societe || {}
+      },
+    };
+
+    const response = await axios.post(
+      `${apiUrl}/generate_penalite_pdf`,
+      { data: pdfData },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        responseType: 'blob'
+      }
+    );
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `recu_penalite_${penaliteData.num_recu || penaliteData.id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success('PDF généré avec succès');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    toast.error('Erreur lors de la génération du PDF');
+  } finally {
+    setLoadingPdfId(null);
+  }
+};
   const getTypeLabel = () => {
     const type = penalite.desistement.type;
 
@@ -354,7 +412,7 @@ const ShowPenalite = () => {
       </button>
     {penalite.sr == 0 && (
 
-        <PDFDownloadLink
+       /* <PDFDownloadLink
           document={
             <DocuPenaliteDesistementDocumentment
               data={[
@@ -408,7 +466,27 @@ const ShowPenalite = () => {
               </button>
             );
           }}
-        </PDFDownloadLink>
+        </PDFDownloadLink>*/
+                          <button
+    onClick={() => handleDownloadPenalitePDF(penalite)}
+    disabled={loadingPdfId === penalite.id}
+    className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-emerald-500 shadow-sm ${
+      loadingPdfId === penalite.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+    }`}
+    title="Télécharger PDF"
+  >
+    {loadingPdfId === penalite.id ? (
+      <>
+        <Loader2 className="w-4 h-4 animate-spin" />
+        Génération...
+      </>
+    ) : (
+      <>
+        <Printer className="w-4 h-4" />
+        Télécharger Reçu
+      </>
+    )}
+  </button>
       )}
       </div>
   </div>
