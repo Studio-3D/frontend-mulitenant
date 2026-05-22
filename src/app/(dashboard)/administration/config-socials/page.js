@@ -16,7 +16,7 @@ export default function ConfigurationSocialsPage() {
   const [activeTab, setActiveTab] = useState("facebook");
 
   // Check if user has proper permissions
-  if (user && user.role !== 1 && user.role !== 2) {
+  if (user && user.role !== 1 && user.role !== 2&& user.role !== 10) {
     return (
       <div className="p-8 text-center">
         <AlertCircleIcon className="mx-auto h-12 w-12 text-yellow-500 mb-4" />

@@ -66,7 +66,7 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal isVisible={true} onClose={onClose}>
-      <div className="w-[500px] p-4">
+      <div className=" p-4">
         <AlertCircle className="text-[#FF4E4E] w-14 h-14 mx-auto mt-2 mb-4" />
         <h2 className="text-xl font-semibold text-center">Confirmation de suppression</h2>
         <p className="text-center text-[#878484] mt-2">

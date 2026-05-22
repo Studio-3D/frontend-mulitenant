@@ -2022,7 +2022,7 @@ if (isEditing) {
 
       if (response.data) {
         if (response.data.prospect) {
-          toast.error(
+          toast.info(
             ` ${prefix} ${value} appartient au Prospect ${
               (response.data.prospect.nom || "") +
               " " +
@@ -2056,7 +2056,7 @@ if (isEditing) {
         }
 
         if (response.data.client) {
-          toast.error(
+          toast.info(
             ` ${prefix} ${value} appartient au Client ${
               response.data.client.nom + " " + response.data.client.prenom
             }`,
