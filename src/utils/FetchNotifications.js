@@ -282,6 +282,22 @@ const fetchNotifications = async ({
         color: 'error',
         subtitle: (description_type) => description_type,
       },
+    // Replace entries 50, 51, 99, and 51 (duplicate) with these:
+
+    50: {
+      title: (description_type) => description_type,
+      icon: 'fa-brands:whatsapp',  // Fixed from 'whatsap' to 'whatsapp'
+      color: 'success',
+      subtitle: (description_type) => null,
+    },
+    51: {
+      title: 'un nouveau prospect via WhatsApp',
+      icon: 'mdi:whatsapp',  // Changed from import-export to WhatsApp
+      color: 'success',  // Changed from 'info' to 'success'
+      subtitle: (prospect, user, avance, reservation, bien, projet, description_type) =>
+        description_type || `Message WhatsApp entrant${prospect?.telephone ? ' de ' + prospect.telephone : ''}`,
+    },
+
 
       91: {
         title: 'une Mention Facebook',
@@ -557,20 +573,7 @@ const fetchNotifications = async ({
         ) => description_type || "Quelqu'un a réagi à votre message Instagram",
       },
 
-      99: {
-        title: 'un nouveau Message WhatsApp',
-        icon: 'message-circle',
-        color: 'success',
-        subtitle: (
-          prospect,
-          user,
-          avance,
-          reservation,
-          bien,
-          projet,
-          description_type
-        ) => description_type || 'Nouveau message WhatsApp reçu',
-      },
+    
       100: {
         title: 'un nouveau Message Instagram',
         icon: 'message-circle',

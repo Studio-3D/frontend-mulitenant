@@ -116,6 +116,13 @@ export default function WhatsAppConfigTab() {
     }));
   };
 
+  // Add this validation function before the handleSaveWhatsApp function
+const validatePhoneNumberId = (phoneNumberId) => {
+  if (!phoneNumberId) return false;
+  // Check if it starts with 212 and has at least 9 digits after (total 12 digits)
+  const phoneRegex = /^212\d{9}$/;
+  return phoneRegex.test(phoneNumberId);
+};
   // Save or Update WhatsApp configuration
   const handleSaveWhatsApp = async () => {
     try {
@@ -127,6 +134,11 @@ export default function WhatsAppConfigTab() {
         return;
       }
 
+      // Add phone number validation
+    if (!validatePhoneNumberId(whatsappConfig.phone_number_id)) {
+      toast.error("Le numéro de téléphone doit commencer par 212 et contenir exactement 12 chiffres (ex: 212612345678)");
+      return;
+    }
       const dataToSave = {
         phone_number_id: whatsappConfig.phone_number_id,
         access_token: whatsappConfig.access_token,
@@ -168,6 +180,32 @@ export default function WhatsAppConfigTab() {
       setSaving(false);
     }
   };
+
+  const [phoneNumberError, setPhoneNumberError] = useState("");
+// Add validation on input change
+const handlePhoneNumberChange = (e) => {
+  const value = e.target.value;
+  
+  // Optional: Auto-add 212 prefix if user starts typing without it
+  let formattedValue = value;
+  if (value && !value.startsWith('212')) {
+    // You can either show error or auto-add prefix
+    // Option 1: Show error
+    setPhoneNumberError("Le numéro doit commencer par 212");
+    formattedValue = value;
+  } else if (value && value.startsWith('212')) {
+    setPhoneNumberError("");
+    // Option 2: Auto-format to remove any non-digit characters
+    formattedValue = value.replace(/\D/g, '');
+  } else {
+    setPhoneNumberError("");
+  }
+  
+  setWhatsappConfig(prev => ({
+    ...prev,
+    phone_number_id: formattedValue
+  }));
+};
 
   // Edit WhatsApp configuration
   const handleEditWhatsApp = (config) => {
@@ -652,26 +690,31 @@ export default function WhatsAppConfigTab() {
                 )}
 
                   {/* Phone Number ID */}
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Phone Number ID <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="phone_number_id"
-                      value={whatsappConfig.phone_number_id}
-                      onChange={(e) => setWhatsappConfig(prev => ({
-                        ...prev,
-                        phone_number_id: e.target.value
-                      }))}
-                      placeholder="Votre Phone Number ID"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#25D366] focus:border-[#25D366]"
-                      required
-                    />
-                    <p className="text-xs text-gray-500">
-                      L'ID du numéro de téléphone WhatsApp Business (ex: 212XXXXXXXXX)
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Phone Number ID <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone_number_id"
+                    value={whatsappConfig.phone_number_id}
+                    onChange={handlePhoneNumberChange}
+                    placeholder="212612345678"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-[#25D366] focus:border-[#25D366] ${
+                      phoneNumberError ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    required
+                  />
+                  {phoneNumberError ? (
+                    <p className="text-xs text-red-500">
+                      {phoneNumberError}
                     </p>
-                  </div>
+                  ) : (
+                    <p className="text-xs text-gray-500">
+                      Le numéro doit commencer par <strong className="text-gray-700">212</strong> et contenir exactement 12 chiffres (ex: 212612345678)
+                    </p>
+                  )}
+                </div>
 
                   {/* Account SID */}
                   <div className="space-y-1">

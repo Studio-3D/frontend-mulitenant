@@ -284,6 +284,12 @@ const Menu = () => {
         },
       ],
     },
+     {
+      label: 'Messaegerie Whatsapp',
+      icon: <UsersRound size={20} />,
+      href: '/whatsapp-messenger',
+      needsSociete: user.role === 1,
+    },
     
   ];
 
