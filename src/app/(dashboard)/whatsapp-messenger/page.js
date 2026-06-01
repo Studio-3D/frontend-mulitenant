@@ -86,11 +86,28 @@ const WhatsAppMessenger = () => {
   const emojiPickerRef = useRef(null);
   
   // Notre numéro WhatsApp
-  const OUR_WHATSAPP_NUMBER = "212785483649";
-  
+  const OUR_WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_OUR_WHATSAPP_NUMBER;
   // Clé Pusher
   const PUSHER_KEY = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_WHATSAPP;
   
+  // Update selected conversation's unread count immediately when selected
+useEffect(() => {
+  if (selectedConversation && selectedConversation.unread_count > 0) {
+    // Mark as read immediately
+    markMessagesAsRead(selectedConversation.phone_number);
+    
+    // Update local state immediately for UI
+    setConversations(prev => prev.map(conv =>
+      conv.phone_number === selectedConversation.phone_number
+        ? { ...conv, unread_count: 0 }
+        : conv
+    ));
+    
+    setSelectedConversation(prev => 
+      prev ? { ...prev, unread_count: 0 } : prev
+    );
+  }
+}, [selectedConversation?.phone_number]); // Only run when conversation changes
   // Détecter l'écran mobile
   useEffect(() => {
     const checkMobile = () => {
@@ -460,27 +477,39 @@ const WhatsAppMessenger = () => {
   }, [selectedConversation, fetchMessages]);
   
   // Marquer comme lu
-  const markMessagesAsRead = useCallback(async (phoneNumber) => {
-    try {
-      const response = await axios.post(
-        `${APIURL.ROOTV1}/whatsapp/mark-read/${selectedProjet.id}/${encodeURIComponent(phoneNumber)}`,
-        {},
-        { headers: { Authorization: `Bearer ${accesstoken}` } }
+const markMessagesAsRead = useCallback(async (phoneNumber) => {
+  try {
+    const response = await axios.post(
+      `${APIURL.ROOTV1}/whatsapp/mark-read/${selectedProjet.id}/${encodeURIComponent(phoneNumber)}`,
+      {},
+      { headers: { Authorization: `Bearer ${accesstoken}` } }
+    );
+    
+    if (response.data?.updated_count > 0) {
+      // Update the conversations state
+      setConversations(prev => prev.map(conv =>
+        conv.phone_number === phoneNumber
+          ? { ...conv, unread_count: 0 }
+          : conv
+      ));
+      
+      // Also update the selected conversation if it's the same
+      setSelectedConversation(prev => 
+        prev?.phone_number === phoneNumber 
+          ? { ...prev, unread_count: 0 }
+          : prev
       );
       
-      if (response.data?.updated_count > 0) {
-        setConversations(prev => prev.map(conv =>
-          conv.phone_number === phoneNumber
-            ? { ...conv, unread_count: 0 }
-            : conv
-        ));
-        updateMessagesAsRead(phoneNumber);
-      }
-    } catch (error) {
-      console.error('Error marking messages as read:', error);
+      // Update messages as read
+      updateMessagesAsRead(phoneNumber);
+      
+      // Force re-render of the conversation list
+      setConversations(prev => [...prev]);
     }
-  }, [selectedProjet?.id, accesstoken, updateMessagesAsRead]);
-  
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+  }
+}, [selectedProjet?.id, accesstoken, updateMessagesAsRead]);
   // Envoyer un message
   const sendMessage = useCallback(async (replyToMsg = null) => {
     if (!newMessage.trim() || !selectedConversation || sending) return;
@@ -700,11 +729,32 @@ const WhatsAppMessenger = () => {
     );
   };
   
-  const filteredConversations = conversations.filter(conv =>
+ /* const filteredConversations = conversations.filter(conv =>
     conv.phone_number?.includes(searchTerm) ||
     conv.prospect_nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     conv.profile_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  );*/
+  const filteredConversations = conversations.filter(conv => {
+  // Exclure la conversation de notre propre numéro WhatsApp
+  if (conv.phone_number === OUR_WHATSAPP_NUMBER) {
+    return false;
+  }
+  
+  // Exclure également par le nom "AGENT" (fallback)
+  if (conv.profile_name === 'AGENT' || conv.prospect_nom === 'AGENT') {
+    return false;
+  }
+  
+  // Appliquer le filtre de recherche
+  if (!searchTerm.trim()) {
+    return true;
+  }
+  
+  return conv.phone_number?.includes(searchTerm) ||
+    conv.prospect_nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    conv.profile_name?.toLowerCase().includes(searchTerm.toLowerCase());
+});
+  
   
   // Emojis simples
   const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '💀', '👻', '👽', '🤖', '💩', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'];
@@ -950,7 +1000,7 @@ const WhatsAppMessenger = () => {
                           <div className="mb-2">
                             <audio controls className="w-full max-w-[250px] h-10">
                               <source src={msg.media_url} />
-                              Votre navigateur ne supporte pas l'audio.
+                              Votre navigateur ne supporte pas l{"'"}audio.
                             </audio>
                           </div>
                         )}
