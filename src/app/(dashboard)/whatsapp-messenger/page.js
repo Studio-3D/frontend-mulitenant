@@ -90,7 +90,7 @@ const WhatsAppMessenger = () => {
   // Clé Pusher
   const PUSHER_KEY = process.env.NEXT_PUBLIC_PUSHER_APP_KEY_WHATSAPP;
   
-  // Update selected conversation's unread count immediately when selected
+  /* Update selected conversation's unread count immediately when selected
 useEffect(() => {
   if (selectedConversation && selectedConversation.unread_count > 0) {
     // Mark as read immediately
@@ -107,7 +107,7 @@ useEffect(() => {
       prev ? { ...prev, unread_count: 0 } : prev
     );
   }
-}, [selectedConversation?.phone_number]); // Only run when conversation changes
+}, [selectedConversation?.phone_number]); // Only run when conversation changes*/
   // Détecter l'écran mobile
   useEffect(() => {
     const checkMobile = () => {
@@ -455,28 +455,7 @@ useEffect(() => {
     };
   }, [mediaRecorder]);
   
-  // Sélectionner une conversation
-  const selectConversation = useCallback(async (conversation) => {
-    if (selectedConversation?.phone_number === conversation.phone_number) return;
-    
-    console.log('📱 Chargement de la conversation:', conversation.phone_number);
-    
-    setSelectedConversation(conversation);
-    setMessages([]);
-    setReplyTo(null);
-    setIsSelectionMode(false);
-    setSelectedMessages([]);
-    setLoadingMessages(true);
-    
-    const loadedMessages = await fetchMessages(conversation.phone_number);
-    setMessages(loadedMessages);
-    setLoadingMessages(false);
-    
-    scrollToBottom();
-    await markMessagesAsRead(conversation.phone_number);
-  }, [selectedConversation, fetchMessages]);
-  
-  // Marquer comme lu
+// Marquer comme lu
 const markMessagesAsRead = useCallback(async (phoneNumber) => {
   try {
     const response = await axios.post(
@@ -486,32 +465,49 @@ const markMessagesAsRead = useCallback(async (phoneNumber) => {
     );
     
     if (response.data?.updated_count > 0) {
-      // Update the conversations state
-      setConversations(prev => prev.map(conv =>
-        conv.phone_number === phoneNumber
-          ? { ...conv, unread_count: 0 }
-          : conv
-      ));
-      
-      // Also update the selected conversation if it's the same
-      setSelectedConversation(prev => 
-        prev?.phone_number === phoneNumber 
-          ? { ...prev, unread_count: 0 }
-          : prev
-      );
-      
       // Update messages as read
       updateMessagesAsRead(phoneNumber);
       
-      // Force re-render of the conversation list
-      setConversations(prev => [...prev]);
+      // Don't update conversations and selectedConversation here again
+      // to avoid conflicts with the selectConversation function
     }
   } catch (error) {
     console.error('Error marking messages as read:', error);
   }
-}, [selectedProjet?.id, accesstoken, updateMessagesAsRead]);
-  // Envoyer un message
-  const sendMessage = useCallback(async (replyToMsg = null) => {
+}, [selectedProjet?.id, accesstoken, updateMessagesAsRead]); // Envoyer un message
+ 
+// Sélectionner une conversation
+const selectConversation = useCallback(async (conversation) => {
+  if (selectedConversation?.phone_number === conversation.phone_number) return;
+  
+  console.log('📱 Chargement de la conversation:', conversation.phone_number);
+  
+  // Immediately update the unread count in the UI before any API calls
+  if (conversation.unread_count > 0) {
+    setConversations(prev => prev.map(conv =>
+      conv.phone_number === conversation.phone_number
+        ? { ...conv, unread_count: 0 }
+        : conv
+    ));
+    // Update the conversation object we're about to select
+    conversation = { ...conversation, unread_count: 0 };
+  }
+  
+  setSelectedConversation(conversation);
+  setMessages([]);
+  setReplyTo(null);
+  setIsSelectionMode(false);
+  setSelectedMessages([]);
+  setLoadingMessages(true);
+  
+  const loadedMessages = await fetchMessages(conversation.phone_number);
+  setMessages(loadedMessages);
+  setLoadingMessages(false);
+  
+  scrollToBottom();
+  await markMessagesAsRead(conversation.phone_number);
+}, [selectedConversation, fetchMessages, markMessagesAsRead]);
+ const sendMessage = useCallback(async (replyToMsg = null) => {
     if (!newMessage.trim() || !selectedConversation || sending) return;
     
     setSending(true);
