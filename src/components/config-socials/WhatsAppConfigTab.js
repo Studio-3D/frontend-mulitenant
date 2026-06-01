@@ -435,7 +435,7 @@ const handlePhoneNumberChange = (e) => {
                             {config.projet_nom || 'Projet supprimé'}
                           </h3>
                           <p className="text-sm text-gray-500">
-                            Phone Number ID: {config.phone_number_id}
+                            Numéro de téléphone: {config.phone_number_id}
                           </p>
                           <p className="text-xs text-gray-400">
                             Configuré le {new Date(config.created_at).toLocaleDateString('fr-FR')}
@@ -692,7 +692,7 @@ const handlePhoneNumberChange = (e) => {
                   {/* Phone Number ID */}
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">
-                    Phone Number ID <span className="text-red-500">*</span>
+                    Numéro de téléphone <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -719,7 +719,7 @@ const handlePhoneNumberChange = (e) => {
                   {/* Account SID */}
                   <div className="space-y-1">
                     <label className="block text-sm font-medium text-gray-700">
-                      Account SID <span className="text-red-500">*</span>
+                      Compte SID <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -735,10 +735,9 @@ const handlePhoneNumberChange = (e) => {
                   </div>
 
                   {/* Access Token */}
-                  {/* Access Token */}
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">
-                  Access Token <span className="text-red-500">*</span>
+                   Token  d{"'"}accès<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
