@@ -52,7 +52,7 @@ export default function ConfigurationSocialsPage() {
       label: "Instagram",
       icon: <Instagram className="h-4 w-4 text-[#E1306C]" />
     },
-    {
+    /*{
       id: "linkedin",
       label: "LinkedIn",
       icon: <Linkedin className="h-4 w-4 text-[#0A66C2]" />
@@ -61,7 +61,7 @@ export default function ConfigurationSocialsPage() {
       id: "tiktok",
       label: "TikTok",
       icon: <Video className="h-4 w-4 text-[#FF0050]" />
-    },
+    },*/
     {
       id: "whatsapp",
       label: "WhatsApp",
