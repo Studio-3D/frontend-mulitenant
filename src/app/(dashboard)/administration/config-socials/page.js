@@ -87,11 +87,11 @@ export default function ConfigurationSocialsPage() {
       case "instagram":
         return <InstagramConfigTab />;
 
-      case "linkedin":
+      /*case "linkedin":
         return <LinkedInConfigTab />;
 
       case "tiktok":
-        return <TikTokConfigTab />;
+        return <TikTokConfigTab />;*/
 
       case "whatsapp":
         return <WhatsAppConfigTab />;
