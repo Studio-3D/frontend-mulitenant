@@ -33,17 +33,20 @@ import {
   Trash2,
   Pin,
   Flag,
-  
+  FileText,  // Add this
+  File    ,   // Add this
   Share2,
   Volume2,
   VolumeX,
   Eye,
   EyeOff,
-  PlusCircle
+  PlusCircle,
+  
 } from 'lucide-react';
 import LoadingSpin from '@/components/LoadingSpin';
 
 const WhatsAppMessenger = () => {
+
   // Add dropdown menu state
 const [showHeaderMenu, setShowHeaderMenu] = useState(false);
 const headerMenuRef = useRef(null);
@@ -113,6 +116,205 @@ const headerMenuRef = useRef(null);
 
   
   
+    // Add these with your other state variables
+const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
+const [uploadingFile, setUploadingFile] = useState(false);
+const fileInputRef = useRef(null);
+const attachmentMenuRef = useRef(null);
+
+  // Upload and send file (image, PDF, document)
+const uploadAndSendMediaFile = useCallback(async (file) => {
+  if (!file || !selectedConversation) {
+    toast.error('Aucun fichier sélectionné');
+    return;
+  }
+
+  // Validate file size (max 20MB)
+  if (file.size > 20 * 1024 * 1024) {
+    toast.error('Le fichier est trop volumineux (max 20MB)');
+    return;
+  }
+
+  // Determine file type
+  let fileType = 'document';
+  if (file.type.startsWith('image/')) {
+    fileType = 'image';
+  } else if (file.type.startsWith('audio/')) {
+    fileType = 'audio';
+  } else if (file.type === 'application/pdf') {
+    fileType = 'pdf';
+  }
+
+  setUploadingFile(true);
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('type', fileType);
+
+  try {
+    // Upload file
+    const uploadResponse = await axios.post(`${APIURL.ROOTV1}/upload/whatsapp-media`, formData, {
+      headers: { 
+        Authorization: `Bearer ${accesstoken}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (uploadResponse.data?.success) {
+      const mediaUrl = uploadResponse.data.url;
+      const mediaType = uploadResponse.data.type;
+
+      // Create temp message
+      const tempMessage = {
+        id: `temp_${Date.now()}`,
+        from_number: OUR_WHATSAPP_NUMBER,
+        to_number: selectedConversation.phone_number,
+        message: `📎 ${file.name}`,
+        media_url: mediaUrl,
+        media_type: mediaType,
+        profile_name: user?.name || 'Commercial',
+        status: 'sending',
+        created_at: new Date().toISOString()
+      };
+
+      setMessages(prev => [...prev, tempMessage]);
+      scrollToBottom();
+
+      // Send message with media
+      await axios.post(
+        `${APIURL.ROOTV1}/whatsapp/reply/${selectedProjet.id}/${encodeURIComponent(selectedConversation.phone_number)}`,
+        { 
+          media_url: mediaUrl, 
+          media_type: mediaType,
+          message: file.name
+        },
+        { headers: { Authorization: `Bearer ${accesstoken}` } }
+      );
+
+      setMessages(prev => prev.map(msg =>
+        msg.id === tempMessage.id ? { ...msg, status: 'sent' } : msg
+      ));
+
+      toast.success('Fichier envoyé avec succès');
+    }
+
+  } catch (error) {
+    console.error('Error sending file:', error);
+    toast.error("Erreur lors de l'envoi du fichier");
+  } finally {
+    setUploadingFile(false);
+    setShowAttachmentMenu(false);
+  }
+}, [selectedConversation, accesstoken, selectedProjet, user]);
+
+// Handle file selection
+// In your WhatsAppMessenger component, update the handleFileSelect function:
+const handleFileSelect = useCallback(async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // Validate file size (max 20MB)
+  if (file.size > 20 * 1024 * 1024) {
+    toast.error('Le fichier est trop volumineux (max 20MB)');
+    return;
+  }
+
+  // Determine file type
+  let fileType = 'document';
+  if (file.type.startsWith('image/')) {
+    fileType = 'image';
+  } else if (file.type.startsWith('audio/')) {
+    fileType = 'audio';
+  } else if (file.type === 'application/pdf') {
+    fileType = 'pdf';
+  }
+
+  setUploadingFile(true);
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('type', fileType);
+
+  try {
+    // Upload file first
+    const uploadResponse = await axios.post(`${APIURL.ROOTV1}/upload/whatsapp-media`, formData, {
+      headers: { 
+        Authorization: `Bearer ${accesstoken}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (uploadResponse.data?.success) {
+      const mediaUrl = uploadResponse.data.url;
+      const mediaType = uploadResponse.data.type;
+
+      // Create temp message
+      const tempMessage = {
+        id: `temp_${Date.now()}`,
+        from_number: OUR_WHATSAPP_NUMBER,
+        to_number: selectedConversation.phone_number,
+        message: file.name,
+        media_url: mediaUrl,
+        media_type: mediaType,
+        profile_name: user?.name || 'Commercial',
+        status: 'sending',
+        created_at: new Date().toISOString()
+      };
+
+      setMessages(prev => [...prev, tempMessage]);
+      scrollToBottom();
+
+      // Send message with media
+      const payload = {
+        message: file.name,
+        media_url: mediaUrl,
+        media_type: mediaType
+      };
+      
+      console.log('Sending payload:', payload);
+
+      const sendResponse = await axios.post(
+        `${APIURL.ROOTV1}/whatsapp/reply/${selectedProjet.id}/${encodeURIComponent(selectedConversation.phone_number)}`,
+        payload,
+        { headers: { Authorization: `Bearer ${accesstoken}` } }
+      );
+
+      console.log('Send response:', sendResponse.data);
+
+      if (sendResponse.data?.success) {
+        setMessages(prev => prev.map(msg =>
+          msg.id === tempMessage.id ? { 
+            ...msg, 
+            status: 'sent',
+            id: sendResponse.data.message_id 
+          } : msg
+        ));
+        toast.success('Fichier envoyé avec succès');
+      }
+    }
+
+  } catch (error) {
+    console.error('Error sending file:', error);
+    toast.error("Erreur lors de l'envoi du fichier: " + (error.response?.data?.error || error.message));
+  } finally {
+    setUploadingFile(false);
+    setShowAttachmentMenu(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }
+}, [selectedConversation, accesstoken, selectedProjet, user]);
+// Close attachment menu when clicking outside
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (attachmentMenuRef.current && !attachmentMenuRef.current.contains(event.target)) {
+      setShowAttachmentMenu(false);
+    }
+  };
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => document.removeEventListener('mousedown', handleClickOutside);
+}, []);
+
   // Détecter l'écran mobile
   useEffect(() => {
     const checkMobile = () => {
@@ -1388,14 +1590,41 @@ const highlightText = (text, searchTerm) => {
         } ${selectedMessages.includes(msg.id) ? 'ring-2 ring-green-500' : ''}`}
       >
         {/* Audio message */}
-        {msg.media_url && msg.media_type === 'audio' && (
-          <div className="mb-2">
-            <audio controls className="w-full max-w-[250px] h-10">
-              <source src={msg.media_url} />
-              Votre navigateur ne supporte pas l'audio.
-            </audio>
-          </div>
-        )}
+          {msg.media_url && msg.media_type === 'image' && (
+            <div className="mb-2">
+              <img 
+                src={msg.media_url} 
+                alt="Image" 
+                className="max-w-full rounded-lg cursor-pointer max-h-64 object-cover"
+                onClick={() => window.open(msg.media_url, '_blank')}
+              />
+            </div>
+          )}
+
+          {/* PDF document */}
+          {msg.media_url && msg.media_type === 'application/pdf' && (
+            <div className="mb-2">
+              <a 
+                href={msg.media_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-blue-500 hover:text-blue-700 bg-gray-100 p-2 rounded-lg"
+              >
+                <FileText className="h-5 w-5" />
+                <span className="text-sm">Ouvrir le document PDF</span>
+              </a>
+            </div>
+          )}
+
+          {/* Audio message */}
+          {msg.media_url && msg.media_type === 'audio' && (
+            <div className="mb-2">
+              <audio controls className="w-full max-w-[250px] h-10">
+                <source src={msg.media_url} />
+                Votre navigateur ne supporte pas l'audio.
+              </audio>
+            </div>
+          )}
         
         {/* Message with search highlighting */}
         <p className="text-sm break-words whitespace-pre-wrap">
@@ -1448,84 +1677,148 @@ const highlightText = (text, searchTerm) => {
           </div>
           
           {/* Input message */}
-          <div className="p-4 bg-white border-t relative">
-            {isRecording ? (
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex-1 flex items-center gap-2 bg-red-50 rounded-full px-4 py-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  <span className="text-red-500 font-medium">Enregistrement...</span>
-                  <span className="text-gray-500">{formatTime(recordingTime)}</span>
-                </div>
-                <button
-                  onClick={stopRecording}
-                  className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
-                >
-                  <Send className="h-5 w-5" />
-                </button>
+        <div className="p-4 bg-white border-t relative">
+          {isRecording ? (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 flex items-center gap-2 bg-red-50 rounded-full px-4 py-2">
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-red-500 font-medium">Enregistrement...</span>
+                <span className="text-gray-500">{formatTime(recordingTime)}</span>
               </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
-                  title="Emojis"
-                >
-                  <Smile className="h-5 w-5" />
-                </button>
-                
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage(replyTo)}
-                  placeholder="Écrivez votre message..."
-                  className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  disabled={sending}
-                />
-                
-                <button
-                  onClick={() => sendMessage(replyTo)}
-                  disabled={!newMessage.trim() || sending}
-                  className={`p-2 rounded-full transition ${
-                    newMessage.trim() && !sending
-                      ? 'bg-green-500 text-white hover:bg-green-600'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  {sending ? <Loader className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                </button>
-              </div>
-            )}
-            
-            {/* Emoji picker */}
-            {showEmojiPicker && (
-              <div 
-                ref={emojiPickerRef}
-                className="absolute bottom-20 left-4 bg-white rounded-lg shadow-lg border p-2 z-50 max-w-[300px]"
+              <button
+                onClick={stopRecording}
+                className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
               >
-                <div className="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto">
-                  {emojis.map((emoji) => (
-                    <button
-                      key={emoji}
-                      onClick={() => {
-                        setNewMessage(prev => prev + emoji);
-                        setShowEmojiPicker(false);
-                        inputRef.current?.focus();
-                      }}
-                      className="text-2xl hover:bg-gray-100 p-1 rounded transition"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
+                <Send className="h-5 w-5" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              {/* Attachment Button */}
+              {/* Attachment Button */}
+<div className="relative" ref={attachmentMenuRef}>
+  <button
+    onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
+    className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
+    title="Joindre un fichier"
+    disabled={sending || uploadingFile}
+  >
+    <Paperclip className="h-5 w-5" />
+  </button>
+  
+  {/* Attachment Menu */}
+  {showAttachmentMenu && (
+    <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg border z-50 min-w-[180px] overflow-hidden">
+      <label className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-3 transition cursor-pointer">
+        <Image className="h-4 w-4 text-blue-500" />
+        <span>Image / Photo</span>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+      </label>
+      <label className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-3 transition border-t cursor-pointer">
+        <FileText className="h-4 w-4 text-red-500" />
+        <span>Document (PDF)</span>
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+      </label>
+      <label className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex items-center gap-3 transition border-t cursor-pointer">
+        <File className="h-4 w-4 text-gray-500" />
+        <span>Autre fichier</span>
+        <input
+          type="file"
+          accept=".doc,.docx,.txt,.xlsx"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+      </label>
+    </div>
+  )}
+</div>
+              
+              
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,application/pdf,.doc,.docx,.txt"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              
+              <button
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
+                title="Emojis"
+                disabled={sending}
+              >
+                <Smile className="h-5 w-5" />
+              </button>
+              
+              <input
+                ref={inputRef}
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && sendMessage(replyTo)}
+                placeholder="Écrivez votre message..."
+                className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                disabled={sending || uploadingFile}
+              />
+              
+              <button
+                onClick={() => sendMessage(replyTo)}
+                disabled={(!newMessage.trim() && !uploadingFile) || sending}
+                className={`p-2 rounded-full transition ${
+                  (newMessage.trim() || uploadingFile) && !sending
+                    ? 'bg-green-500 text-white hover:bg-green-600'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {sending || uploadingFile ? (
+                  <Loader className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          )}
+          
+          {/* Emoji picker */}
+          {showEmojiPicker && (
+            <div 
+              ref={emojiPickerRef}
+              className="absolute bottom-20 left-4 bg-white rounded-lg shadow-lg border p-2 z-50 max-w-[300px]"
+            >
+              <div className="grid grid-cols-8 gap-1 max-h-48 overflow-y-auto">
+                {emojis.map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => {
+                      setNewMessage(prev => prev + emoji);
+                      setShowEmojiPicker(false);
+                      inputRef.current?.focus();
+                    }}
+                    className="text-2xl hover:bg-gray-100 p-1 rounded transition"
+                  >
+                    {emoji}
+                  </button>
+                ))}
               </div>
-            )}
-            
-            <p className="text-xs text-gray-400 text-center mt-2">
-              Les messages sont envoyés via Messagerie
-            </p>
-          </div>
+            </div>
+          )}
+          
+          <p className="text-xs text-gray-400 text-center mt-2">
+            Les messages sont envoyés via Messagerie
+          </p>
+        </div>
         </div>
       ) : (
         !isMobile && (

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback ,useRef  } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
@@ -8,9 +8,9 @@ import { Eye, EyeOff, Home, Check } from 'lucide-react';
 export default function Login() {
   // State
   const [formData, setFormData] = useState({
-    email: 'superadmin@gmail.com',
-    password: 'superadmin',
-    rememberMe: true
+    email: '',
+    password: '',
+    rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -18,7 +18,22 @@ export default function Login() {
   
   const router = useRouter();
   const { login, user } = useAuth();
-  const loginAttempted = useRef(false); // Track if we've attempted login
+  const loginAttempted = useRef(false);
+
+  // Charger les données sauvegardées au chargement de la page
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    const savedPassword = localStorage.getItem('rememberedPassword');
+    const rememberMe = localStorage.getItem('rememberMe') === 'true';
+    
+    if (rememberMe && savedEmail) {
+      setFormData({
+        email: savedEmail,
+        password: savedPassword || '',
+        rememberMe: true
+      });
+    }
+  }, []);
 
   // Handle input changes
   const handleChange = useCallback((e) => {
@@ -30,27 +45,20 @@ export default function Login() {
   }, []);
 
   // Redirect if already logged in
-  // Remove or modify the auto-redirect for logged-in users
-  // Keep it but add a condition
   useEffect(() => {
-    // Only redirect if user is already logged in AND we haven't just logged in
     if (user && !loginAttempted.current) {
-      // Check if there's a saved redirect URL
       const redirectUrl = localStorage.getItem('redirectAfterLogin');
-      
       if (redirectUrl) {
-      //  localStorage.removeItem('redirectAfterLogin');
         router.push(redirectUrl);
       } else {
         router.push('/tableau-de-bord');
       }
     }
-  }, [user, router, isSubmitting]);
+  }, [user, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Basic validation
     if (!formData.email || !formData.password) {
       setError("Veuillez remplir tous les champs");
       return;
@@ -60,17 +68,24 @@ export default function Login() {
     setError('');
     
     try {
-      await login(formData);
-      //router.push('/tableau-de-bord');
+      // Gérer la sauvegarde des identifiants si "Se souvenir de moi" est coché
+      if (formData.rememberMe) {
+        localStorage.setItem('rememberedEmail', formData.email);
+        localStorage.setItem('rememberedPassword', formData.password);
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        // Supprimer les données sauvegardées si la case n'est pas cochée
+        localStorage.removeItem('rememberedEmail');
+        localStorage.removeItem('rememberedPassword');
+        localStorage.removeItem('rememberMe');
+      }
       
-    // Immediately redirect after successful login
-      // Don't wait for useEffect
+      await login(formData);
       const redirectUrl = localStorage.getItem('redirectAfterLogin');
-          console.log('Login successful, redirect URL found:', redirectUrl);
+      console.log('Login successful, redirect URL found:', redirectUrl);
 
       if (redirectUrl) {
         router.push(redirectUrl);
-       // localStorage.removeItem('redirectAfterLogin');
       } else {
         router.push('/tableau-de-bord');
       }
@@ -82,39 +97,37 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* Left side - Real Estate Illustration */}
-      <div className="hidden md:flex md:flex-1 relative items-center justify-center bg-gray-50">
-        <div className="px-12 py-20">
+    <div className="flex flex-col md:flex-row min-h-screen bg-white">
+      {/* Left side - Hidden on mobile, visible on tablet/desktop */}
+      <div className="hidden md:flex md:w-1/2 relative items-center justify-center bg-gray-50">
+        <div className="px-8 py-12">
           <img
             src="/images/bg1.jpg"
             alt="Real Estate Illustration"
-            className="max-w-[38rem] rounded-lg shadow-lg"
+            className="max-w-md rounded-lg shadow-lg"
             loading="lazy"
-            width={608}
-            height={456}
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-100 opacity-60"></div>
-        
-        <div className="absolute bottom-16 left-0 right-0 text-center">
-          <h2 className="text-2xl font-bold !text-gray-800">Gestion Immobilière Professionnelle</h2>
-          <p className="text-gray-600 mt-2">Solutions complètes pour votre entreprise</p>
+        <div className="absolute bottom-12 left-0 right-0 text-center px-4">
+          <h2 className="text-xl font-bold text-gray-800">Gestion Immobilière Professionnelle</h2>
+          <p className="text-gray-600 mt-1 text-sm">Solutions complètes pour votre entreprise</p>
         </div>
       </div>
 
-      {/* Right side - Login Form */}
-      <div className="w-full md:w-2/5 lg:w-2/5 xl:w-[450px] flex items-center justify-center border-l border-gray-200 !text-gray-500">
-        <div className="p-7 w-full max-w-[450px]">
+      {/* Right side - Login Form (full width on mobile) */}
+      <div className="w-full md:w-1/2 flex items-center justify-center py-8 md:py-0">
+        <div className="p-6 sm:p-8 w-full max-w-md mx-auto">
           {/* Logo */}
-          <div className="absolute top-8 left-8 flex items-center">
-            <Home className="w-6 h-6" />
-            <span className="ml-2 text-xl font-bold leading-6">Immo Gestion</span>
+          <div className="flex justify-center md:justify-start mb-6">
+            <div className="flex items-center gap-2">
+              <Home className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
+              <span className="text-lg sm:text-xl font-bold text-gray-800">Immo Gestion</span>
+            </div>
           </div>
 
-          <div className="mb-6 mt-16">
-            <h1 className="text-2xl font-semibold mb-1.5">Bienvenue sur Immo Gestion! 👋🏻</h1>
-            <p className="text-gray-500">Veuillez vous connecter</p>
+          <div className="mb-6 text-center md:text-left">
+            <h1 className="text-xl sm:text-2xl font-semibold mb-2">Bienvenue! 👋🏻</h1>
+            <p className="text-gray-500 text-sm sm:text-base">Veuillez vous connecter</p>
           </div>
 
           {error && (
@@ -135,16 +148,16 @@ export default function Login() {
                   Email
                 </label>
                 <input
+                  placeholder='user@gmail.com'
                   id="email"
                   name="email"
                   type="email"
                   autoFocus
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full px-3 py-3 border rounded-md bg-transparent
+                  className={`w-full px-3 py-3 border rounded-md bg-white
                     ${error ? 'border-red-500' : formData.email ? 'border-[#666cff]' : 'border-gray-300'}
-                    focus:outline-none focus:border-[#666cff] focus:border-2`}
-                  aria-describedby="email-error"
+                    focus:outline-none focus:border-[#666cff] focus:ring-1 focus:ring-[#666cff]`}
                 />
               </div>
             </div>
@@ -160,48 +173,40 @@ export default function Login() {
                   Password
                 </label>
                 <input
+                 placeholder='password'
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full px-3 py-3 border rounded-md bg-transparent
+                  className={`w-full px-3 py-3 border rounded-md bg-white pr-10
                     ${error ? 'border-red-500' : formData.password ? 'border-[#666cff]' : 'border-gray-300'}
-                    focus:outline-none focus:border-[#666cff] focus:border-2 pr-10`}
-                  aria-describedby="password-error"
+                    focus:outline-none focus:border-[#666cff] focus:ring-1 focus:ring-[#666cff]`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 !text-gray-500"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
             {/* Remember Me and Forgot Password */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-6">
               <div className="flex items-center">
-                <div className="relative inline-block">
-                  <input
-                    id="remember-me"
-                    name="rememberMe"
-                    type="checkbox"
-                    checked={formData.rememberMe}
-                    onChange={handleChange}
-                    className="opacity-0 absolute h-4 w-4 cursor-pointer"
-                  />
-                  <div 
-                    className={`border rounded w-4 h-4 flex flex-shrink-0 justify-center items-center mr-2
-                      ${formData.rememberMe ? 'bg-[#666cff] border-[#666cff]' : 'border-gray-400'}`}
-                  >
-                    {formData.rememberMe && <Check className="w-3 h-3 text-white" />}
-                  </div>
-                </div>
-                <label htmlFor="remember-me" className="ml-2 text-sm !text-gray-600">
-                  Remember Me
+                <input
+                  id="remember-me"
+                  name="rememberMe"
+                  type="checkbox"
+                  checked={formData.rememberMe}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-[#666cff] border-gray-300 rounded focus:ring-[#666cff] cursor-pointer"
+                />
+                <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600 cursor-pointer select-none">
+                  Se souvenir de moi
                 </label>
               </div>
               <Link href="/forgot-password" className="text-sm font-medium text-[#666cff] hover:underline">
@@ -213,11 +218,11 @@ export default function Login() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium !text-white bg-[#666cff] hover:bg-[#5a5fe6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#666cff] mb-7 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full py-2.5 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-[#666cff] hover:bg-[#5a5fe6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#666cff] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -226,26 +231,16 @@ export default function Login() {
               ) : 'Se Connecter'}
             </button>
 
-            {/* Divider */}
-            <div className="relative mt-7 mb-7">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-4 bg-white text-sm !text-gray-500"></span>
-              </div>
-            </div>
-
-            {/* Footer with legal links */}
-            <div className="text-center text-gray-500 text-sm mt-8">
-              <p>© {new Date().getFullYear()} Immo Gestion. Tous droits réservés.</p>
-              <div className="mt-2 space-x-4">
-                <Link href="/conditions-generales" className="!text-blue-600 hover:text-blue-800">
-                  Conditions Générales
+            {/* Footer */}
+            <div className="text-center text-gray-400 text-xs mt-8">
+              <p>© {new Date().getFullYear()} Immo Gestion</p>
+              <div className="mt-2 space-x-3">
+                <Link href="/conditions-generales" className="hover:text-gray-600">
+                  CGU
                 </Link>
                 <span>•</span>
-                <Link href="/politique-confidentialite" className="!text-blue-600 hover:text-blue-800">
-                  Politique de Confidentialité
+                <Link href="/politique-confidentialite" className="hover:text-gray-600">
+                  Confidentialité
                 </Link>
               </div>
             </div>

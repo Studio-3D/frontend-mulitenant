@@ -89,8 +89,9 @@ export const ProjectTypeStep = ({
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="flex items-end gap-4">
-          <div className="flex flex-col mt-10">
+        {/* SECTION TYPE DE PROJET MODIFIEE - RESPONSIVE */}
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+          <div className="flex flex-col flex-1">
             <label
               htmlFor="projectType"
               className="block text-lg font-medium text-gray-700 mb-1"
@@ -98,17 +99,17 @@ export const ProjectTypeStep = ({
               Type de projet <span className="text-red-500 ml-1">*</span>
             </label>
             {showNewTypeInput ? (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  id="newProjectType"
+                  value={newType}
+                  onChange={(e) => setNewType(e.target.value)}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
+                  placeholder="Nouveau type"
+                  disabled={addingType}
+                />
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    id="newProjectType"
-                    value={newType}
-                    onChange={(e) => setNewType(e.target.value)}
-                    className="block w-[600px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border px-3 py-2"
-                    placeholder="Nouveau type"
-                    disabled={addingType}
-                  />
                   <button
                     type="button"
                     onClick={handleAddNewType}
@@ -130,7 +131,7 @@ export const ProjectTypeStep = ({
                 </div>
               </div>
             ) : (
-              <div>
+              <div className="w-full">
                 <SelectInput
                   id="projectType"
                   name="projectType"
@@ -145,7 +146,7 @@ export const ProjectTypeStep = ({
                       label: type.type,
                     })),
                   ]}
-                  width="w-[600px]"
+                  width="w-full"
                   error={touched.projectType && errors.projectType}
                 />
                 {errors.projectType && touched.projectType && (
@@ -160,21 +161,24 @@ export const ProjectTypeStep = ({
             <button
               type="button"
               onClick={() => setShowNewTypeInput(true)}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md flex items-center gap-1"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-md flex items-center justify-center gap-1 whitespace-nowrap"
             >
               <PlusIcon size={16} />
               <span>Nouveau</span>
             </button>
           )}
         </div>
+        {/* FIN SECTION TYPE DE PROJET MODIFIEE */}
+        
         {typeOptions.length === 0 && !loading && (
           <p className="mt-1 text-sm text-amber-600">
-            Aucun type de projet trouvé. Veuillez {"d'"}abord créer des types de
+            Aucun type de projet trouvé. Veuillez d{"'"}abord créer des types de
             projets.
           </p>
         )}
       </div>
 
+      {/* RESTE DU CODE NON MODIFIE - Composition et bouton suivant identiques */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-800 mt-14">
           Composition de projet
