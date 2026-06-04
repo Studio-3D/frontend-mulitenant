@@ -7,16 +7,17 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // URL de base (change selon environnement)
 const BASERESOURCEURL = isProduction 
-    ? process.env.NEXT_PUBLIC_BASE_URL || 'https://api-prod.immogestion.online'
+    ? process.env.NEXT_PUBLIC_BASE_URL || 'https://phplaravel-1633242-6465298.cloudwaysapps.com'//'https://api-prod.immogestion.online'
     : (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000');
 
 // URL S3 pour les fichiers en production
-const S3_URL = 'https://erp-immo-prod-storage.s3.eu-central-1.amazonaws.com';
+//const S3_URL = 'https://erp-immo-prod-storage.s3.eu-central-1.amazonaws.com';
+const CLOUDWAYS_DOCS_URL = `${BASERESOURCEURL}/docs`;
 
 export const RESOURCE_URL = {
   // En local: http://localhost:8000/docs
   // En prod: https://bucket.s3.amazonaws.com
-  DOCS: isProduction ? S3_URL : `${BASERESOURCEURL}/docs`,
+  DOCS: isProduction ? CLOUDWAYS_DOCS_URL  : `${BASERESOURCEURL}/docs`,
   BASE: BASERESOURCEURL,
   FRONTEND_IMAGES: '/images',
 };

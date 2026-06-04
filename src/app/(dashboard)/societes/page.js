@@ -300,7 +300,7 @@ export default function Societes() {
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
         // add + export buttons
-        addLink={"/societes/ajouter-societe"}
+        //addLink={"/societes/ajouter-societe"}
         enableExport={true}
         searchFields={["raison_sociale", "email"]} // Specify filterable fields
         onSearch={setSearchTerm} // Pass searchTerm handler
