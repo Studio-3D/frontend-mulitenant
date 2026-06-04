@@ -284,12 +284,7 @@ const Menu = () => {
         },
       ],
     },
-     {
-      label: 'Messaegerie Whatsapp',
-      icon: <UsersRound size={20} />,
-      href: '/whatsapp-messenger',
-      needsSociete: user.role === 1,
-    },
+    
     
   ];
 
@@ -414,6 +409,7 @@ const Menu = () => {
       needsSociete: user.role === 1,
       needsProjet: true,
     },
+     
     {
           label: 'Etapes Projet',
           icon: <Cuboid size={20} />,
@@ -697,6 +693,12 @@ const Menu = () => {
       href: '/histo-importation',
       needsSociete: user.role === 1,
       needsProjet: true,
+    },
+    {
+      label: 'Messaegerie Whatsapp',
+      icon: <UsersRound size={20} />,
+      href: '/whatsapp-messenger',
+      needsSociete: user.role === 1,
     },
   ];
 

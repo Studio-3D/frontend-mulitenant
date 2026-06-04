@@ -16,6 +16,8 @@ import SelectInput from '../SelectInput';
 import DateInput from '../DateInput';
 
 const ProfileContent = ({ userId }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { user } = useAuth();
   const [userData, setUserData] = useState(null);
   const [projetOptions, setProjetsOptions] = useState([]);
@@ -102,6 +104,8 @@ const ProfileContent = ({ userId }) => {
     },
     validationSchema,
     onSubmit: async (values) => {
+        setIsSubmitting(true);
+
       // Validate that at least one project is selected
       /*if (selectedProjetIds.length === 0) {
         setDisplay_Errors_projets(true);
@@ -147,6 +151,10 @@ const ProfileContent = ({ userId }) => {
         toast.error("Une erreur s'est produite, Veuillez réessayer.");
         console.error(error);
       }
+       finally {
+    // Réactiver le bouton après l'opération (succès ou erreur)
+    setIsSubmitting(false);
+  }
     },
     validateOnChange: true,
     validateOnBlur: false,
@@ -636,12 +644,15 @@ const ProfileContent = ({ userId }) => {
             >
               Annuler
             </button>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Enregistrer
-            </button>
+  <button
+  type="submit"
+  disabled={isSubmitting}
+  className={`bg-blue-500 text-white py-2 px-6 rounded-lg transition-colors ${
+    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+  }`}
+>
+  {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
+</button>
           </div>
         )}
       </form>
