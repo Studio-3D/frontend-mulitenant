@@ -105,7 +105,7 @@ export function VisitDetails({
       code_pre_reservation: visite.pre_reservation_visite?.code_pre_reserve,
       date_pre_reserve: visite.pre_reservation_visite?.date_pre_reserve,
       rdv: visite.rdv_relation?.rdv,
-      propriete_dite_bien: visite.bien?.propriete_dite_bien,
+      propriete_dite_bien: NomBienComplet(visite?.bien),
       niveau: visite.bien?.niveau,
       superficie: visite.bien?.superficie_architecte,
       orientation: visite.bien?.orientation,
