@@ -193,7 +193,7 @@ const handleDownloadBonPreReservation = async (row) => {
         ? row.visite?.rdv_relation?.rdv
         : null,
       date_pre_reserve: row.date_pre_reserve,
-      propriete_dite_bien: row.bien?.propriete_dite_bien,
+      propriete_dite_bien:  NomBienComplet(row?.bien),
       niveau: row.bien?.niveau,
       superficie: row.bien?.superficie_architecte,
       orientation: row.bien?.orientation,

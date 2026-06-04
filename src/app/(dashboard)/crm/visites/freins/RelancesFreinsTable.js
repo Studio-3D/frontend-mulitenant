@@ -94,24 +94,31 @@ const RelancesFreinsTable = () => {
     window.open(`/crm/visites/freins/${frId}`, '_blank');
   };
 
-  const formatData = () => {
-    return data.map((pro) => {
-      return {
-        id: pro.id,
-        date: pro.date,
-        nomComplet: `${pro.nom + ' ' + pro.prenom}`.trim(),
-        frein: pro.frein,
-
-        telephone:
-          (pro.telephone ? pro.telephone : '') +
-            (pro.telephone && pro.telephone_2 && pro.telephone_2 !== 'null'
-              ? ' / ' + pro.telephone_2
-              : '') || 'Non spécifié',
-        frein_id_origin: pro.id_origin,
-        visiteId: pro.visite_id,
-      };
-    });
-  };
+ const formatData = () => {
+  return data.map((pro) => {
+    // Gérer le nom complet avec valeurs null
+    const nom = pro.nom || '';
+    const prenom = pro.prenom || '';
+    const nomComplet = `${nom} ${prenom}`.trim() || 'Nom non spécifié';
+    
+    // Gérer le téléphone avec valeurs null
+    const telephone1 = pro.telephone || '';
+    const telephone2 = (pro.telephone_2 && pro.telephone_2 !== 'null') ? pro.telephone_2 : '';
+    const telephone = (telephone1 || telephone2) 
+      ? (telephone1 + (telephone1 && telephone2 ? ' / ' + telephone2 : telephone2))
+      : 'Non spécifié';
+    
+    return {
+      id: pro.id,
+      date: pro.date || '',
+      nomComplet: nomComplet,
+      frein: pro.frein || '',
+      telephone: telephone,
+      frein_id_origin: pro.id_origin || null,
+      visiteId: pro.visite_id || null,
+    };
+  });
+};
 
   // Table columns configuration
   const columns = [
