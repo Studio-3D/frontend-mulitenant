@@ -2412,7 +2412,7 @@ useEffect(() => {
                             {/* N° Remise */}
                             <div>
                               <TextField
-                                label="N° Remise :"
+                                label="N° Encaissement :"
                                 name="num_remise_suivi"
                                 type="number"
                                 control={control}
@@ -2900,7 +2900,7 @@ useEffect(() => {
                                   </h2>
                                 </div>
                                 <TextField
-                                  label="N° Remise:"
+                                  label="N° Encaissement:"
                                   name="num_remise"
                                   type="number"
                                   control={control}

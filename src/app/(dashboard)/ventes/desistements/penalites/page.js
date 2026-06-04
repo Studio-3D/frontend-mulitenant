@@ -690,7 +690,7 @@ export default function PenalitesTable() {
                     <div className="mb-4">
                       <TextField
                         type="number"
-                        label="N° Remise"
+                        label="N° Encaissement"
                         name="remiseNumber"
                         control={false}
                         errors={{}}

@@ -112,14 +112,15 @@ export const ContractTab = ({
     setErrors(message);
     setTimeout(() => setErrors(''), 5000);
   };
-
 const showToast = (message, type = 'success') => {
-    toast[type](message, {
-      position: 'top-right',
-      duration: 100, // 0.1 seconde
-    });
-  };
-
+  if (type === 'success') {
+    toast.success(message);
+  } else if (type === 'error') {
+    toast.error(message);
+  } else {
+    toast(message);
+  }
+};
   const onsubmit_ajouter = (e) => {
     setLoading_btn(true);
     e.preventDefault();
