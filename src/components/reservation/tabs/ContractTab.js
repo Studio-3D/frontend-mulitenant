@@ -159,6 +159,19 @@ const showToast = (message, type = 'success') => {
       });
   };
 
+  const NomBienComplet = (bien) => {
+    if (!bien || typeof bien === 'string') {
+      return '';
+    }
+    
+    const noms = [];
+    if (bien.tranche?.nom) noms.push(bien.tranche.nom);
+    if (bien.bloc?.nom) noms.push(bien.bloc.nom);
+    if (bien.immeuble?.nom) noms.push(bien.immeuble.nom);
+    if (bien.propriete_dite_bien) noms.push(bien.propriete_dite_bien);
+    
+    return noms.length > 0 ? noms.join(' - ') : '';
+  };
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -596,7 +609,7 @@ const showToast = (message, type = 'success') => {
                     </h4>
                     <div className="bg-[#F5F0F5] p-4 rounded-lg border-l-4 border-[#5A5FE0]">
                       <p className="text-sm mb-3">
-                        Ce bien immobilier est un{' '}
+                        Ce bien {NomBienComplet(data_reservation?.bien)} est un{' '}
                         {data_reservation?.bien?.type_bien?.type ||
                           'type non spécifié'}
                         , identifié par le numéro{' '}
@@ -616,7 +629,7 @@ const showToast = (message, type = 'success') => {
                         {data_reservation?.bien?.superficie_terrasse > 0 &&
                           ` Il dispose également d'une terrasse de ${data_reservation.bien.superficie_terrasse} m².`}
                       </p>
-                           {data_reservation?.bien?.composition_bien?.length  && (
+                      {data_reservation?.bien?.composition_bien?.length > 0 && (
                             <>
                                 <p className="text-sm font-semibold mb-1">Composition:</p>
                                   {data_reservation?.bien?.composition_bien?.length > 0 ? (
