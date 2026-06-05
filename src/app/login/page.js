@@ -89,8 +89,20 @@ export default function Login() {
       } else {
         router.push('/tableau-de-bord');
       }
-    } catch (err) {
-      setError("L'e-mail ou le mot de passe n'est pas valide ou l'utilisateur n'est pas Actif");
+    }  catch (err) {
+      // Gestion des erreurs selon le status HTTP
+      const status = err.response?.status;
+      const errorData = err.response?.data;
+      
+      if (status === 404) {
+        setError(errorData?.error || "Utilisateur non trouvé");
+      } else if (status === 422) {
+        setError(errorData?.error || "Email ou mot de passe incorrect");
+      } else if (status === 500) {
+        setError("Une erreur est survenue, veuillez réessayer plus tard");
+      } else {
+        setError("L'e-mail ou le mot de passe n'est pas valide ou l'utilisateur n'est pas actif");
+      }
     } finally {
       setIsSubmitting(false);
     }
