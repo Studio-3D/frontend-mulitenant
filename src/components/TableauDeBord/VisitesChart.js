@@ -76,22 +76,28 @@ export function VisitesChart({ data = [], startDate, endDate }) {
         result.push(hourData)
       }
     } 
-    else if (rangeType === "week") {
-      // Group by day of week
-      const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
-      days.forEach(day => {
-        const dayData = { name: day, interesse: 0, perdu: 0, receptif: 0 }
-        data.forEach(item => {
-          const itemDay = format(new Date(item.date), 'EEE', { locale: fr }).substring(0, 3)
-          if (itemDay === day.substring(0, 3)) {
-            dayData.interesse += item["intéressé"] || 0
-            dayData.perdu += item["perdu"] || 0
-            dayData.receptif += item["réceptif"] || 0
-          }
-        })
-        result.push(dayData)
-      })
-    }
+   else if (rangeType === "week") {
+  // Group by day of week
+  const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
+  const dayMapping = {
+    "lun": "Lun", "mar": "Mar", "mer": "Mer", "jeu": "Jeu", 
+    "ven": "Ven", "sam": "Sam", "dim": "Dim"
+  }
+  
+  days.forEach(day => {
+    const dayData = { name: day, interesse: 0, perdu: 0, receptif: 0 }
+    data.forEach(item => {
+      const itemDay = format(new Date(item.date), 'EEE', { locale: fr }).toLowerCase().substring(0, 3)
+      const mappedDay = dayMapping[itemDay]
+      if (mappedDay === day) {
+        dayData.interesse += item["intéressé"] || 0
+        dayData.perdu += item["perdu"] || 0
+        dayData.receptif += item["réceptif"] || 0
+      }
+    })
+    result.push(dayData)
+  })
+}
     else if (rangeType === "month") {
       // Group by day of month
       const daysInMonth = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate()

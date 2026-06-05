@@ -11,27 +11,31 @@ export default function ForgotPassword() {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    setIsLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+  setSuccess('');
+  setIsLoading(true);
 
-    try {
-      await axios.post(authConfig.forgotPasswordEndpoint, { email });
-      setSuccess(
-        "Un email avec les instructions a été envoyé si l'adresse est associée à un compte."
-      );
-      setEmail('');
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          'Une erreur est survenue, veuillez réessayer plus tard.'
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    const response = await axios.post(authConfig.forgotPasswordEndpoint, { email });
+    
+    setSuccess(response.data.message || "Un email avec les instructions a été envoyé.");
+    setEmail('');
+    
+  } catch (err) {
+    console.log('Erreur:', err.response?.data);
+    
+    // ICI : Chercher 'error_' au lieu de 'error'
+    const errorMessage = err.response?.data?.error_ || 
+                         err.response?.data?.error || 
+                         "Une erreur est survenue, veuillez réessayer plus tard.";
+    
+    setError(errorMessage);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-white">

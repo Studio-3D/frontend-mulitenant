@@ -607,8 +607,8 @@ const ProfileContent = ({ userId }) => {
           
           {/* Message d'avertissement pour changement d'email */}
           {isEditing && emailChanged && (
-            <div className="col-span-1 md:col-span-2 xl:col-span-3 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
-              <p className="text-sm text-yellow-700">
+            <div className="col-span-1 md:col-span-2 xl:col-span-3 bg-yellow-50 border-l-4 border-blue-400 p-4 rounded-md">
+              <p className="text-sm text-blue-700">
                 ⚠️ Vous avez changé votre adresse email. Veuillez saisir votre nouveau mot de passe ci-dessous.
               </p>
             </div>

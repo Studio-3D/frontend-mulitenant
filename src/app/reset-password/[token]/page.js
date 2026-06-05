@@ -4,10 +4,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 import { use } from 'react';
-import authConfig from '../../../configs/auth'; // Correct import path
+import authConfig from '../../../configs/auth';
 
 export default function ResetPassword({ params }) {
-  // Properly unwrap the params using React.use
   const unwrappedParams = use(params);
   const token = unwrappedParams.token;
   
@@ -17,6 +16,8 @@ export default function ResetPassword({ params }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmError, setConfirmError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTokenValid, setIsTokenValid] = useState(true);
@@ -24,10 +25,8 @@ export default function ResetPassword({ params }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Verify token validity
     const verifyToken = async () => {
       try {
-        // Change from GET to POST method to match the API requirements
         const response = await axios.post(`${authConfig.validateTokenEndpoint}/${token}`);
         setEmail(response.data.email || '');
         setIsTokenValid(true);
@@ -42,25 +41,70 @@ export default function ResetPassword({ params }) {
     }
   }, [token]);
 
+  // Validation du mot de passe en temps réel
+  const validatePassword = (value) => {
+    if (!value) {
+      setPasswordError('');
+      return false;
+    }
+    if (value.length < 8) {
+      setPasswordError('Le mot de passe doit contenir au moins 8 caractères');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
+
+  // Validation de la confirmation en temps réel
+  const validateConfirmPassword = (value) => {
+    if (!value) {
+      setConfirmError('');
+      return false;
+    }
+    if (value !== password) {
+      setConfirmError('Les mots de passe ne correspondent pas');
+      return false;
+    }
+    setConfirmError('');
+    return true;
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+    validatePassword(value);
+    if (confirmPassword) {
+      validateConfirmPassword(confirmPassword);
+    }
+  };
+
+  const handleConfirmChange = (e) => {
+    const value = e.target.value;
+    setConfirmPassword(value);
+    validateConfirmPassword(value);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     
-    // Password validation
-    if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas.');
+    // Validations
+    const isPasswordValid = validatePassword(password);
+    const isConfirmValid = validateConfirmPassword(confirmPassword);
+    
+    if (!isPasswordValid) {
+      setError('Le mot de passe doit contenir au moins 8 caractères.');
       return;
     }
     
-    if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères.');
+    if (!isConfirmValid) {
+      setError('Les mots de passe ne correspondent pas.');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Use the correct endpoint from authConfig
       await axios.post(`${authConfig.resetPasswordEndpoint}/${token}`, {
         email,
         password,
@@ -71,7 +115,6 @@ export default function ResetPassword({ params }) {
       setPassword('');
       setConfirmPassword('');
       
-      // Redirect to login after 3 seconds
       setTimeout(() => {
         router.push('/login');
       }, 3000);
@@ -115,9 +158,7 @@ export default function ResetPassword({ params }) {
 
   return (
     <div className="flex min-h-screen bg-gray-100 items-center justify-center p-4 !text-gray-500 relative">
-      {/* Background Image - Updated styling and path */}
       <div className="fixed inset-0 -z-10 w-full h-full pointer-events-none">
-        {/* Try different image paths */}
         <img 
           src="/images/bg1.jpg" 
           alt="Background illustration" 
@@ -137,7 +178,7 @@ export default function ResetPassword({ params }) {
         <div className="mb-6">
           <h5 className="text-xl font-semibold mb-1.5">Réinitialisation du mot de passe 🔒</h5>
           <p className="text-gray-500 text-sm">
-            Votre nouveau mot de passe doit contenir au moins 8 caractères mixte entre des lettres et nombres et symbols pour que votre compte soit bien sécurisé.
+            Votre nouveau mot de passe doit contenir au moins 8 caractères.
           </p>
         </div>
 
@@ -152,15 +193,17 @@ export default function ResetPassword({ params }) {
           <form noValidate autoComplete="off" onSubmit={handleSubmit}>
             <div className="mb-4">
               <div className="relative">
-                <label htmlFor="password" className="block text-sm font-medium mb-2">Nouveau mot de passe</label>
+                <label htmlFor="password" className="block text-sm font-medium mb-2">
+                  Nouveau mot de passe <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={handlePasswordChange}
                     className={`w-full px-3 py-2 border rounded-md bg-transparent
-                      ${error && !confirmPassword ? 'border-red-500' : 'border-gray-300'}
+                      ${passwordError ? 'border-red-500' : 'border-gray-300'}
                       focus:outline-none focus:ring-2 focus:ring-[#666cff] focus:border-[#666cff] pr-10`}
                     required
                   />
@@ -182,20 +225,25 @@ export default function ResetPassword({ params }) {
                     )}
                   </button>
                 </div>
+                {passwordError && (
+                  <p className="mt-1 text-xs !text-red-500">{passwordError}</p>
+                )}
               </div>
             </div>
 
             <div className="mb-6">
               <div className="relative">
-                <label htmlFor="confirm-password" className="block text-sm font-medium mb-2">Confirmer le mot de passe</label>
+                <label htmlFor="confirm-password" className="block text-sm font-medium mb-2">
+                  Confirmer le mot de passe <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                   <input
                     id="confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={handleConfirmChange}
                     className={`w-full px-3 py-2 border rounded-md bg-transparent
-                      ${error ? 'border-red-500' : 'border-gray-300'}
+                      ${confirmError ? 'border-red-500' : 'border-gray-300'}
                       focus:outline-none focus:ring-2 focus:ring-[#666cff] focus:border-[#666cff] pr-10`}
                     required
                   />
@@ -217,9 +265,17 @@ export default function ResetPassword({ params }) {
                     )}
                   </button>
                 </div>
-                {error && <p className="mt-1 text-xs !text-red-500">{error}</p>}
+                {confirmError && (
+                  <p className="mt-1 text-xs !text-red-500">{confirmError}</p>
+                )}
               </div>
             </div>
+
+            {error && !passwordError && !confirmError && (
+              <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
 
             <button
               type="submit"
