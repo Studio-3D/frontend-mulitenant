@@ -231,7 +231,7 @@ export default function Login() {
               ) : 'Se Connecter'}
             </button>
 
-            {/* Footer */}
+            {/* Footer 
             <div className="text-center text-gray-400 text-xs mt-8">
               <p>© {new Date().getFullYear()} Immo Gestion</p>
               <div className="mt-2 space-x-3">
@@ -243,7 +243,7 @@ export default function Login() {
                   Confidentialité
                 </Link>
               </div>
-            </div>
+            </div>*/}
           </form>
         </div>
       </div>
