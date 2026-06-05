@@ -2939,7 +2939,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                   </div>
                                   <div>
                                     <TextField
-                                      label="N° Remise :"
+                                      label="N° Encaissement :"
                                       name="num_remise_suivi"
                                       type="number"
                                       control={control}
@@ -3459,7 +3459,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                             </h2>
                                           </div>
                                           <InputField_Biens
-                                            label="N° Remise:"
+                                            label="N° Encaissement:"
                                             name="num_remise"
                                             type="number"
                                             value={x.num_remise}
@@ -4100,7 +4100,7 @@ const VisiteForm = ({ prospect_id, origin, client_reservations = [] }) => {
                                               </h2>
                                             </div>
                                             <InputField_Biens
-                                              label="N° Remise:"
+                                              label="N° Encaissement:"
                                               name="num_remise"
                                               type="number"
                                               value={x.num_remise}

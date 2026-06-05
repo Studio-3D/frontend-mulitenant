@@ -739,7 +739,7 @@ const PenaltyDetails = ({
       {penalite.statut == 1 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 border-t border-gray-00">
           <InfoDetail
-            label="N° Remise"
+            label="N° Encaissement"
             value={penalite.last_statut?.num_remise || ''}
           />
           <InfoDetail
@@ -928,7 +928,7 @@ const ValidationModal = ({
                           <TextField
                             type="number"
                             control={false}
-                            label="N° Remise"
+                            label="N° Encaissement"
                             name="remiseNumber"
                             value={field.value}
                             onChange={field.onChange}

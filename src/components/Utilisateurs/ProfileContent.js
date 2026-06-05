@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { useSociete } from '@/context/SocieteContext';
 import Input from '../Input';
 import toast from 'react-hot-toast';
-import { Edit, XIcon } from 'lucide-react';
+import { Edit, XIcon, Eye, EyeOff } from 'lucide-react';
 import LoadingSpin from '../LoadingSpin';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
@@ -17,6 +17,12 @@ import DateInput from '../DateInput';
 
 const ProfileContent = ({ userId }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+  const [emailChanged, setEmailChanged] = useState(false);
+  const [originalEmail, setOriginalEmail] = useState('');
+  const [roles, setRoles] = useState([]);
+  const [loadingRoles, setLoadingRoles] = useState(false);
 
   const { user } = useAuth();
   const [userData, setUserData] = useState(null);
@@ -37,53 +43,136 @@ const ProfileContent = ({ userId }) => {
   const fileInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
 
-  const validationSchema = Yup.object().shape({
-    name: Yup.string()
-      .required('Le nom est requis')
-      .min(3, 'Le nom doit comporter au moins 3 caractères'),
-    prenom: Yup.string()
-      .required('Le prénom est requis')
-      .min(3, 'Le prénom doit comporter au moins 3 caractères'),
-    email: Yup.string()
-      .trim()
-      .required("L'email est requis")
-      .max(254, "L'email ne doit pas dépasser 254 caractères")
-      .matches(
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        'Veuillez entrer une adresse email valide'
-      ),
-    phone: Yup.string().matches(
-      /^[0-9]{10}$/,
-      'Le numéro doit contenir exactement 10 chiffres'
-    ),
-    cin: Yup.string(),
-    cnss: Yup.string(),
-    gender: Yup.string().required('Le genre est requis'),
-    fonction: Yup.string(),
-    date_embauche: Yup.date(),
-    solde_conge: Yup.number(),
-  });
-
-  // Initialize selected projects from user data when projects are available
- /* useEffect(() => {
-    console.log('mmmmm=>')
-    if (
-      !isInitialized &&
-      userData &&
-      userData.projets_de_user &&
-      projetOptions.length > 0
-    ) {
-        console.log('=>')
-      // Extract project IDs from the full project objects
-      const projetIds = userData.projets_de_user.map((projet) =>
-        projet.id.toString()
-      );
-      console.log('fadwaaa==>'+projetIds)
-    //  setSelectedProjetIds(projetIds);
-
-      setIsInitialized(true);
+  // Fonction pour récupérer les rôles disponibles
+  const fetchRoles = async (societeId) => {
+    setLoadingRoles(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.get(`${APIURL.GESTION_ROLES_ACTIVES}/${societeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRoles(response.data.roles || []);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    } finally {
+      setLoadingRoles(false);
     }
-  }, [userData, projetOptions, isInitialized]);*/
+  };
+
+  // Récupérer les options de rôles
+  const getRoleOptions = () => {
+    // Rôles par défaut
+    const defaultRoles = [
+      { label: "Admin", value: "2" },
+      { label: "Commercial", value: "3" },
+    ];
+
+    // Si l'utilisateur connecté est Super Admin (role 1), ajouter Super Admin
+    if (user?.role === 1) {
+      defaultRoles.unshift({ label: "Super Admin", value: "1" });
+    }
+
+    // Si aucun rôle supplémentaire n'est configuré, retourner seulement les rôles par défaut
+    if (!roles || roles.length === 0) {
+      return defaultRoles;
+    }
+
+    // Mapper les rôles dynamiques depuis l'API
+    const dynamicRoles = roles
+      .filter(role => {
+        const roleValue = parseInt(role.role);
+        return ![1, 2, 3].includes(roleValue);
+      })
+      .map(role => {
+        const roleValue = parseInt(role.role);
+        let label = '';
+        
+        switch(roleValue) {
+          case 5:
+            label = 'Notaire';
+            break;
+          case 6:
+            label = 'Responsable Livraison';
+            break;
+          case 7:
+            label = 'Comptable';
+            break;
+          case 8:
+            label = 'SAV';
+            break;
+          case 9:
+            label = 'Responsable Commercial';
+            break;
+          case 10:
+            label = 'Agent de saisie';
+            break;
+          default:
+            label = `Rôle ${roleValue}`;
+        }
+        
+        return {
+          label,
+          value: role.role.toString(),
+        };
+      });
+
+    return [...defaultRoles, ...dynamicRoles];
+  };
+
+  const validationSchema = Yup.object().shape({
+  name: Yup.string()
+    .typeError('Le nom doit être une chaîne de caractères')
+    .required('Le nom est requis')
+    .min(3, 'Le nom doit comporter au moins 3 caractères'),
+  prenom: Yup.string()
+    .typeError('Le prénom doit être une chaîne de caractères')
+    .required('Le prénom est requis')
+    .min(3, 'Le prénom doit comporter au moins 3 caractères'),
+  email: Yup.string()
+    .trim()
+    .required("L'email est requis")
+    .max(254, "L'email ne doit pas dépasser 254 caractères")
+    .matches(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      'Veuillez entrer une adresse email valide'
+    ),
+  phone: Yup.string()
+    .typeError('Le numéro de téléphone doit être une chaîne de caractères')
+    .min(10, 'Le numéro de téléphone doit contenir au moins 10 caractères')
+    .max(14, 'Le numéro de téléphone ne peut pas dépasser 14 caractères')
+    .matches(/^[0-9]+$/, 'Le numéro de téléphone ne doit contenir que des chiffres'),
+  cin: Yup.string(),
+  cnss: Yup.number()
+    .typeError('Le numéro CNSS doit être un nombre entier')
+    .integer('Le numéro CNSS doit être un nombre entier')
+    .nullable(),
+  gender: Yup.string().required('Le genre est requis'),
+  role: Yup.string().required('Le rôle est requis'),
+  fonction: Yup.string(),
+  date_embauche: Yup.date()
+    .typeError('La date d\'embauche doit être une date valide')
+    .nullable(),
+  solde_conge: Yup.number()
+    .typeError('Le solde de congé doit être un nombre entier')
+    .integer('Le solde de congé doit être un nombre entier')
+    .nullable(),
+  is_actif: Yup.string().nullable(),
+  // Champs de mot de passe conditionnels
+  password: Yup.string().when('$emailChanged', {
+    is: true,
+    then: (schema) => schema
+      .min(6, 'Le mot de passe doit contenir au moins 6 caractères')
+      .required('Le mot de passe est requis lorsque vous changez l\'email'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  password_confirmation: Yup.string().when('$emailChanged', {
+    is: true,
+    then: (schema) => schema
+      .oneOf([Yup.ref('password'), null], 'Les mots de passe ne correspondent pas')
+      .required('La confirmation du mot de passe est requise'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+});
 
   const formik = useFormik({
     initialValues: {
@@ -101,64 +190,144 @@ const ProfileContent = ({ userId }) => {
       cnss: '',
       solde_conge: '',
       selected_projets: [],
+      password: '',
+      password_confirmation: '',
     },
     validationSchema,
-    onSubmit: async (values) => {
-        setIsSubmitting(true);
-
-      // Validate that at least one project is selected
-      /*if (selectedProjetIds.length === 0) {
-        setDisplay_Errors_projets(true);
-        return;
-      } else {
-        setDisplay_Errors_projets(false);
-      }*/
-
-      const formToSend = new FormData();
-
-      // Add all form values
-      for (const key in values) {
-        const value = values[key];
-        if (value !== undefined && value !== null && value !== '') {
-          formToSend.append(key, value);
-        }
-      }
-
-      // Add selected projects
-     // Create a comma-separated string of project IDs
-      const selectedProjetsString = selectedProjetIds.join(',');
-      formToSend.append('selectedProjets', selectedProjetsString);
-      // Add the image file if selected
-      if (selectedFile) {
-        formToSend.append('photo', selectedFile);
-      }
-
-      try {
-        await axios.post(`${APIURL.UTILISATEURS}/${userId}`, formToSend, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-
-        toast.success('Profil modifié avec succès');
-        setIsEditing(false);
-
-       if (searchParams.get('edit')) {
-          router.push('/utilisateurs');
-        }
-      } catch (error) {
-        toast.error("Une erreur s'est produite, Veuillez réessayer.");
-        console.error(error);
-      }
-       finally {
-    // Réactiver le bouton après l'opération (succès ou erreur)
-    setIsSubmitting(false);
-  }
-    },
     validateOnChange: true,
     validateOnBlur: false,
+    context: { emailChanged },
+   onSubmit: async (values) => {
+    console.log('fadwa')
+  setIsSubmitting(true);
+
+  const formToSend = new FormData();
+
+  // Add all form values
+  for (const key in values) {
+    const value = values[key];
+    if (value !== undefined && value !== null && value !== '') {
+      // Ne pas envoyer les champs de mot de passe si l'email n'a pas changé
+      if ((key === 'password' || key === 'password_confirmation') && !emailChanged) {
+        continue;
+      }
+      formToSend.append(key, value);
+    }
+  }
+
+  // Add selected projects
+  const selectedProjetsString = selectedProjetIds.join(',');
+  formToSend.append('selectedProjets', selectedProjetsString);
+  
+  // Add the image file if selected
+  if (selectedFile) {
+    formToSend.append('photo', selectedFile);
+  }
+
+  // Ajouter la méthode PUT pour Laravel
+  formToSend.append('_method', 'PUT');
+
+  try {
+    const response = await axios.post(`${APIURL.UTILISATEURS}/${userId}`, formToSend, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    toast.success('Profil modifié avec succès');
+    setIsEditing(false);
+    setEmailChanged(false);
+
+    if (searchParams.get('edit')) {
+      router.push('/utilisateurs');
+    }
+    
+    // Rafraîchir les données
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+    
+  } catch (error) {
+    // Gestion des erreurs de validation Laravel (status 422)
+    if (error.response?.status === 422 && error.response?.data?.errors) {
+      const validationErrors = error.response.data.errors;
+      
+      // Parcourir et définir chaque erreur dans formik
+      Object.keys(validationErrors).forEach((field) => {
+        const errorMessage = validationErrors[field][0];
+        
+        // Mapper les noms de champs Laravel vers les noms formik
+        let formikField = field;
+        
+        // Si le champ est 'photo', c'est déjà le bon nom
+        // Les autres champs sont déjà alignés
+        formik.setFieldError(formikField, errorMessage);
+        formik.setFieldTouched(formikField, true, false);
+      });
+      
+      // Afficher un toast récapitulatif
+      const errorCount = Object.keys(validationErrors).length;
+      toast.error(`${errorCount} erreur${errorCount > 1 ? 's' : ''} à corriger`);
+      
+      // Scroll au premier champ en erreur
+      const firstErrorField = Object.keys(validationErrors)[0];
+      setTimeout(() => {
+        const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+        if (errorElement) {
+          errorElement.focus();
+          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    } 
+    // Erreur unique CIN ou Email depuis le contrôleur (status 422 aussi)
+    else if (error.response?.status === 422 && error.response?.data?.errors) {
+      // Même traitement que ci-dessus
+      const validationErrors = error.response.data.errors;
+      Object.keys(validationErrors).forEach((field) => {
+        formik.setFieldError(field, validationErrors[field][0]);
+        formik.setFieldTouched(field, true, false);
+      });
+      toast.error('Veuillez corriger les erreurs dans le formulaire');
+    }
+    // Erreur 401 - Non autorisé
+    else if (error.response?.status === 401) {
+      toast.error('Session expirée. Veuillez vous reconnecter.');
+      // Optionnel: rediriger vers login
+      // router.push('/login');
+    }
+    // Autres erreurs
+    else {
+      toast.error(error.response?.data?.message || "Une erreur s'est produite, veuillez réessayer.");
+    }
+    
+    console.error('Update error:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+},
   });
+
+  // Détecter le changement d'email
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value;
+    formik.setFieldValue('email', newEmail);
+    if (newEmail !== originalEmail) {
+      setEmailChanged(true);
+    } else {
+      setEmailChanged(false);
+      // Réinitialiser les champs de mot de passe
+      formik.setFieldValue('password', '');
+      formik.setFieldValue('password_confirmation', '');
+    }
+  };
+
+  // Charger les rôles quand la société change
+  useEffect(() => {
+    if (selectedSociete?.id) {
+      fetchRoles(selectedSociete.id);
+    }
+  }, [selectedSociete?.id]);
 
   useEffect(() => {
     if (!userId || !accessToken) {
@@ -174,6 +343,7 @@ const ProfileContent = ({ userId }) => {
         });
         const data = response.data.user || response.data;
         setUserData(data);
+        setOriginalEmail(data.email || '');
 
         // Get all available projects (not just user's projects)
         const allProjects = response.data.projets || [];
@@ -182,10 +352,9 @@ const ProfileContent = ({ userId }) => {
           label: projet.nom || 'Projet sans nom',
         }));
 
-        
         setProjetsOptions(projectOptions);
         const projetIds = response.data.projets_de_user.map((projet) =>
-           projet.id.toString()
+          projet.id.toString()
         );
         setSelectedProjetIds(projetIds);
 
@@ -197,7 +366,7 @@ const ProfileContent = ({ userId }) => {
           phone: data.phone || '',
           adresse: data.adresse || '',
           gender: data.gender || '',
-          role: data.role || '',
+          role: data.role?.toString() || '',
           is_actif: data.is_actif?.toString() || '1',
           fonction: data.fonction || '',
           date_embauche: data.date_embauche || '',
@@ -205,6 +374,8 @@ const ProfileContent = ({ userId }) => {
           cnss: data.cnss || '',
           solde_conge: data.solde_conge?.toString() || '',
           selected_projets: data.projets_de_user || [],
+          password: '',
+          password_confirmation: '',
         });
       } catch (err) {
         if (err.response?.status === 401) {
@@ -223,9 +394,6 @@ const ProfileContent = ({ userId }) => {
   // Handle project selection from dropdown
   const handleProjetSelection = (selectedValues) => {
     setSelectedProjetIds(selectedValues || []);
-    /*if (display_errors_projets) {
-      setDisplay_Errors_projets(false);
-    }*/
   };
 
   // Get the full project objects for display
@@ -244,6 +412,8 @@ const ProfileContent = ({ userId }) => {
     } else {
       formik.resetForm();
       setIsEditing(false);
+      setEmailChanged(false);
+      setOriginalEmail(userData?.email || '');
 
       // Reset selected projects to original values
       if (userData && userData.projets_de_user) {
@@ -264,8 +434,10 @@ const ProfileContent = ({ userId }) => {
   if (error) return <div>{error}</div>;
   if (!userData) return <div>Aucune donnée utilisateur trouvée.</div>;
 
-  // Get selected projects for display
   const selectedProjects = getSelectedProjects();
+
+  // Vérifier si l'utilisateur connecté peut modifier le rôle (role <= 2)
+  const canEditRole = user?.role <= 2 && isEditing;
 
   return (
     <div className="relative">
@@ -315,15 +487,19 @@ const ProfileContent = ({ userId }) => {
               alt="User Avatar"
               className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
             />
-            {user?.role<=2&& (
-                   <div
-                      className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md cursor-pointer"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Edit className="text-gray-600 text-lg" />
-                    </div>
+                      {/* Erreur pour la photo */}
+          {formik.errors.photo && (formik.touched.photo || formik.submitCount > 0) && (
+            <div className="text-red-500 text-sm mt-1">{formik.errors.photo}</div>
+          )}
+              
+              {user?.role <= 2 && (
+              <div
+                className="absolute top-1 right-1 bg-white p-1 rounded-full shadow-md cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Edit className="text-gray-600 text-lg" />
+              </div>
             )}
-           
           </div>
           <div className="flex flex-col p-4 mt-8">
             <div className="font-bold text-2xl !text-gray-900">
@@ -336,17 +512,17 @@ const ProfileContent = ({ userId }) => {
                 ? 'Admin'
                 : userData.role === 3
                 ? 'Commercial'
-                 : userData.role ===5 
+                : userData.role === 5
                 ? 'Notaire'
-                : userData.role ===6
+                : userData.role === 6
                 ? 'Responsable Livraison'
-                 : userData.role ===7
+                : userData.role === 7
                 ? 'Comptable'
-                  : userData.role ===8
+                : userData.role === 8
                 ? 'Service Après-Vente'
-                 : userData.role ===9
+                : userData.role === 9
                 ? 'Responsable Commercial'
-                 : userData.role ===10
+                : userData.role === 10
                 ? 'Agent de saisie'
                 : 'Utilisateur'}
             </div>
@@ -354,7 +530,7 @@ const ProfileContent = ({ userId }) => {
         </div>
 
         {/* Top Modifier Button */}
-        {!isEditing && !searchParams.get('edit') &&user?.role<=2 && (
+        {!isEditing && !searchParams.get('edit') && user?.role <= 2 && (
           <div className="mt-8">
             <button
               className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
@@ -418,10 +594,7 @@ const ProfileContent = ({ userId }) => {
             label="Email:"
             name="email"
             value={formik.values.email}
-            onChange={(e) => {
-              formik.handleChange(e);
-              formik.setFieldTouched('email', true, false);
-            }}
+            onChange={handleEmailChange}
             type="email"
             readOnly={!isEditing}
             required={isEditing}
@@ -431,6 +604,61 @@ const ProfileContent = ({ userId }) => {
                 : null
             }
           />
+          
+          {/* Message d'avertissement pour changement d'email */}
+          {isEditing && emailChanged && (
+            <div className="col-span-1 md:col-span-2 xl:col-span-3 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+              <p className="text-sm text-yellow-700">
+                ⚠️ Vous avez changé votre adresse email. Veuillez saisir votre nouveau mot de passe ci-dessous.
+              </p>
+            </div>
+          )}
+          
+          {/* Champs de mot de passe - affichés uniquement si email changé */}
+          {isEditing && emailChanged && (
+            <>
+              <div className="relative">
+                <Input
+                  label="Nouveau mot de passe:"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.password || formik.submitCount > 0 ? formik.errors.password : null}
+                  required={emailChanged}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              
+              <div className="relative">
+                <Input
+                  label="Confirmer le mot de passe:"
+                  name="password_confirmation"
+                  type={showPasswordConfirmation ? "text" : "password"}
+                  value={formik.values.password_confirmation}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.password_confirmation || formik.submitCount > 0 ? formik.errors.password_confirmation : null}
+                  required={emailChanged}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
+                  className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+                >
+                  {showPasswordConfirmation ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </>
+          )}
+          
           <Input
             label="Téléphone:"
             name="phone"
@@ -449,6 +677,7 @@ const ProfileContent = ({ userId }) => {
                 : null
             }
           />
+          
           <Input
             label="Adresse:"
             name="adresse"
@@ -456,35 +685,57 @@ const ProfileContent = ({ userId }) => {
             onChange={formik.handleChange}
             readOnly={!isEditing}
           />
-          <Input
-            label="Role:"
-            name="role"
-            value={
-              formik.values.role == 1
-                ? 'Super Admin'
-                : formik.values.role == 2
-                ? 'Admin'
-                : formik.values.role == 3
-                ? 'Commercial'
-                  :  formik.values.role ==5 
-                ? 'Notaire'
-                :  formik.values.role ==6
-                ? 'Responsable Livraison'
-                :  formik.values.role ==7
-                 ? 'Comptable'
-                  :  formik.values.role ==8
-                ? 'Service Après-Vente'
-                : formik.values.role ===9
-                ? 'Responsable Commercial'
-                 : formik.values.role ===10
-                ? 'Agent de saisie'
-                : 'Utilisateur' 
-            }
-            
-            readOnly
-          />
+          
+          {/* Sélecteur de Rôle - comme dans le formulaire d'ajout */}
+          {canEditRole ? (
+            <SelectInput
+              label="Rôle"
+              name="role"
+              loading={loadingRoles}
+              placeholder="Sélectionnez un rôle"
+              options={getRoleOptions()}
+              value={formik.values.role}
+              onChange={(value) => formik.setFieldValue('role', value)}
+              onBlur={() => formik.setFieldTouched('role', true)}
+              error={
+                formik.touched.role || formik.submitCount > 0
+                  ? formik.errors.role
+                  : null
+              }
+              submitted={formik.submitCount > 0}
+              disabled={!isEditing}
+            />
+          ) : (
+            <Input
+              label="Rôle:"
+              name="role"
+              value={
+                formik.values.role == 1
+                  ? 'Super Admin'
+                  : formik.values.role == 2
+                  ? 'Admin'
+                  : formik.values.role == 3
+                  ? 'Commercial'
+                  : formik.values.role == 5 
+                  ? 'Notaire'
+                  : formik.values.role == 6
+                  ? 'Responsable Livraison'
+                  : formik.values.role == 7
+                  ? 'Comptable'
+                  : formik.values.role == 8
+                  ? 'Service Après-Vente'
+                  : formik.values.role === 9
+                  ? 'Responsable Commercial'
+                  : formik.values.role === 10
+                  ? 'Agent de saisie'
+                  : 'Utilisateur' 
+              }
+              readOnly
+            />
+          )}
+          
+          {/* Le reste de vos champs (Genre, Statut, Fonction, etc.) */}
           <SelectInput
-            
             label="Genre"
             name="gender"
             options={[
@@ -527,7 +778,6 @@ const ProfileContent = ({ userId }) => {
             onChange={formik.handleChange}
             readOnly={!isEditing}
           />
-         
           <Input
             label="CIN:"
             name="cin"
@@ -575,20 +825,13 @@ const ProfileContent = ({ userId }) => {
               Projets 
             </label>
             <SelectInput
-            disabled={!isEditing}
+              disabled={!isEditing}
               isMulti
               label=""
               placeholder="Sélectionnez des projets"
               options={projetOptions}
               value={selectedProjetIds}
               onChange={handleProjetSelection}
-              /*error={
-                display_errors_projets
-                  ? 'Veuillez sélectionner au moins un projet'
-                  : null
-              }
-              submitted={display_errors_projets}*/
-              
             />
 
             {/* Display selected projects */}
@@ -626,11 +869,6 @@ const ProfileContent = ({ userId }) => {
                 </div>
               </div>
             )}
-            {/*display_errors_projets && (
-              <div className="text-red-500 text-sm mt-1">
-                {'Veuillez sélectionner au moins un projet'}
-              </div>
-            )*/}
           </div>
         </div>
 
@@ -644,15 +882,16 @@ const ProfileContent = ({ userId }) => {
             >
               Annuler
             </button>
-  <button
-  type="submit"
-  disabled={isSubmitting}
-  className={`bg-blue-500 text-white py-2 px-6 rounded-lg transition-colors ${
-    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
-  }`}
->
-  {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
-</button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`bg-blue-500 text-white py-2 px-6 rounded-lg transition-colors ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+              }`}
+            >
+              {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
+            </button>
+           
           </div>
         )}
       </form>
