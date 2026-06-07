@@ -10,8 +10,6 @@ import { useRouter } from 'next/navigation';
 import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
 import { format, parseISO, isValid } from 'date-fns';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import BonPreReservationDocument from './bon_pre_reservation.js';
 import Input from '@/components/Input';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';

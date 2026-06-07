@@ -5,7 +5,7 @@ import { format, parseISO } from 'date-fns';
 import {
   getInteret_label,
   getOrientationLabel,
-  getFullOrientation,
+  getOrientationLabelFromAbbreviation,
 } from '../../../../../../src/configs/enum';
 import {
   PhoneCallIcon,
@@ -17,6 +17,7 @@ import {
   MessageSquareIcon,
   XIcon,
 } from 'lucide-react';
+
 export default function Modal_Show({
   onClose,
   date,
@@ -44,345 +45,316 @@ export default function Modal_Show({
   frein_avance,
   commentaire,
   commentaire_rel,
-  commentaire_rdv,description_autre
+  commentaire_rdv,
+  description_autre
 }) {
   const freins = [
-    frein_tranches.length > 0 && 'TRANCHE', description_autre!='' && 'Autre',
-    frein_etages.length > 0 && 'ETAGE',
-    frein_orientations.length > 0 && 'ORIENTATION',
-    frein_typologies.length > 0 && 'TYPOLOGIE',
-    frein_vues.length > 0 && 'VUE',
+    frein_tranches?.length > 0 && 'TRANCHE',
+    description_autre != null && 'AUTRE',
+    frein_etages?.length > 0 && 'ETAGE',
+    frein_orientations?.length > 0 && 'ORIENTATION',
+    frein_typologies?.length > 0 && 'TYPOLOGIE',
+    frein_vues?.length > 0 && 'VUE',
     (frein_prix_min != null || frein_prix_max != null) && 'PRIX',
-    (frein_superficie_min != null || frein_superficie_max != null) &&
-      'SUPERFICIE',
+    (frein_superficie_min != null || frein_superficie_max != null) && 'SUPERFICIE',
     frein_avance && 'AVANCE',
   ]
     .filter(Boolean)
     .join(', ')
     .toLowerCase();
+
   const dateObj = new Date(date);
-
-  // Format date: DD/MM/YYYY
   const formattedDate = dateObj.toLocaleDateString('fr-FR');
-
-  // Format time: HH:mm
   const formattedTime = dateObj.toLocaleTimeString('fr-FR', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
   });
 
+  // Helper component for badge
+  const Badge = ({ children, color = 'blue' }) => {
+    const colors = {
+      blue: 'bg-blue-100 text-blue-800',
+      green: 'bg-green-100 text-green-800',
+      orange: 'bg-orange-100 text-orange-800',
+      purple: 'bg-purple-100 text-purple-800',
+      red: 'bg-red-100 text-red-800',
+      gray: 'bg-gray-100 text-gray-800',
+    };
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[color]}`}>
+        {children}
+      </span>
+    );
+  };
+
   return (
-    <div className="w-full max-w-[90%] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[800px] h-auto bg-white flex flex-col mx-auto">
-      <div className="bg-[rgb(0,159,255)] text-white p-6 ">
+    <div className="w-full max-w-[95%] sm:max-w-[550px] md:max-w-[700px] lg:max-w-[900px] h-auto bg-white rounded-2xl flex flex-col mx-auto overflow-hidden shadow-2xl">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[rgb(0,159,255)] to-[rgb(0,120,200)] text-white p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <PhoneCallIcon className="h-6 w-6" />
-            <h1 className="text-xl font-semibold">Détails de {"l'Appel"}</h1>
+            <PhoneCallIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+            <h1 className="text-lg sm:text-xl font-semibold">Détails de l{"'"}Appel</h1>
           </div>
           <button
             onClick={onClose}
-            className="hover:bg-blue-500 p-2 rounded-full transition-colors"
+            className="hover:bg-white/20 p-2 rounded-full transition-colors duration-200"
+            aria-label="Fermer"
           >
             <XIcon className="h-5 w-5" />
           </button>
         </div>
         <div className="text-center">
-          <div className="text-3xl font-bold">{formattedTime}</div>
-          <div className="text-blue-100">{formattedDate}</div>
+          <div className="text-2xl sm:text-3xl font-bold">{formattedTime}</div>
+          <div className="text-blue-100 text-sm sm:text-base">{formattedDate}</div>
         </div>
       </div>
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      {/* Content */}
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto max-h-[70vh]">
+        {/* Info Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <InfoCard
-            icon={<PhoneCallIcon className="h-5 w-5 !text-blue-500" />}
+            icon={<PhoneCallIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />}
             label="Type Appel"
             value={type_appel}
           />
           <InfoCard
-            icon={<UserIcon className="h-5 w-5 !text-blue-500" />}
+            icon={<UserIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />}
             label="Responsable"
             value={responsable}
           />
           <InfoCard
-            icon={<MessageSquareIcon className="h-5 w-5 !text-blue-500" />}
-            label="L'Intérêt"
+            icon={<MessageSquareIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />}
+            label="Intérêt"
             value={getInteret_label(interet)}
           />
         </div>
-        <div className="mt-6 pt-6 border-t border-gray-100">
-          <h3 className="text-sm font-medium !text-gray-500 mb-2">
+
+        {/* Informations Section */}
+        <div className="border-t border-gray-100 pt-4 sm:pt-6">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 bg-blue-500 rounded-full"></span>
             Informations
           </h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 text-sm">
+            
+            {/* Intéressé (interet == 1) */}
             {interet == 1 && (
               <>
-                {tranche != null && (
-                  <div>
-                    <span className="text-gray-500">Tranche:</span>
-                    <span className="ml-2 font-medium">{tranche}</span>
-                  </div>
+                {tranche && (
+                  <InfoRow label="Tranche" value={tranche} />
                 )}
-
-                {bloc != null && (
-                  <div>
-                    <span className="text-gray-500">Bloc:</span>
-                    <span className="ml-2 font-medium">{bloc}</span>
-                  </div>
+                {bloc && (
+                  <InfoRow label="Bloc" value={bloc} />
                 )}
-                {immeuble != null && (
-                  <div>
-                    <span className="text-gray-500">Immeuble:</span>
-                    <span className="ml-2 font-medium">{immeuble}</span>
-                  </div>
+                {immeuble && (
+                  <InfoRow label="Immeuble" value={immeuble} />
                 )}
-
-                {type_biens.length > 0 && (
-                  <div>
-                    <span className="text-gray-500">Types de Biens:</span>
-                    <span className="ml-2 font-medium">
-                      {type_biens?.map((t, i) => (
-                        <b key={t.id}>
-                          {t.type_bien.type}{' '}
-                          {i + 1 == type_biens.length ? '' : ','}
-                        </b>
-                      ))}
-                    </span>
-                  </div>
+                {type_biens?.length > 0 && (
+                  <InfoRow 
+                    label="Types de Biens" 
+                    value={type_biens.map((t, i) => (
+                      <span key={t.id}>
+                        {t.type_bien.type}{i < type_biens.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                  />
                 )}
-
-                <div>
-                  <span className="text-gray-500">Etage:</span>
-                  <span className="ml-2 font-medium">{etage}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Orientation:</span>
-                  <span className="ml-2 font-medium">
-                    {getOrientationLabel(orientation)}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Rendez Vous:</span>
-                  <span className="ml-2 font-medium">
-                    {rdv
-                      ? format(new Date(rdv), 'dd/MM/yyyy HH:mm') // Corrected format for time
-                      : ''}
-                  </span>
-                </div>
+                <InfoRow label="Etage" value={etage} />
+                <InfoRow 
+                  label="Orientation" 
+                  value={getOrientationLabel(orientation)} 
+                />
+                <InfoRow 
+                  label="Rendez-vous" 
+                  value={rdv ? format(new Date(rdv), 'dd/MM/yyyy HH:mm') : '-'} 
+                />
               </>
             )}
+
+            {/* Réceptif ou Intéressé (interet == 2 ou 1) */}
             {(interet == 2 || interet == 1) && (
               <>
-                <div>
-                  <span className="text-gray-500">Mode Relance:</span>
-                  <span className="ml-2 font-medium">{mode_relance}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Date Relance:</span>
-                  <span className="ml-2 font-medium">
-                    {date_relance && !isNaN(new Date(date_relance))
-                      ? format(new Date(date_relance), 'dd/MM/yyyy ') // Corrected format for time
-                      : ''}
-                  </span>
-                </div>
+                <InfoRow label="Mode Relance" value={mode_relance || '-'} />
+                <InfoRow 
+                  label="Date Relance" 
+                  value={date_relance && !isNaN(new Date(date_relance)) 
+                    ? format(new Date(date_relance), 'dd/MM/yyyy') 
+                    : '-'} 
+                />
               </>
             )}
+
+            {/* Perdu (interet == 3) */}
             {interet == 3 && (
               <>
-                <div className="cols-1">
-                  <span className="text-gray-500">Freins:</span>
-                  <span className="ml-2 font-medium">{freins}</span>
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <InfoRow 
+                    label="Freins" 
+                    value={<Badge color="orange">{freins || '-'}</Badge>} 
+                  />
                 </div>
 
-                <div></div>
+                {frein_tranches?.length > 0 && (
+                  <InfoRow 
+                    label="Tranches" 
+                    value={frein_tranches.map((fr, i) => (
+                      <span key={fr.id}>
+                        {fr.tranche?.nom?.toUpperCase()}
+                        {i < frein_tranches.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                  />
+                )}
 
-                {frein_tranches.length > 0 && (
-                  <div>
-                    <span className="text-gray-500">Tranches:</span>
-                    <span className="ml-2 font-medium">
-                      {frein_tranches?.map((fr_tranche, i) => (
-                        <span
-                          key={`${fr_tranche.id}-${i}`}
-                          className="inline whitespace-nowrap tracking-tight"
-                        >
-                          {i > 0 && (
-                            <span className="text-inherit inline">, </span>
-                          )}
-                          {fr_tranche.tranche.nom.toUpperCase()}
-                        </span>
-                      ))}
-                    </span>
+                {frein_etages?.length > 0 && (
+                  <InfoRow 
+                    label="Etages" 
+                    value={frein_etages.map((fr, i) => (
+                      <span key={fr.id}>
+                        {fr.etage}
+                        {i < frein_etages.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                  />
+                )}
+
+                {frein_orientations?.length > 0 && (
+                  <div className="sm:col-span-2">
+                    <InfoRow 
+                      label="Orientations" 
+                      value={
+                        <div className="flex flex-wrap gap-1">
+                          {frein_orientations.map((fr, i) => (
+                            <Badge key={fr.id} color="blue">
+                              {getOrientationLabelFromAbbreviation(fr.orientation)}
+                            </Badge>
+                          ))}
+                        </div>
+                      } 
+                    />
                   </div>
                 )}
 
-                {frein_etages.length > 0 && (
-                  <div>
-                    <span className="text-gray-500">Etages:</span>
-                    <span className="ml-2 font-medium">
-                      {frein_etages?.map((fr_etage, i) => (
-                        <span
-                          key={`${fr_etage.id}-${i}`}
-                          className="inline whitespace-nowrap tracking-tight"
-                        >
-                          {i > 0 && <span className="inline">, </span>}
-                          {fr_etage.etage}
-                        </span>
-                      ))}
-                    </span>
-                  </div>
+                {frein_typologies?.length > 0 && (
+                  <InfoRow 
+                    label="Typologies" 
+                    value={frein_typologies.map((fr, i) => (
+                      <span key={fr.typologie?.id}>
+                        {fr.typologie?.typologie}
+                        {i < frein_typologies.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                  />
                 )}
 
-                {frein_orientations.length > 0 && (
-                  <div>
-                    <span className="text-gray-500">Orientations:</span>
-                    <span className="ml-2 font-medium">
-                      {frein_orientations?.map((fr_orientation, i) => (
-                        <span
-                          key={`${fr_orientation.id}-${i}`}
-                          className="inline"
-                        >
-                          {i !== 0 && (
-                            <span className="inline ml-1 !text-gray-500">,</span>
-                          )}
-                          <span className="inline whitespace-nowrap tracking-tight">
-                            {getFullOrientation(fr_orientation.orientation)}
-                          </span>
-                        </span>
-                      ))}
-                    </span>
-                  </div>
-                )}
-
-                {frein_typologies.length > 0 && (
-                  <div>
-                    <span className="text-gray-500">Typologies:</span>
-                    <span className="ml-2 font-medium">
-                      {frein_typologies?.map((fr_typologie, j) => (
-                        <span
-                          key={`${fr_typologie.id}-${j}`}
-                          className="inline"
-                        >
-                          {j !== 0 && <span className="inline">, </span>}
-                          <span className="inline whitespace-nowrap tracking-tight">
-                            {fr_typologie.typologie.typologie}
-                          </span>
-                        </span>
-                      ))}
-                    </span>
-                  </div>
-                )}
-
-                {frein_vues.length > 0 && (
-                  <div>
-                    <span className="text-gray-500">Vues:</span>
-                    <span className="ml-2 font-medium">
-                      {frein_vues?.map((fr_vue, i) => (
-                        <span key={`${fr_vue.vue.id}-${i}`} className="inline">
-                          {i > 0 && <span className="inline">, </span>}
-                          <span className="inline whitespace-nowrap tracking-tight">
-                            {fr_vue.vue.vue}
-                          </span>
-                        </span>
-                      ))}
-                    </span>
-                  </div>
+                {frein_vues?.length > 0 && (
+                  <InfoRow 
+                    label="Vues" 
+                    value={frein_vues.map((fr, i) => (
+                      <span key={fr.vue?.id}>
+                        {fr.vue?.vue}
+                        {i < frein_vues.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                  />
                 )}
 
                 {frein_avance != null && (
-                  <div>
-                    <span className="text-gray-500">Avance:</span>
-                    <span className="ml-2 font-medium">{frein_avance}</span>
-                  </div>
+                  <InfoRow label="Avance" value={`${frein_avance} DH`} />
                 )}
 
                 {frein_prix_min != null && (
-                  <div>
-                    <span className="text-gray-500">Prix Min:</span>
-                    <span className="ml-2 font-medium">
-                      {frein_prix_min} DH
-                    </span>
-                  </div>
+                  <InfoRow label="Prix Min" value={`${frein_prix_min} DH`} />
                 )}
 
                 {frein_prix_max != null && (
-                  <div>
-                    <span className="text-gray-500">Prix Max:</span>
-                    <span className="ml-2 font-medium">
-                      {frein_prix_max} DH
-                    </span>
-                  </div>
+                  <InfoRow label="Prix Max" value={`${frein_prix_max} DH`} />
                 )}
 
                 {frein_superficie_min != null && (
-                  <div>
-                    <span className="text-gray-500">Superficie Min:</span>
-                    <span className="ml-2 font-medium">
-                      {frein_superficie_min} DH
-                    </span>
-                  </div>
+                  <InfoRow label="Superficie Min" value={`${frein_superficie_min} m²`} />
                 )}
 
                 {frein_superficie_max != null && (
-                  <div>
-                    <span className="text-gray-500">Superficie Max:</span>
-                    <span className="ml-2 font-medium">
-                      {frein_superficie_max} DH
-                    </span>
-                  </div>
-                )} {description_autre != '' && (
-                  <div>
-                    <span className="text-gray-500">Description:</span>
-                    <span className="ml-2 font-medium">
-                      {description_autre} 
-                    </span>
-                  </div>
+                  <InfoRow label="Superficie Max" value={`${frein_superficie_max} m²`} />
+                )}
+
+                {description_autre && (
+                  <InfoRow label="Description" value={description_autre} />
                 )}
               </>
             )}
           </div>
         </div>
-        <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-sm font-medium !text-gray-500 mb-2">
-            Commentaire
-          </h3>
-          <p className="text-sm !text-gray-700">{commentaire}</p>
-        </div>
-        {commentaire_rel != null && (
-          <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-sm font-medium !text-gray-500 mb-2">
-              Commentaire du Relance
-            </h3>
-            <p className="text-sm !text-gray-700">{commentaire_rel}</p>
-          </div>
+
+        {/* Commentaires */}
+        {commentaire && (
+          <CommentSection title="Commentaire" content={commentaire} />
         )}
-        {commentaire_rdv != null && (
-          <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-sm font-medium !text-gray-500 mb-2">
-              Commentaire du Rendez-Vous
-            </h3>
-            <p className="text-sm !text-gray-700">{commentaire_rdv}</p>
-          </div>
+        {commentaire_rel && (
+          <CommentSection title="Commentaire du Relance" content={commentaire_rel} />
+        )}
+        {commentaire_rdv && (
+          <CommentSection title="Commentaire du Rendez-Vous" content={commentaire_rdv} />
         )}
       </div>
-      <div className="px-6 py-4 bg-gray-50 rounded-b-2xl border-t border-gray-100">
+
+      {/* Footer */}
+      <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-100">
         <button
           onClick={onClose}
-          className="w-full bg-white !text-gray-600 py-2 px-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+          className="w-full bg-white text-gray-700 py-2 px-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 text-sm sm:text-base font-medium"
         >
-          Annuler
+          Fermer
         </button>
       </div>
     </div>
   );
 }
+
+// Helper component for info rows
+function InfoRow({ label, value }) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
+      <span className="text-gray-500 text-xs sm:text-sm font-medium min-w-[100px]">{label}:</span>
+      <span className="text-gray-800 text-sm sm:text-base font-medium break-words">
+        {value || '-'}
+      </span>
+    </div>
+  );
+}
+
+// Helper component for info cards
 function InfoCard({ icon, label, value }) {
   return (
-    <div className="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-      <div className="flex items-center space-x-3 mb-2">
-        {icon}
-        <span className="text-sm !text-gray-500">{label}</span>
+    <div className="bg-gray-50 p-3 sm:p-4 rounded-xl hover:bg-gray-100 transition-all duration-200 border border-gray-100">
+      <div className="flex items-center space-x-2 mb-2">
+        <div className="p-1.5 bg-blue-50 rounded-lg">
+          {icon}
+        </div>
+        <span className="text-xs sm:text-sm text-gray-500 font-medium">{label}</span>
       </div>
-      <div className="text-sm font-medium !text-gray-900">{value}</div>
+      <div className="text-sm sm:text-base font-semibold text-gray-900 break-words">
+        {value || '-'}
+      </div>
+    </div>
+  );
+}
+
+// Helper component for comment sections
+function CommentSection({ title, content }) {
+  return (
+    <div className="bg-gray-50 p-3 sm:p-4 rounded-xl border border-gray-100">
+      <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+        <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
+        {title}
+      </h3>
+      <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap break-words">
+        {content}
+      </p>
     </div>
   );
 }

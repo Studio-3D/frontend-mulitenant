@@ -4,7 +4,7 @@ export default function BienSuperficies({ bien }) {
   
   // Format area with m²
   const formatArea = (value) => {
-    if (value === null || value === undefined || value === 0 || value === "0" || value === "000") return 'N/A';
+    if (value === null || value === undefined || value === 0 || value === "0" || value === "000") return '0 m²';
     return `${value} m²`;
   };
 

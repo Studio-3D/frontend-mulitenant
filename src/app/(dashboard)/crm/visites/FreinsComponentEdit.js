@@ -29,21 +29,20 @@ const FreinsComponent = ({
 }) => {
   // Helper function to get selected values in the correct format
   const getSelectedValues = (fieldName, options) => {
-    const storedValues = watch(fieldName) || [];
-    
-    // If values are already in the correct format (array of strings)
-    if (storedValues.length > 0 && typeof storedValues[0] === 'string') {
-      return storedValues;
-    }
-    
-    // If values are objects, extract the IDs
-    if (storedValues.length > 0 && typeof storedValues[0] === 'object') {
-      return storedValues.map(item => item.id.toString());
-    }
-    
-    return [];
-  };
-
+  const storedValues = watch(fieldName) || [];
+  
+  // Si c'est une chaîne (cas de données existantes)
+  if (typeof storedValues === 'string') {
+    return storedValues.split(',').filter(v => v && v.trim() !== '');
+  }
+  
+  // Si c'est un tableau
+  if (Array.isArray(storedValues)) {
+    return storedValues.filter(v => v && v !== '' && v !== null);
+  }
+  
+  return [];
+};
   // Helper function to handle SelectInput changes
   const handleSelectChange = (fieldName, selectedValues) => {
     setValue(fieldName, selectedValues || []);
@@ -181,9 +180,14 @@ const FreinsComponent = ({
             required={true}
             isMulti={true}
             options={orientationSelectOptions}
-            value={getSelectedValues('orientations', orientationSelectOptions)}
-            onChange={(selectedValues) => handleSelectChange('orientations', selectedValues)}
-            placeholder="sélectionnez un ou plusieurs orientations"
+            value={getSelectedValues('orientations', orientationSelectOptions).filter(v => v && v !== '')}    
+              onChange={(selectedValues) => {
+                  // Nettoyer les valeurs sélectionnées
+                  const cleanValues = (selectedValues || []).filter(v => v && v !== '');
+                  handleSelectChange('orientations', cleanValues);
+                }}
+              placeholder="sélectionnez un ou plusieurs orientations"
+           
             errors={{
               ...errors,
               orientations:

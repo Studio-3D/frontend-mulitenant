@@ -41,10 +41,8 @@ import {
   VISITE_INTERETS,
   VISITE_STATUT,
   getModePaiementLabel,
-  getRelance_label,
+  getRelance_label,getOrientationLabel  ,getOrientationLabelFromAbbreviation
 } from '../../../src/configs/enum';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import BonPreReservationDocument from '../../../src/app/(dashboard)/crm/pre-reservations/bon_pre_reservation';
 import { useRouter } from 'next/navigation';
 import Modal_Historique_rel_rdv from './Modal_Historique_rel_rdv';
 import Modal_Historique from './Modal_Historique';
@@ -89,6 +87,9 @@ export function VisitDetails({
   const [open_dialog_r, setOpen_dialog_r] = useState(false);
   const [text, setText] = useState(' ');
   const [ID_rel_rdv, setID_rel_rdv] = useState(0);
+
+  // Ajoutez cette fonction avant le composant VisitDetails
+
 
   const handleValider = (Id, text) => {
     setOpen_dialog_r(!open_dialog_r);
@@ -843,16 +844,14 @@ export function VisitDetails({
                                       .join(', ')}
                                   </div>
                                 )}
-                                {row.frein?.frein_orientation?.length > 0 && (
-                                  <div>
-                                    <span className="font-medium">
-                                      Orientations:{' '}
-                                    </span>
-                                    {row.frein.frein_orientation
-                                      .map((o) => o.orientation)
-                                      .join(', ')}
-                                  </div>
-                                )}
+                                      {row.frein?.frein_orientation?.length > 0 && (
+                                    <div>
+                                      <span className="font-medium">Orientations: </span>
+                                      {row.frein.frein_orientation
+                                        .map((o) => getOrientationLabelFromAbbreviation(o.orientation))
+                                        .join(', ')}
+                                    </div>
+                                  )}
                                 {row.frein?.frein_typologie?.length > 0 && (
                                   <div>
                                     <span className="font-medium">
@@ -1443,27 +1442,28 @@ export function VisitDetails({
                                 )}
                               />
                             )}
-                            {visite.freins?.frein_orientation.length > 0 && (
-                              <InfoCard
-                                icon={<CompassIcon className="h-5 w-5" />}
-                                title="Orientations"
-                                value={visite.freins?.frein_orientation?.map(
-                                  (fr_orientation, i) => (
-                                    <span
-                                      key={fr_orientation.id}
-                                      className="inline-block"
-                                    >
-                                      {i != 0 && (
-                                        <span className="mx-1">,</span>
-                                      )}
-                                      <span className="uppercase tracking-wide whitespace-nowrap">
-                                        {fr_orientation.orientation}
-                                      </span>
-                                    </span>
-                                  )
-                                )}
-                              />
-                            )}
+ {visite.freins?.frein_orientation.length > 0 && (
+  <InfoCard
+    icon={<CompassIcon className="h-5 w-5" />}
+    title="Orientations"
+    value={
+      <div className="flex flex-wrap gap-1">
+        {visite.freins?.frein_orientation?.map((fr_orientation, i) => {
+          console.log('Orientation from DB:', fr_orientation.orientation);
+          const label = getOrientationLabelFromAbbreviation(fr_orientation.orientation);
+          return (
+            <span
+              key={fr_orientation.id}
+              className="inline-block bg-gray-100 rounded-full px-2 py-1 text-xs"
+            >
+              {label}
+            </span>
+          );
+        })}
+      </div>
+    }
+  />
+)}
 
                             {visite.freins?.frein_typologie.length > 0 && (
                               <InfoCard

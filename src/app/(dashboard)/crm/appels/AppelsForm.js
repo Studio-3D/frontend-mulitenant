@@ -381,32 +381,41 @@ export default function AppelsForm({ id }) {
                     freinValue.push('tranche');
                   }
 
-                  if (frein_n.frein_orientation.length > 0) {
-                    const firstLetterToCode = {
-                      N: ORIENTATIONS[1].code,
-                      S: ORIENTATIONS[2].code,
-                      E: ORIENTATIONS[3].code,
-                      O: ORIENTATIONS[4].code,
-                      N_E: ORIENTATIONS[5].code,
-                      N_o: ORIENTATIONS[6].code,
-                      S_E: ORIENTATIONS[7].code,
-                      S_O: ORIENTATIONS[8].code,
-                    };
+                 if (frein_n.frein_orientation.length > 0) {
+  // Mapping complet des 16 orientations (abréviation -> code)
+  const orientationToCode = {
+    // Orientations de base
+    'N': 1,
+    'E': 2,
+    'S': 3,
+    'O': 4,
+    // Orientations diagonales
+    'N_E': 5,
+    'N_O': 6,
+    'S_E': 7,
+    'S_O': 8,
+    // Nouvelles orientations (8)
+    'NORD_SUD': 9,
+    'NORD_OUEST': 10,
+    'SUD_EST': 11,
+    'EST_OUEST': 12,
+    'NO_SE': 13,
+    'NORD_SUD_OUEST': 14,
+    'NORD_SUD_EST': 15,
+    'NORD_EST_OUEST': 16
+  };
 
-                    const orientations = frein_n.frein_orientation.map(
-                      (item) => {
-                        const letter = item.orientation
-                          ?.trim()
-                          .charAt(0)
-                          .toUpperCase();
-                        return firstLetterToCode[letter];
-                      }
-                    );
+  const orientations = frein_n.frein_orientation
+    .map((item) => {
+      const orientationValue = item.orientation?.trim();
+      return orientationToCode[orientationValue] || null;
+    })
+    .filter(code => code !== null);
 
-                    console.log('Setting orientations:', orientations);
-                    setValue('orientations', orientations);
-                    freinValue.push('orientation');
-                  }
+  console.log('Setting orientations:', orientations);
+  setValue('orientations', orientations);
+  freinValue.push('orientation');
+}
 
                   if (frein_n.prix_min != null || frein_n.prix_max != null) {
                     setValue('prix_min', frein_n?.prix_min || '');
@@ -792,26 +801,39 @@ export default function AppelsForm({ id }) {
     // For editing mode transformations
     if (isEditing) {
       // Safely map orientation IDs to N/S/E/W codes
-      if (preparedData.orientations && preparedData.orientations !== '') {
-        const codes = String(preparedData.orientations)
-          .split(',')
-          .map((s) => {
-            const num = parseInt(s.trim(), 10);
-            return isNaN(num) ? '' : num;
-          })
-          .filter((i) => ORIENTATIONS[i])
-          .map((i) => ORIENTATION_ABBREVIATIONS[ORIENTATIONS[i].label] || '')
-          .filter(Boolean);
+     if (preparedData.orientations && preparedData.orientations !== '') {
+    // Mapping des codes vers les abréviations (16 orientations)
+    const codeToAbbreviation = {
+      1: 'N', 2: 'E', 3: 'S', 4: 'O',
+      5: 'N_E', 6: 'N_O', 7: 'S_E', 8: 'S_O',
+      9: 'NORD_SUD', 10: 'NORD_OUEST', 11: 'SUD_EST', 12: 'EST_OUEST',
+      13: 'NO_SE', 14: 'NORD_SUD_OUEST', 15: 'NORD_SUD_EST', 16: 'NORD_EST_OUEST'
+    };
 
-        preparedData.orientations = codes.length ? codes.join(',') : '';
-      }
-      // Also handle single orientation field if needed
-      if (preparedData.orientation && ORIENTATIONS[preparedData.orientation]) {
-        preparedData.orientation =
-          ORIENTATION_ABBREVIATIONS[
-            ORIENTATIONS[preparedData.orientation].label
-          ] || '';
-      }
+    const codes = String(preparedData.orientations)
+      .split(',')
+      .map((s) => {
+        const num = parseInt(s.trim(), 10);
+        return isNaN(num) ? null : num;
+      })
+      .filter(code => code !== null && codeToAbbreviation[code])
+      .map(code => codeToAbbreviation[code])
+      .filter(Boolean);
+
+    preparedData.orientations = codes.length ? codes.join(',') : '';
+  }
+  
+  // Also handle single orientation field if needed
+  if (preparedData.orientation) {
+    const orientationValue = parseInt(preparedData.orientation, 10);
+    const codeToAbbreviation = {
+      1: 'N', 2: 'E', 3: 'S', 4: 'O',
+      5: 'N_E', 6: 'N_O', 7: 'S_E', 8: 'S_O',
+      9: 'NORD_SUD', 10: 'NORD_OUEST', 11: 'SUD_EST', 12: 'EST_OUEST',
+      13: 'NO_SE', 14: 'NORD_SUD_OUEST', 15: 'NORD_SUD_EST', 16: 'NORD_EST_OUEST'
+    };
+    preparedData.orientation = codeToAbbreviation[orientationValue] || '';
+  }
       // Normalize freins format
       if (preparedData.freins) {
         preparedData.freins = preparedData.freins

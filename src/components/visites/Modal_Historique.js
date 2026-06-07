@@ -7,9 +7,9 @@ import LoadingSpin from '@/components/LoadingSpin';
 import {
   VISITE_INTERETS,
   VISITE_STATUT,
-  getFullOrientation,
+  
   getModePaiementLabel,
-  getRelance_label,
+  getRelance_label,getOrientationLabelFromAbbreviation
 } from '../../../src/configs/enum';
 import { APIURL } from '@/configs/api';
 import axios from 'axios';
@@ -362,21 +362,22 @@ if (historique.reservation?.banque_id?.old) {
                         </tr>
                         
                         {/* Orientations - Compare: - (old from next row) vs E,S (new from current row) */}
-                        <tr className="bg-white">
-                          <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
-                            Orientations
-                          </td>
-                          <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
-                            {nextPerduData.fr_orientations 
-                              ? nextPerduData.fr_orientations.split(',').map(getFullOrientation).join(', ')
-                              : '-'}
-                          </td>
-                          <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
-                            {currentFreinData.fr_orientations 
-                              ? currentFreinData.fr_orientations.split(',').map(getFullOrientation).join(', ')
-                              : '-'}
-                          </td>
-                        </tr>
+                        {/* Orientations */}
+                          <tr className="bg-white">
+                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                              Orientations
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-red-500">
+                              {nextPerduData.fr_orientations 
+                                ? nextPerduData.fr_orientations.split(',').map(orient => getOrientationLabelFromAbbreviation(orient.trim())).join(', ')
+                                : '-'}
+                            </td>
+                            <td className="text-center px-3 py-2 border-b border-gray-200 text-green-600 font-medium">
+                              {currentFreinData.fr_orientations 
+                                ? currentFreinData.fr_orientations.split(',').map(orient => getOrientationLabelFromAbbreviation(orient.trim())).join(', ')
+                                : '-'}
+                            </td>
+                          </tr>
                         
                         {/* Typologies */}
                         {(currentFreinData.fr_typologies || nextPerduData.fr_typologies) && (
@@ -543,16 +544,17 @@ if (historique.reservation?.banque_id?.old) {
                         )}
                         
                         {/* Orientations */}
-                        {currentFreinData.fr_orientations && (
-                          <tr className="bg-white">
-                            <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
-                              Orientations
-                            </td>
-                            <td className="text-center px-3 py-2 border-b border-gray-200">
-                              {currentFreinData.fr_orientations.split(',').map(getFullOrientation).join(', ')}
-                            </td>
-                          </tr>
-                        )}
+                       {/* Orientations */}
+                      {currentFreinData.fr_orientations && (
+                        <tr className="bg-white">
+                          <td className="text-center px-3 py-2 border-b border-gray-200 font-medium">
+                            Orientations
+                          </td>
+                          <td className="text-center px-3 py-2 border-b border-gray-200">
+                            {currentFreinData.fr_orientations.split(',').map(orient => getOrientationLabelFromAbbreviation(orient.trim())).join(', ')}
+                          </td>
+                        </tr>
+                      )}
                         
                         {/* Typologies */}
                         {currentFreinData.fr_typologies && (

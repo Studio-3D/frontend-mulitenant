@@ -38,6 +38,8 @@ const CompositionForm = ({}) => {
       nbre_placards: 0,
       nbre_receptions: 0,
       nbre_salons: 0,
+      nbre_sejour: 0,        // Ajouté
+      nbre_kitchenette: 0,   // Ajouté
       nbre_sdb: 0,
       nbre_terasses: 0,
     },
@@ -65,6 +67,8 @@ const CompositionForm = ({}) => {
         // Remplir les champs avec les données de composition
         setValue('nbre_chambres', compositionData.nbre_chambres || '');
         setValue('nbre_salons', compositionData.nbre_salons || '');
+        setValue('nbre_sejour', compositionData.nbre_sejour || 0);        // Ajouté
+        setValue('nbre_kitchenette', compositionData.nbre_kitchenette || 0); // Ajouté
         setValue('nbre_sdb', compositionData.nbre_sdb || '');
         setValue('nbre_cuisines', compositionData.nbre_cuisines || '');
         setValue('nbre_halls', compositionData.nbre_halls || '');
@@ -128,8 +132,6 @@ const CompositionForm = ({}) => {
     }
   };
 
-  // Ajoute ça dans PrestataireForm.jsx
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-32">
@@ -156,7 +158,6 @@ const CompositionForm = ({}) => {
               name="nbre_balcons"
               value={watch('nbre_balcons') || ''}
               onChange={(e) => setValue('nbre_balcons', e.target.value)}
-              required
               error={
                 errors?.nbre_balcons?.message ||
                 backendErrors?.nbre_balcons?.[0]
@@ -167,9 +168,8 @@ const CompositionForm = ({}) => {
               label="Nombre de buanderies"
               type="number"
               name="nbre_buanderies"
-              value={watch('nbre_buanderies')}
+              value={watch('nbre_buanderies') || ''}
               onChange={(e) => setValue('nbre_buanderies', e.target.value)}
-              required
               error={
                 errors?.nbre_buanderies?.message ||
                 backendErrors?.nbre_buanderies?.[0]
@@ -180,7 +180,7 @@ const CompositionForm = ({}) => {
               label="Nombre de chambres"
               name="nbre_chambres"
               type="number"
-              value={watch('nbre_chambres')}
+              value={watch('nbre_chambres') || ''}
               onChange={(e) => setValue('nbre_chambres', e.target.value)}
               error={
                 errors?.nbre_chambres?.message ||
@@ -192,7 +192,7 @@ const CompositionForm = ({}) => {
               label="Nombre de cuisines"
               type="number"
               name="nbre_cuisines"
-              value={watch('nbre_cuisines')}
+              value={watch('nbre_cuisines') || ''}
               onChange={(e) => setValue('nbre_cuisines', e.target.value)}
               error={
                 errors?.nbre_cuisines?.message ||
@@ -204,7 +204,7 @@ const CompositionForm = ({}) => {
               label="Nombre de halls"
               type="number"
               name="nbre_halls"
-              value={watch('nbre_halls')}
+              value={watch('nbre_halls') || ''}
               onChange={(e) => setValue('nbre_halls', e.target.value)}
               error={
                 errors?.nbre_halls?.message || backendErrors?.nbre_halls?.[0]
@@ -212,10 +212,22 @@ const CompositionForm = ({}) => {
             />
 
             <Input
+              label="Nombre de kitchenettes"
+              type="number"
+              name="nbre_kitchenette"
+              value={watch('nbre_kitchenette') || ''}
+              onChange={(e) => setValue('nbre_kitchenette', e.target.value)}
+              error={
+                errors?.nbre_kitchenette?.message ||
+                backendErrors?.nbre_kitchenette?.[0]
+              }
+            />
+
+            <Input
               label="Nombre de placards"
               type="number"
               name="nbre_placards"
-              value={watch('nbre_placards')}
+              value={watch('nbre_placards') || ''}
               onChange={(e) => setValue('nbre_placards', e.target.value)}
               error={
                 errors?.nbre_placards?.message ||
@@ -227,7 +239,7 @@ const CompositionForm = ({}) => {
               label="Nombre de réceptions"
               type="number"
               name="nbre_receptions"
-              value={watch('nbre_receptions')}
+              value={watch('nbre_receptions') || ''}
               onChange={(e) => setValue('nbre_receptions', e.target.value)}
               error={
                 errors?.nbre_receptions?.message ||
@@ -239,7 +251,7 @@ const CompositionForm = ({}) => {
               label="Nombre de salons"
               type="number"
               name="nbre_salons"
-              value={watch('nbre_salons')}
+              value={watch('nbre_salons') || ''}
               onChange={(e) => setValue('nbre_salons', e.target.value)}
               error={
                 errors?.nbre_salons?.message || backendErrors?.nbre_salons?.[0]
@@ -250,16 +262,28 @@ const CompositionForm = ({}) => {
               label="Nombre de salles de bain"
               type="number"
               name="nbre_sdb"
-              value={watch('nbre_sdb')}
+              value={watch('nbre_sdb') || ''}
               onChange={(e) => setValue('nbre_sdb', e.target.value)}
               error={errors?.nbre_sdb?.message || backendErrors?.nbre_sdb?.[0]}
+            />
+
+            <Input
+              label="Nombre de séjours"
+              type="number"
+              name="nbre_sejour"
+              value={watch('nbre_sejour') || ''}
+              onChange={(e) => setValue('nbre_sejour', e.target.value)}
+              error={
+                errors?.nbre_sejour?.message ||
+                backendErrors?.nbre_sejour?.[0]
+              }
             />
 
             <Input
               label="Nombre de terrasses"
               type="number"
               name="nbre_terasses"
-              value={watch('nbre_terasses')}
+              value={watch('nbre_terasses') || ''}
               onChange={(e) => setValue('nbre_terasses', e.target.value)}
               error={
                 errors?.nbre_terasses?.message ||
@@ -280,7 +304,7 @@ const CompositionForm = ({}) => {
               type="submit"
               customColor="blue"
               variant="contained"
-              disabled={submitting || loading || disabled}
+              disabled={submitting || loading}
             >
               {submitting ? 'Chargement...' : id ? 'Modifier' : 'Ajouter'}
             </Button>

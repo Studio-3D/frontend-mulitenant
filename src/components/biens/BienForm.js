@@ -180,6 +180,8 @@ export default function BienForm() {
   const [formDataComp, setFormDataComp] = useState({
     nbre_chambres: 0,
     nbre_salons: 0,
+    nbre_sejour: 0,        // Ajouté
+    nbre_kitchenette: 0,   // Ajouté
     nbre_sdb: 0,
     nbre_cuisines: 0,
     nbre_terasses: 0,
@@ -194,6 +196,8 @@ export default function BienForm() {
     setFormDataComp({
       nbre_chambres: 0,
       nbre_salons: 0,
+      nbre_sejour: 0,        // Ajouté
+      nbre_kitchenette: 0,   // Ajouté
       nbre_sdb: 0,
       nbre_cuisines: 0,
       nbre_terasses: 0,
@@ -936,6 +940,8 @@ useEffect(() => {
         'nbre_receptions',
         'nbre_buanderies',
         'nbre_placards',
+        'nbre_sejour',        // Ajouté
+        'nbre_kitchenette',   // Ajouté
       ];
 
       // Ajouter conditionnellement 'etage' si project.nbre_tranches > 0  || blocs || immeubles
@@ -1820,6 +1826,23 @@ useEffect(() => {
           value={formDataComp.nbre_salons || 0}
           onChange={(e) => handleChange('nbre_salons', e.target.value, 'comp')}
         />
+     <Input
+        label="Nombre de séjours"
+        name="nbre_sejour"
+        type="number"
+        min={0}
+        value={formDataComp.nbre_sejour || 0}
+        onChange={(e) => handleChange('nbre_sejour', e.target.value, 'comp')}
+      />
+
+      <Input
+        label="Nombre de kitchenettes"
+        name="nbre_kitchenette"
+        type="number"
+        min={0}
+        value={formDataComp.nbre_kitchenette || 0}
+        onChange={(e) => handleChange('nbre_kitchenette', e.target.value, 'comp')}
+      />
 
         <Input
           label="Nombre de salles de bain"
