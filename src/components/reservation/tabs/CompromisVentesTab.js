@@ -488,6 +488,12 @@ const fetchData = async () => {
                                       nbre_chambres:
                                         (acc.nbre_chambres || 0) +
                                         (curr.nbre_chambres || 0),
+                                      nbre_kitchenette:
+                                        (acc.nbre_kitchenette || 0) +
+                                        (curr.nbre_kitchenette || 0),
+                                         nbre_sejour:
+                                        (acc.nbre_sejour || 0) +
+                                        (curr.nbre_sejour || 0),
                                       nbre_cuisines:
                                         (acc.nbre_cuisines || 0) +
                                         (curr.nbre_cuisines || 0),
@@ -527,6 +533,22 @@ const fetchData = async () => {
                                 parts.push(
                                   `${summedComposition.nbre_chambres} chambre${
                                     summedComposition.nbre_chambres > 1
+                                      ? 's'
+                                      : ''
+                                  }`
+                                );
+                                if (summedComposition.nbre_kitchenette > 0)
+                                parts.push(
+                                  `${summedComposition.nbre_kitchenette} kitchenette${
+                                    summedComposition.nbre_kitchenette > 1
+                                      ? 's'
+                                      : ''
+                                  }`
+                                );
+                                if (summedComposition.nbre_sejour > 0)
+                                parts.push(
+                                  `${summedComposition.nbre_sejour} séjour${
+                                    summedComposition.nbre_sejour > 1
                                       ? 's'
                                       : ''
                                   }`
