@@ -22,7 +22,7 @@ import {
   Image,
   EyeIcon,
 } from 'lucide-react';
-import { getEtatLabel, getFullOrientation, isAgentAdministratif, isNotaire, isRespoCommercial, isRespoLivraison } from '@/configs/enum';
+import { getEtatLabel, getOrientationLabelFromAbbreviation, isAgentAdministratif, isNotaire, isRespoCommercial, isRespoLivraison } from '@/configs/enum';
 import BienSuperficies from './BienSuperficies';
 import BienComposition from './BienComposition';
 import BienDescriptionGenerator from './BienDescriptionGenerator';
@@ -426,7 +426,7 @@ export default function BienDetails({ id }) {
                   </h3>
                   <p className="mt-0.5 font-semibold text-sm truncate">
                     {bien.orientation
-                      ? getFullOrientation(bien.orientation)
+                      ? getOrientationLabelFromAbbreviation(bien.orientation)
                       : ''}
                   </p>
                 </div>

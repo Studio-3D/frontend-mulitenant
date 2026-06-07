@@ -24,6 +24,8 @@ export default function BienComposition({ bien }) {
           {
             nbre_chambres: bien.nbre_chambres || 0,
             nbre_salons: bien.nbre_salons || 0,
+            nbre_sejour: bien.nbre_sejour || 0,           // Ajouté
+            nbre_kitchenette: bien.nbre_kitchenette || 0, // Ajouté
             nbre_sdb: bien.nbre_sdb || 0,
             nbre_cuisines: bien.nbre_cuisines || 0,
             nbre_terasses: bien.nbre_terasses || 0,
@@ -42,6 +44,8 @@ export default function BienComposition({ bien }) {
         {
           nbre_chambres: bien.nbre_chambres || 0,
           nbre_salons: bien.nbre_salons || 0,
+          nbre_sejour: bien.nbre_sejour || 0,           // Ajouté
+          nbre_kitchenette: bien.nbre_kitchenette || 0, // Ajouté
           nbre_sdb: bien.nbre_sdb || 0,
           nbre_cuisines: bien.nbre_cuisines || 0,
           nbre_terasses: bien.nbre_terasses || 0,
@@ -118,6 +122,46 @@ export default function BienComposition({ bien }) {
             strokeLinejoin="round"
             strokeWidth={2}
             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
+        </svg>
+      ),
+    },
+    {
+      field: 'nbre_sejour',
+      label: 'Séjours',
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5 !text-blue-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+          />
+        </svg>
+      ),
+    },
+    {
+      field: 'nbre_kitchenette',
+      label: 'Kitchenettes',
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5 !text-blue-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6.5M17 13l1.5 6.5M9 21h6M12 13v8"
           />
         </svg>
       ),
@@ -287,14 +331,6 @@ export default function BienComposition({ bien }) {
   const hasCompositions = compositions.some((comp) =>
     Object.values(comp).some((val) => typeof val === 'number' && val > 0)
   );
-
-  /* if (!hasCompositions) {
-    return (
-      <div className="text-center py-8 !text-gray-500">
-        <p>Aucune information de composition disponible pour ce bien.</p>
-      </div>
-    );
-  } */
 
   return (
     <div className="bg-white shadow-sm rounded-lg">

@@ -28,7 +28,7 @@ import { useParams } from 'next/navigation';
 import LoadingSpin from '@/components/LoadingSpin';
 import { useAuth } from "@/context/AuthContext";
 import { APIURL } from "@/configs/api";
-import { getFullOrientation } from "@/configs/enum";
+import { getOrientationLabelFromAbbreviation } from "@/configs/enum";
 import { AlertCircle } from 'lucide-react';
 import { Eye } from 'lucide-react'; // Add this import
 import BreadCrumb from "../../navigation/BreadCrumb";
@@ -349,7 +349,7 @@ function InfoSection({ dossier }) {
   ['Numéro', d.bien.reference],
   ['Type', `${d.bien.type} ${d.bien.nombre_chambres != 0 && d.bien.nombre_chambres + ' chambres'}`],
   ['Étage', d.bien.etage],
-  ['Orientation', getFullOrientation(d.bien.orientation)],
+  ['Orientation', getOrientationLabelFromAbbreviation(d.bien.orientation)],
   ['Titre foncier', d.bien.titre_foncier]
 ].map(([label, val]) => (
   <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '6px 0' }}>

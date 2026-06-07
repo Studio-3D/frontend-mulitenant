@@ -283,6 +283,28 @@ export const MODE_PAIEMENT_with_transfert = {
   6: { code: 6, label: 'Versement' },
   7: { code: 7, label: 'Transfert Dossier' },
 };
+// Dans configs/enum.js
+export const getOrientationLabelFromAbbreviation = (abbreviation) => {
+  const directLabelMap = {
+    'N': 'Nord',
+    'E': 'Est',
+    'S': 'Sud',
+    'O': 'Ouest',
+    'N_E': 'Nord-Est',
+    'N_O': 'Nord-Ouest',
+    'S_E': 'Sud-Est',
+    'S_O': 'Sud-Ouest',
+    'NORD_SUD': 'Nord / Sud',
+    'NORD_OUEST': 'Nord-Ouest',
+    'SUD_EST': 'Sud-Est',
+    'EST_OUEST': 'Est / Ouest',
+    'NO_SE': 'Nord-Ouest / Sud-Est',
+    'NORD_SUD_OUEST': 'Nord / Sud / Ouest',
+    'NORD_SUD_EST': 'Nord / Sud / Est',
+    'NORD_EST_OUEST': 'Nord / Est / Ouest'
+  };
+  return directLabelMap[abbreviation] || abbreviation;
+};
 export const getModePaiementLabel = (code) => {
   return MODE_PAIEMENT_with_transfert[code]?.label || '';
 };
@@ -302,35 +324,19 @@ export const ORIENTATIONS = {
   6: { code: 6, label: 'Nord-Ouest', description: 'Orientation Nord-Ouest' },
   7: { code: 7, label: 'Sud-Est', description: 'Orientation Sud-Est' },
   8: { code: 8, label: 'Sud-Ouest', description: 'Orientation Sud-Ouest' },
+ // Nouvelles orientations (8)
+  9: { code: 9, label: 'Nord / Sud', description: 'Orientation double Nord/Sud', abbreviation: 'NORD_SUD' },
+  10: { code: 10, label: 'Nord-Ouest', description: 'Orientation Nord-Ouest', abbreviation: 'NORD_OUEST' },
+  11: { code: 11, label: 'Sud-Est', description: 'Orientation Sud-Est', abbreviation: 'SUD_EST' },
+  12: { code: 12, label: 'Est / Ouest', description: 'Orientation double Est/Ouest', abbreviation: 'EST_OUEST' },
+  13: { code: 13, label: 'Nord-Ouest / Sud-Est', description: 'Orientation double Nord-Ouest/Sud-Est', abbreviation: 'NO_SE' },
+  14: { code: 14, label: 'Nord / Sud / Ouest', description: 'Orientation triple Nord/Sud/Ouest', abbreviation: 'NORD_SUD_OUEST' },
+  15: { code: 15, label: 'Nord / Sud / Est', description: 'Orientation triple Nord/Sud/Est', abbreviation: 'NORD_SUD_EST' },
+  16: { code: 16, label: 'Nord / Est / Ouest', description: 'Orientation triple Nord/Est/Ouest', abbreviation: 'NORD_EST_OUEST' }
 };
 
 export const getOrientationLabel = (code) => {
   return ORIENTATIONS[code]?.label || 'Unknown';
-};
-
-export const ORIENTATION_ABBREVIATIONS = {
-  Nord: 'N',
-  Sud: 'S',
-  Est: 'E',
-  Ouest: 'O',
-  'Nord-Est': 'N_E',
-  'Nord-Ouest': 'N_O',
-  'Sud-Est': 'S_E',
-  'Sud-Ouest': 'S_O',
-};
-
-// Function that accepts a letter/abbreviation and returns the full word
-export const getFullOrientation = (letter) => {
-  // Reverse the object so that the keys are abbreviations and values are the full names
-  const reversedAbbreviations = Object.fromEntries(
-    Object.entries(ORIENTATION_ABBREVIATIONS).map(([key, value]) => [
-      value,
-      key,
-    ])
-  );
-
-  // Return the full orientation name based on abbreviation
-  return reversedAbbreviations[letter] || 'Unknown Orientation'; // Default if not found
 };
 export const getOrientationCode = (orientation) =>
   ORIENTATIONS[orientation]?.code || '';
