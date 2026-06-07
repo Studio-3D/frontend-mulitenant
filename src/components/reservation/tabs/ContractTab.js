@@ -648,6 +648,12 @@ const showToast = (message, type = 'success') => {
                                               nbre_chambres:
                                                 (acc.nbre_chambres || 0) +
                                                 (curr.nbre_chambres || 0),
+                                              nbre_kitchenette:
+                                            (acc.nbre_kitchenette || 0) +
+                                            (curr.nbre_kitchenette || 0),
+                                            nbre_sejour:
+                                            (acc.nbre_sejour || 0) +
+                                            (curr.nbre_sejour || 0),
                                               nbre_cuisines:
                                                 (acc.nbre_cuisines || 0) +
                                                 (curr.nbre_cuisines || 0),
@@ -688,6 +694,22 @@ const showToast = (message, type = 'success') => {
                                               <span className="bg-purple-50 text-purple-800 px-2 py-1 rounded text-xs">
                                                 {summedComposition.nbre_chambres} Chambre
                                                 {summedComposition.nbre_chambres > 1
+                                                  ? 's'
+                                                  : ''}
+                                              </span>
+                                            )}
+                                            {summedComposition.nbre_kitchenette > 0 && (
+                                              <span className="bg-purple-50 text-purple-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_kitchenette} Kitchenette
+                                                {summedComposition.nbre_kitchenette > 1
+                                                  ? 's'
+                                                  : ''}
+                                              </span>
+                                            )}
+                                            {summedComposition.nbre_sejour > 0 && (
+                                              <span className="bg-purple-50 text-purple-800 px-2 py-1 rounded text-xs">
+                                                {summedComposition.nbre_sejour} Séjour
+                                                {summedComposition.nbre_sejour > 1
                                                   ? 's'
                                                   : ''}
                                               </span>
