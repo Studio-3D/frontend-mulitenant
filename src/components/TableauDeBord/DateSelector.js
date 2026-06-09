@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import {
   format,
   startOfDay,
@@ -11,11 +11,11 @@ import {
   endOfYear,
   subDays,
   isAfter,
-  isBefore,
   parseISO,
-  isEqual
-} from 'date-fns';
-import { CalendarIcon, ChevronDownIcon, XIcon, CheckIcon } from 'lucide-react';
+  isEqual,
+  isValid,
+} from "date-fns";
+import { CalendarIcon, ChevronDownIcon, XIcon, CheckIcon } from "lucide-react";
 
 export const DateSelector = ({ startDate, endDate, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,36 +27,36 @@ export const DateSelector = ({ startDate, endDate, onChange }) => {
 
   const presets = [
     {
-      id: 'today',
+      id: "today",
       label: "Aujourd'hui",
       getRange: () => [startOfDay(today), endOfDay(today)],
     },
     {
-      id: 'week',
-      label: 'Cette semaine',
+      id: "week",
+      label: "Cette semaine",
       getRange: () => [
         startOfWeek(today, { weekStartsOn: 1 }),
         endOfWeek(today, { weekStartsOn: 1 }),
       ],
     },
     {
-      id: 'month',
-      label: 'Ce mois',
+      id: "month",
+      label: "Ce mois",
       getRange: () => [startOfMonth(today), endOfMonth(today)],
     },
     {
-      id: 'year',
-      label: 'Cette année',
+      id: "year",
+      label: "Cette année",
       getRange: () => [startOfYear(today), endOfYear(today)],
     },
     {
-      id: 'last7days',
-      label: '7 derniers jours',
+      id: "last7days",
+      label: "7 derniers jours",
       getRange: () => [subDays(today, 6), today],
     },
     {
-      id: 'last30days',
-      label: '30 derniers jours',
+      id: "last30days",
+      label: "30 derniers jours",
       getRange: () => [subDays(today, 29), today],
     },
   ];
@@ -66,17 +66,14 @@ export const DateSelector = ({ startDate, endDate, onChange }) => {
     // Check if current range matches any preset
     for (const preset of presets) {
       const [presetStart, presetEnd] = preset.getRange();
-      if (
-        isEqual(startDate, presetStart) && 
-        isEqual(endDate, presetEnd)
-      ) {
+      if (isEqual(startDate, presetStart) && isEqual(endDate, presetEnd)) {
         setActivePreset(preset.id);
         return;
       }
     }
-    
+
     // If no preset matches, it's a custom range
-    setActivePreset('custom');
+    setActivePreset("custom");
     setCustomStart(startDate);
     setCustomEnd(endDate);
   }, [startDate, endDate]);
@@ -87,8 +84,8 @@ export const DateSelector = ({ startDate, endDate, onChange }) => {
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
@@ -99,20 +96,33 @@ export const DateSelector = ({ startDate, endDate, onChange }) => {
     setIsOpen(false);
   };
 
+  const safeParseDate = (value) => {
+    const parsed = parseISO(value);
+    return isValid(parsed) ? parsed : null;
+  };
+
   const handleCustomDateChange = () => {
+    if (!isValid(customStart) || !isValid(customEnd)) {
+      return;
+    }
+
     if (isAfter(customStart, customEnd)) {
       return; // Prevent invalid date ranges
     }
+
     onChange(customStart, customEnd);
     setIsOpen(false);
   };
 
   const getDisplayText = () => {
-    if (activePreset === 'custom') {
-      return `${format(startDate, 'd MMM')} - ${format(endDate, 'd MMM yyyy')}`;
+    if (activePreset === "custom") {
+      if (isValid(startDate) && isValid(endDate)) {
+        return `${format(startDate, "d MMM")} - ${format(endDate, "d MMM yyyy")}`;
+      }
+      return "Période personnalisée";
     }
     const preset = presets.find((p) => p.id === activePreset);
-    return preset ? preset.label : 'Sélectionner une période';
+    return preset ? preset.label : "Sélectionner une période";
   };
 
   return (
@@ -122,7 +132,7 @@ export const DateSelector = ({ startDate, endDate, onChange }) => {
         className="flex  items-center xl:w-[300px] px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
       >
         <CalendarIcon size={16} className="mr-2 text-gray-500" />
-        <div className='flex-1 flex items-center justify-between'>
+        <div className="flex-1 flex items-center justify-between">
           <span>{getDisplayText()}</span>
           <ChevronDownIcon size={16} className="ml-2 text-gray-500" />
         </div>
@@ -144,19 +154,19 @@ export const DateSelector = ({ startDate, endDate, onChange }) => {
                 <button
                   key={preset.id}
                   onClick={() => handlePresetClick(preset)}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors ${activePreset === preset.id ? 'bg-blue-50 text-blue-500' : 'text-gray-700 hover:bg-gray-50'}`}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors ${activePreset === preset.id ? "bg-blue-50 text-blue-500" : "text-gray-700 hover:bg-gray-50"}`}
                 >
                   {preset.label}
                   {activePreset === preset.id && <CheckIcon size={16} />}
                 </button>
               ))}
               <div
-                className={`w-full px-3 py-2 text-sm rounded-md transition-colors cursor-pointer ${activePreset === 'custom' ? 'bg-blue-50 text-blue-500' : 'text-gray-700 hover:bg-gray-50'}`}
-                onClick={() => setActivePreset('custom')}
+                className={`w-full px-3 py-2 text-sm rounded-md transition-colors cursor-pointer ${activePreset === "custom" ? "bg-blue-50 text-blue-500" : "text-gray-700 hover:bg-gray-50"}`}
+                onClick={() => setActivePreset("custom")}
               >
                 <div className="flex items-center justify-between mb-1">
                   <span>Période personnalisée</span>
-                  {activePreset === 'custom' && <CheckIcon size={16} />}
+                  {activePreset === "custom" && <CheckIcon size={16} />}
                 </div>
                 <div className="flex space-x-2 mt-2">
                   <div className="flex-1">
@@ -165,8 +175,15 @@ export const DateSelector = ({ startDate, endDate, onChange }) => {
                     </label>
                     <input
                       type="date"
-                      value={format(customStart, 'yyyy-MM-dd')}
-                      onChange={(e) => setCustomStart(parseISO(e.target.value))}
+                      value={
+                        isValid(customStart)
+                          ? format(customStart, "yyyy-MM-dd")
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const nextDate = safeParseDate(e.target.value);
+                        if (nextDate) setCustomStart(nextDate);
+                      }}
                       className="w-full px-2 py-1 text-xs border border-gray-200 rounded"
                     />
                   </div>
@@ -176,15 +193,22 @@ export const DateSelector = ({ startDate, endDate, onChange }) => {
                     </label>
                     <input
                       type="date"
-                      value={format(customEnd, 'yyyy-MM-dd')}
-                      onChange={(e) => setCustomEnd(parseISO(e.target.value))}
+                      value={
+                        isValid(customEnd)
+                          ? format(customEnd, "yyyy-MM-dd")
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const nextDate = safeParseDate(e.target.value);
+                        if (nextDate) setCustomEnd(nextDate);
+                      }}
                       className="w-full px-2 py-1 text-xs border border-gray-200 rounded"
                     />
                   </div>
                 </div>
               </div>
             </div>
-            {activePreset === 'custom' && (
+            {activePreset === "custom" && (
               <button
                 onClick={handleCustomDateChange}
                 className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
