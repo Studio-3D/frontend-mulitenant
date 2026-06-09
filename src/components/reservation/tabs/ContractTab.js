@@ -622,7 +622,7 @@ const showToast = (message, type = 'success') => {
                           ? '1er étage'
                           : data_reservation?.bien.niveau + 'ème étage'}
                         
-                        et offre une superficie habitable de{' '}
+                       {' '} et offre une superficie habitable de{' '}
                         {data_reservation?.bien?.superficie_habitable || '0'}{' '}
                         m².
                         {data_reservation?.bien?.superficie_balcon > 0 &&
