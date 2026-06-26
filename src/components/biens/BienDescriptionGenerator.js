@@ -28,6 +28,7 @@ export default function BienDescriptionGenerator({
   isOpen = false,
   onClose,
 }) {
+  
   const [isModalOpen, setIsModalOpen] = useState(isOpen);
   const [description, setDescription] = useState(bien?.description || '');
   const [generatedDescription, setGeneratedDescription] = useState('');
@@ -834,7 +835,8 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
                     disabled={
                       !description ||
                       isSharingFacebook ||
-                      (!uploadedMediaUrl && !selectedMedia)
+                      (!uploadedMediaUrl && !selectedMedia) ||
+                      isUploading  // ← Add this condition
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-md hover:bg-[#166FE5] disabled:opacity-50"
                   >
@@ -859,7 +861,8 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
                     disabled={
                       !description ||
                       isSharing ||
-                      (!uploadedMediaUrl && !selectedMedia)
+                      (!uploadedMediaUrl && !selectedMedia) ||
+                      isUploading  // ← Add this condition
                     }
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md hover:opacity-90 disabled:opacity-50"
                   >
