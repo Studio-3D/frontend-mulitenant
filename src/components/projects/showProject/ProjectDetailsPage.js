@@ -203,8 +203,9 @@ export const ProjectDetailsPage = () => {
           name: b.propriete_dite_bien,
           type: b.type_bien?.type || 'Inconnu',
           type_id: b.type_id || 'Inconnu',
-          surface: b.superficie_habitable || b.superficie_architecte,
-        price: b.prix == null ? 0 : b.prix,
+           surface: b.superficie_vendable ,
+         // surface: b.superficie_habitable || b.superficie_architecte,
+          price: b.prix == null ? 0 : b.prix,
           status: statusConfig.name,
           statusColor: statusConfig.color,
           originalStatus: b.etat,
@@ -221,8 +222,8 @@ export const ProjectDetailsPage = () => {
           conventionne: b?.conventionne || '', // Modifier ici - valeur par défaut vide au lieu de 0
           prix_unitaire: b?.prix_unitaire || 0,
           prix: b?.prix || '',
-          num_parking: b?.num_parking || '',
-          num_box: b?.num_box || 0,
+          nb_parking: b?.nb_parking || '',
+          nb_box: b?.nb_box || 0,
           prix_box: b?.prix_box || 0,
           prix_parking: b?.prix_parking || 0,
           avance_minimale: b?.avance_minimale || 0,
@@ -253,7 +254,20 @@ export const ProjectDetailsPage = () => {
           nbre_receptions: firstComposition.nbre_receptions || 0,
           // Information sur le nombre total de compositions (pour information)
           total_compositions: b.composition_bien?.length || 0,
-        };
+         // Composition fields
+        nbre_chambres: firstComposition.nbre_chambres || 0,
+        nbre_salons: firstComposition.nbre_salons || 0,
+        nbre_sdb: firstComposition.nbre_sdb || 0,
+        nbre_cuisines: firstComposition.nbre_cuisines || 0,
+        nbre_halls: firstComposition.nbre_halls || 0,
+        nbre_kitchenette: firstComposition.nbre_kitchenette || 0,  // ← Make sure this is mapped
+        nbre_terasses: firstComposition.nbre_terasses || 0,
+        nbre_balcons: firstComposition.nbre_balcons || 0,
+        nbre_buanderies: firstComposition.nbre_buanderies || 0,
+        nbre_placards: firstComposition.nbre_placards || 0,
+        nbre_receptions: firstComposition.nbre_receptions || 0,
+        nbre_sejour: firstComposition.nbre_sejour || 0,  // ← Make sure this is mapped
+            };
       }) || [];
     // Map tranche data to match your column requirements
     const tranches =
