@@ -296,19 +296,19 @@ export const TrancheDetailsPage = () => {
           titre_foncier: b?.titre_foncier || '',
           superficie_total: b?.superficie_total || 0,
           superficie_vendable: b?.superficie_vendable || 0,
-          // Données de la première composition seulement
-          nbre_chambres: firstComposition.nbre_chambres || 0,
-          nbre_salons: firstComposition.nbre_salons || 0,
-          nbre_sdb: firstComposition.nbre_sdb || 0,
-          nbre_cuisines: firstComposition.nbre_cuisines || 0,
-          nbre_halls: firstComposition.nbre_halls || 0,
-          nbre_terasses: firstComposition.nbre_terasses || 0,
-          nbre_balcons: firstComposition.nbre_balcons || 0,
-          nbre_buanderies: firstComposition.nbre_buanderies || 0,
-          nbre_placards: firstComposition.nbre_placards || 0,
-          nbre_receptions: firstComposition.nbre_receptions || 0,
-          // Information sur le nombre total de compositions (pour information)
-          total_compositions: b.composition_bien?.length || 0,
+            nbre_chambres: firstComposition.nbre_chambres || 0,
+    nbre_salons: firstComposition.nbre_salons || 0,
+    nbre_sdb: firstComposition.nbre_sdb || 0,
+    nbre_cuisines: firstComposition.nbre_cuisines || 0,
+    nbre_halls: firstComposition.nbre_halls || 0,
+    nbre_kitchenette: firstComposition.nbre_kitchenette || 0,
+    nbre_terasses: firstComposition.nbre_terasses || 0,
+    nbre_balcons: firstComposition.nbre_balcons || 0,
+    nbre_buanderies: firstComposition.nbre_buanderies || 0,
+    nbre_placards: firstComposition.nbre_placards || 0,
+    nbre_receptions: firstComposition.nbre_receptions || 0,
+    nbre_sejour: firstComposition.nbre_sejour || 0,
+    total_compositions: b.composition_bien?.length || 0,
         };
       }) || [];
     const immeubles =
