@@ -84,7 +84,7 @@ const CustomCheckbox = ({
 
 const ProspectTable = ({ view = 'all', searchParams }) => {
   const showOnlyAssigned = view === 'assigned';
-
+  const [filteredTotalRows, setFilteredTotalRows] = useState(0);
   const [affect_lance, setAffect_lance] = useState(false);
 
   // --- State ---
@@ -127,13 +127,31 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
   // Check if user is commercial to disable assignment features
   const isCommercialUser = isCommercial(user?.role);
 
+ // Dans ProspectTable.js, modifiez le useEffect
+
+// Dans ProspectTable.js - Modifiez le useEffect
+
+ // 🔥 MODIFIER le useEffect pour gérer la pagination
   useEffect(() => {
-    // Only fetch data if we're NOT in form mode (no action parameter)
     const action = searchParams?.get('action');
     if (action === 'add' || action === 'edit') {
-      console.log('Skipping API call - in form mode');
       return;
     }
+
+    let params_url = { ...filters };
+
+    // 🔥 Si on est en mode "Mes prospects", ajouter commercial_id
+    if (showOnlyAssigned && isCommercialUser && user?.id) {
+      params_url.commercial_id = user.id;
+    }
+
+    // Nettoyer les paramètres vides
+    Object.keys(params_url).forEach(key => {
+      if (params_url[key] === '' || params_url[key] === null || params_url[key] === undefined) {
+        delete params_url[key];
+      }
+    });
+
 
     fetchData_table_by_projet(
       {
@@ -141,7 +159,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
         dataKey: 'prospects',
         searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
       },
-      filters,
+      params_url,
       searchTerm,
       currentPage,
       rowsPerPage,
@@ -149,10 +167,14 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
       setLoading,
       setError,
       setProspects,
-      setTotalRows
+      // 🔥 MODIFIER : Utiliser une fonction personnalisée pour setTotalRows
+      (total) => {
+        setTotalRows(total);
+        setFilteredTotalRows(total); // Stocker le total filtré
+      }
     );
   }, [
-    searchParams, // Add searchParams to dependencies
+    searchParams,
     accesstoken,
     currentPage,
     rowsPerPage,
@@ -160,6 +182,8 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     filters,
     selectedProjet,
     user,
+    showOnlyAssigned,
+    isCommercialUser,
   ]);
 
   useEffect(() => {
@@ -226,6 +250,38 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
         );
       });
     }
+    /* if (showOnlyAssigned && isCommercialUser && user?.id) {
+    filteredProspects = prospects.filter((pro) => {
+      // 1️⃣ PRIORITÉ : Vérifier si un commercial est affecté
+      if (pro.commercial_affecte && pro.commercial_affecte.user_id_origin === user.id) {
+        return true;
+      }
+      
+      // 2️⃣ FALLBACK : Vérifier si l'utilisateur est le créateur (user_id_add)
+      if (pro.user_id_add && pro.user_id_add === user.id) {
+        return true;
+      }
+      
+      // 3️⃣ Ni affecté ni créé par l'utilisateur
+      return false;
+    });
+  }*/
+    if (showOnlyAssigned && isCommercialUser && user?.id) {
+      filteredProspects = prospects.filter((pro) => {
+        // 1️⃣ PRIORITÉ : Vérifier si un commercial est affecté
+        if (pro.commercial_affecte && pro.commercial_affecte.user_id_origin === user.id) {
+          return true;
+        }
+    
+    // 2️⃣ FALLBACK : Vérifier si l'utilisateur est le créateur (user_id_add)
+    if (pro.user_id_add && pro.user_id_add === user.id) {
+      return true;
+    }
+    
+    // 3️⃣ Ni affecté ni créé par l'utilisateur
+    return false;
+  });
+}
 
     return filteredProspects.map((pro) => ({
       id: pro.id,
@@ -260,7 +316,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     }));
   };
 
-  // Calculate filtered total rows for pagination
+  /*Calculate filtered total rows for pagination
   const getFilteredTotalRows = () => {
     if (showOnlyAssigned && isCommercialUser && user?.id) {
       const filteredCount = prospects.filter(
@@ -271,8 +327,21 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
       return filteredCount;
     }
     return totalRows;
-  };
+  };*/
 
+
+  // 🔥 MODIFIER getFilteredTotalRows pour utiliser le total filtré
+  const getFilteredTotalRows = () => {
+    // Si on est en mode "Mes prospects", utiliser le total filtré
+    if (showOnlyAssigned && isCommercialUser && user?.id) {
+      return filteredTotalRows; // Utiliser le total retourné par l'API
+    }
+    return totalRows;
+  };
+    // 🔥 AJOUT : Réinitialiser la page à 1 quand on change de vue
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [showOnlyAssigned]);
   // --- Export with filtered data ---
   const data_to_export = () => {
     let filteredProspects = prospects;
@@ -702,7 +771,6 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
       );
 
       // Show success message
-      console.log('Auto-assignment completed:', result.assignments);
     } catch (e) {
       console.error('Auto-assignment failed:', e);
       // Handle error - maybe show a toast notification
@@ -801,10 +869,22 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
       // Handle error
     }
   };
+  
   // --- Render ---
   return (
     <>
       <div className="relative py-4">
+         {/* 🔥 AJOUT : Afficher le nombre de prospects pour le commercial
+        {showOnlyAssigned && isCommercialUser && user?.id && (
+          <div className="mb-2 text-sm text-gray-600">
+            <span className="font-semibold text-blue-600">{filteredTotalRows}</span>
+            {' prospects affectés à '}
+            <span className="font-semibold">{user.name} {user.prenom}</span>
+            {' / '}
+            <span className="font-semibold">{totalRows}</span>
+            {' au total'}
+          </div>
+        )} */}
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
