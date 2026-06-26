@@ -59,7 +59,8 @@ import {
   Workflow,
   Split,
   FileBarChart,
-  
+  Menu as MenuIcon,
+  X,
 } from 'lucide-react';
 
 import { User_roles } from '../configs/enum';
@@ -71,6 +72,7 @@ import ProjetDialog from './ProjetDialog';
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { user } = useAuth();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -149,9 +151,16 @@ const Menu = () => {
       });
     }
 
-    if (role <= User_roles.ROLE_COMMERCIAL|| role === User_roles.ROLE_AGENT_ADMINISTRATIF) {
-      items.push(...getCommercialItems());
-    }
+   // ⚠️ IMPORTANT: Séparez les items selon le rôle
+  if (role <= User_roles.ROLE_COMMERCIAL || role === User_roles.ROLE_AGENT_ADMINISTRATIF) {
+    items.push(...getCommercialItems());
+  }
+  
+  // Items UNIQUEMENT pour le rôle commercial (pas pour admin ou super admin)
+  if (role === User_roles.ROLE_COMMERCIAL) {
+    items.push(...getCommercialOnlyItems());
+  }
+
 
     // Check for both ROLE_ADMIN and ROLE_AGENT_ADMINISTRATIF
     if (role <= User_roles.ROLE_ADMIN || role === User_roles.ROLE_AGENT_ADMINISTRATIF) {
@@ -179,6 +188,29 @@ const Menu = () => {
     return items;
   };
 
+  const getCommercialOnlyItems = () => [
+  {
+    label: 'Echéances Paiement',
+    icon: <Split size={20} />,
+    href: '/administration/echeance-tranches',
+    needsProjet: true,
+    needsSociete: user.role === 1,
+  },
+  {
+    label: 'Etapes Projet',
+    icon: <Cuboid size={20} />,
+    href: '/etapes-projet',
+    needsProjet: true,
+    needsSociete: user.role === 1,
+  },
+      {
+      label: 'Historique Importation',
+      icon: <History size={20} />,
+      href: '/histo-importation',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
+];
   const getAdminItems = () => [
     {
       label: 'Utilisateurs',
@@ -264,7 +296,7 @@ const Menu = () => {
           needsSociete: user.role === 1,
         },
         {
-          label: 'Echéances Tranche',
+          label: 'Echéances Paiement',
           icon: <Split  size={20} />,
           href: '/administration/echeance-tranches',
           needsProjet: true,
@@ -316,21 +348,9 @@ const Menu = () => {
       icon: <Calendar />,
       href: '/calendrier',
       needsSociete: user.role === 1,
-    },
-    {
-      label: 'Echéances Tranche',
-      icon: <Split   size={20} />,
-      href: '/administration/echeance-tranches',
       needsProjet: true,
-      needsSociete: user.role == 1,
     },
-    {
-          label: 'Etapes Projet',
-          icon: <Cuboid size={20} />,
-          href: '/etapes-projet',
-          needsProjet: true,
-          needsSociete: user.role == 1,
-    },
+   
   ];
 
   const getRespoLivraisonItems = () => [
@@ -523,7 +543,7 @@ const Menu = () => {
       needsProjet: true,
     },
      {
-      label: 'Echéances Tranche',
+      label: 'Echéances Paiement',
       icon: <Split  size={20} />,
       href: '/administration/echeance-tranches',
       needsProjet: true,
@@ -536,6 +556,13 @@ const Menu = () => {
           needsProjet: true,
           needsSociete: user.role == 1,
         },
+         {
+      label: 'Historique Importation',
+      icon: <History size={20} />,
+      href: '/histo-importation',
+      needsSociete: user.role === 1,
+      needsProjet: true,
+    },
   ];
 
   const getComptableItems = () => [
@@ -561,7 +588,7 @@ const Menu = () => {
       needsSociete: user.role === 1,
     },
      {
-      label: 'Echéances Tranche',
+      label: 'Echéances Paiement',
       icon: <Split  size={20} />,
       href: '/administration/echeance-tranches',
       needsProjet: true,
@@ -773,77 +800,198 @@ const Menu = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] mt-5 text-sm font-semibold !text-gray-200">
-      {menuItems.map((item, index) => (
-        <div key={index}>
-          {/* Si l'item a des enfants, on affiche un menu déroulant */}
-          {item.children ? (
-            <div>
-              <div
-                onClick={() => toggleDropdown(index)}
-                className={`flex items-center justify-between p-2 mt-1 mb-1 cursor-pointer ${
-                  pathname.startsWith(item.href)
-                    ? 'bg-active text-[#231651] rounded-md'
-                    : 'hover:bg-[#fff] hover:text-[#231651] rounded-md'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 flex items-center justify-start lg:justify-center">
+    <>
+      {/* Desktop Menu - Unchanged */}
+      <div className="hidden sm:block">
+        <div className="h-[calc(100vh-4rem)] mt-5 text-sm font-semibold !text-gray-200">
+          {menuItems.map((item, index) => (
+            <div key={index}>
+              {/* Si l'item a des enfants, on affiche un menu déroulant */}
+              {item.children ? (
+                <div>
+                  <div
+                    onClick={() => toggleDropdown(index)}
+                    className={`flex items-center justify-between p-2 mt-1 mb-1 cursor-pointer ${
+                      pathname.startsWith(item.href)
+                        ? 'bg-active text-[#231651] rounded-md'
+                        : 'hover:bg-[#fff] hover:text-[#231651] rounded-md'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 flex items-center justify-start lg:justify-center">
+                        {item.icon}
+                      </span>
+                      <span className="hidden lg:block">{item.label}</span>
+                    </div>
+                    <span className="w-4 h-4 md:w-6 md:h-6 flex justify-start items-center">
+                      {openDropdown === index ? (
+                        <ChevronDown size={18} />
+                      ) : (
+                        <ChevronRight size={18} />
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Sous-menus */}
+                  {openDropdown === index && (
+                    <div className="pl-1.5 lg:pl-6">
+                      {item.children.map((child, childIndex) => (
+                        <Link
+                          key={childIndex}
+                          href={child.href}
+                          onClick={(e) => handleChildLinkClick(e, child)}
+                          className={`flex items-center gap-2 p-[7px] mt-1 cursor-pointer ${
+                            pathname === child.href
+                              ? 'bg-active text-[#231651] rounded-md'
+                              : 'hover:bg-[#fff] hover:text-[#231651] rounded-md'
+                          }`}
+                        >
+                          <span className="w-[18px] h-[18px] flex justify-center items-center text-xl">
+                            {child.icon}
+                          </span>
+                          <span className="hidden lg:block">{child.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Item sans enfants
+                <Link
+                  href={item.href}
+                  onClick={(e) => handleLinkClick(e, item)}
+                  className={`flex items-center gap-2 p-2 mt-1 cursor-pointer ${
+                    pathname.startsWith(item.href)
+                      ? 'bg-active text-[#231651] rounded-md'
+                      : 'hover:bg-[#fff] hover:text-[#231651] rounded-md'
+                  }`}
+                >
+                  <span className="w-6 h-6 flex justify-start items-center text-xl">
                     {item.icon}
                   </span>
                   <span className="hidden lg:block">{item.label}</span>
-                </div>
-                <span className="w-4 h-4 md:w-6 md:h-6 flex justify-start items-center">
-                  {openDropdown === index ? (
-                    <ChevronDown size={18} />
-                  ) : (
-                    <ChevronRight size={18} />
-                  )}
-                </span>
-              </div>
-
-              {/* Sous-menus */}
-              {openDropdown === index && (
-                <div className="pl-1.5 lg:pl-6">
-                  {item.children.map((child, childIndex) => (
-                    <Link
-                      key={childIndex}
-                      href={child.href}
-                      onClick={(e) => handleChildLinkClick(e, child)}
-                      className={`flex items-center gap-2 p-[7px] mt-1 cursor-pointer ${
-                        pathname === child.href
-                          ? 'bg-active text-[#231651] rounded-md'
-                          : 'hover:bg-[#fff] hover:text-[#231651] rounded-md'
-                      }`}
-                    >
-                      <span className="w-[18px] h-[18px] flex justify-center items-center text-xl">
-                        {child.icon}
-                      </span>
-                      <span className="hidden lg:block">{child.label}</span>
-                    </Link>
-                  ))}
-                </div>
+                </Link>
               )}
             </div>
-          ) : (
-            // Item sans enfants
-            <Link
-              href={item.href}
-              onClick={(e) => handleLinkClick(e, item)}
-              className={`flex items-center gap-2 p-2 mt-1 cursor-pointer ${
-                pathname.startsWith(item.href)
-                  ? 'bg-active text-[#231651] rounded-md'
-                  : 'hover:bg-[#fff] hover:text-[#231651] rounded-md'
-              }`}
-            >
-              <span className="w-6 h-6 flex justify-start items-center text-xl">
-                {item.icon}
-              </span>
-              <span className="hidden lg:block">{item.label}</span>
-            </Link>
-          )}
+          ))}
         </div>
-      ))}
+      </div>
+
+      {/* Mobile Toggle Button - Floating Action Button (FAB) */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="sm:hidden fixed bottom-6 right-6 z-50 p-4 bg-[#231651] rounded-full shadow-lg hover:bg-[#1a1040] transition-all duration-300 transform hover:scale-105"
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? (
+          <X size={24} className="text-white" />
+        ) : (
+          <MenuIcon size={24} className="text-white" />
+        )}
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 sm:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Menu - Slide in from bottom */}
+      <div
+        className={`sm:hidden fixed left-0 right-0 bottom-0 bg-[#1a1040] rounded-t-2xl shadow-2xl z-50 transition-transform duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'translate-y-0' : 'translate-y-full'
+        }`}
+        style={{ maxHeight: '70vh' }}
+      >
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-12 h-1 bg-gray-600 rounded-full"></div>
+        </div>
+        <div className="overflow-y-auto p-4 pb-6" style={{ maxHeight: '70vh' }}>
+          <div className="text-sm font-semibold !text-gray-200">
+            {menuItems.map((item, index) => (
+              <div key={index}>
+                {item.children ? (
+                  <div>
+                    <div
+                      onClick={() => toggleDropdown(index)}
+                      className={`flex items-center justify-between p-3 mt-1 mb-1 cursor-pointer rounded-lg ${
+                        pathname.startsWith(item.href)
+                          ? 'bg-active text-[#231651]'
+                          : 'hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className={`w-6 h-6 flex items-center justify-center ${pathname.startsWith(item.href) ? 'text-[#231651]' : 'text-white'}`}>
+                          {item.icon}
+                        </span>
+                        <span className={pathname.startsWith(item.href) ? 'text-[#231651]' : 'text-white'}>
+                          {item.label}
+                        </span>
+                      </div>
+                      <span className="w-4 h-4 flex justify-start items-center">
+                        {openDropdown === index ? (
+                          <ChevronDown size={18} className={pathname.startsWith(item.href) ? 'text-[#231651]' : 'text-white'} />
+                        ) : (
+                          <ChevronRight size={18} className={pathname.startsWith(item.href) ? 'text-[#231651]' : 'text-white'} />
+                        )}
+                      </span>
+                    </div>
+
+                    {openDropdown === index && (
+                      <div className="pl-4">
+                        {item.children.map((child, childIndex) => (
+                          <Link
+                            key={childIndex}
+                            href={child.href}
+                            onClick={(e) => {
+                              handleChildLinkClick(e, child);
+                              setIsMobileMenuOpen(false);
+                            }}
+                            className={`flex items-center gap-3 p-2.5 mt-1 cursor-pointer rounded-lg ${
+                              pathname === child.href
+                                ? 'bg-active text-[#231651]'
+                                : 'hover:bg-white/10 hover:text-white'
+                            }`}
+                          >
+                            <span className={`w-[18px] h-[18px] flex justify-center items-center text-xl ${pathname === child.href ? 'text-[#231651]' : 'text-white'}`}>
+                              {child.icon}
+                            </span>
+                            <span className={pathname === child.href ? 'text-[#231651]' : 'text-white'}>
+                              {child.label}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    href={item.href}
+                    onClick={(e) => {
+                      handleLinkClick(e, item);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center gap-3 p-3 mt-1 cursor-pointer rounded-lg ${
+                      pathname.startsWith(item.href)
+                        ? 'bg-active text-[#231651]'
+                        : 'hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <span className={`w-6 h-6 flex justify-start items-center text-xl ${pathname.startsWith(item.href) ? 'text-[#231651]' : 'text-white'}`}>
+                      {item.icon}
+                    </span>
+                    <span className={pathname.startsWith(item.href) ? 'text-[#231651]' : 'text-white'}>
+                      {item.label}
+                    </span>
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Modal Société */}
       {isModalVisible && (
@@ -874,8 +1022,10 @@ const Menu = () => {
           }}
         />
       )}
-    </div>
+    </>
   );
 };
+
+
 
 export default Menu;
