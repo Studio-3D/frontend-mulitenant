@@ -10,10 +10,10 @@ import Modal from '@/components/Modal';
 import DeleteData from '@/components/DeleteData';
 import { HomeIcon, LayersIcon, BuildingIcon, BoxesIcon } from 'lucide-react';
 import Table from '@/components/Table';
-import Input from '@/components/Input'; // Make sure to import your Input component
+import Input from '@/components/Input';
 import BienImport from '@/components/biens/BienImport';
-import {  getOrientationOptions } from '@/components/bien-utils'; // Import the new config
-import { handleExportExcel } from '@/configs/export'; // Ajoutez cette ligne
+import { getOrientationOptions } from '@/components/bien-utils';
+import { handleExportExcel } from '@/configs/export';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { APIURL } from '@/configs/api';
@@ -270,7 +270,6 @@ const TAB_CONFIG = {
         className:
           'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
       },
-      // Conditionally show tranche select
       ...(nbre_tranches > 0
         ? [
             {
@@ -288,7 +287,6 @@ const TAB_CONFIG = {
             },
           ]
         : []),
-      // Conditionally show bloc select
       ...(nbre_blocs > 0
         ? [
             {
@@ -390,12 +388,15 @@ const TAB_CONFIG = {
       projectId,
       nbre_tranches,
       nbre_blocs,
-      nbre_immeubles,max_etages,typologies, // Add this parameter FROM HERE
-      vues,typeBiens ,tranches,blocs,immeubles// Add this parameter 
-
+      nbre_immeubles,
+      max_etages,
+      typologies,
+      vues,
+      typeBiens,
+      tranches,
+      blocs,
+      immeubles
     ) => {
-      // fadwa
-     // Use defaultStatuses from tabsData for status options
       const statusOptions = tabsData.bien?.statuses
         ? tabsData.bien.statuses.map((status) => ({
             label: status.name,
@@ -403,40 +404,35 @@ const TAB_CONFIG = {
           }))
         : [];
 
-      // Get unique values for the new filters from ACTUAL project data
-
       const orientationOptions = getOrientationOptions();
 
-       // Use the typologies prop instead of tabsData
       const typologieOptions = typologies && typologies.length > 0
         ? typologies.map((typologie) => ({
-            label: typologie.typologie  || 'Inconnu',
+            label: typologie.typologie || 'Inconnu',
             value: typologie.typologie || '',
           }))
         : [];
 
-      // Use the vues prop instead of tabsData
       const vueOptions = vues && vues.length > 0
         ? vues.map((vue) => ({
-            label: vue.vue  || 'Inconnu',
-            value: vue.vue ||  '',
+            label: vue.vue || 'Inconnu',
+            value: vue.vue || '',
           }))
         : [];
+
       const type_Bien_Options = typeBiens && typeBiens.length > 0
-      ? typeBiens.map((t) => ({
-          label: t.type ,
-          value: t.type ,
-        }))
-      : [];
-     // Generate niveau options based on project's max_etages
+        ? typeBiens.map((t) => ({
+            label: t.type,
+            value: t.type,
+          }))
+        : [];
+
       const generateNiveauOptions = (maxEtages) => {
         const options = [];
         const max = parseInt(maxEtages) || 0;
         
-        // Always include RDC (0)
         options.push({ label: 'RDC', value: 'RDC' });
         
-        // Generate from 1 to max_etages
         for (let i = 1; i <= max; i++) {
           let label;
           if (i === 1) label = '1er étage';
@@ -449,7 +445,9 @@ const TAB_CONFIG = {
         
         return options;
       };
+
       const niveauOptions = generateNiveauOptions(max_etages);
+
       return [
         {
           key: 'name',
@@ -472,11 +470,10 @@ const TAB_CONFIG = {
           label: 'Type',
           type: 'select',
           placeholder: 'Sélectionner un type',
-          options:type_Bien_Options|| [],
+          options: type_Bien_Options || [],
           className:
             'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
-
         {
           key: 'status',
           label: 'Statut',
@@ -486,13 +483,12 @@ const TAB_CONFIG = {
           className:
             'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
-        // New filters for orientation, typologie, vue, and niveau
         {
           key: 'orientation',
           label: 'Orientation',
           type: 'select',
           placeholder: 'Sélectionner une orientation',
-          options: orientationOptions, // This will only show orientations that exist in the data
+          options: orientationOptions,
           className:
             'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
@@ -531,7 +527,7 @@ const TAB_CONFIG = {
                 type: 'select',
                 placeholder: 'Sélectionner une tranche',
                 options:
-                 tranches?.map((t) => ({
+                  tranches?.map((t) => ({
                     label: t.nom,
                     value: t.nom,
                   })) || [],
@@ -548,7 +544,7 @@ const TAB_CONFIG = {
                 type: 'select',
                 placeholder: 'Sélectionner un bloc',
                 options:
-                 blocs?.map((b) => ({
+                  blocs?.map((b) => ({
                     label: b.nom,
                     value: b.nom,
                   })) || [],
@@ -565,7 +561,7 @@ const TAB_CONFIG = {
                 type: 'select',
                 placeholder: 'Sélectionner un immeuble',
                 options:
-                 immeubles?.map((b) => ({
+                  immeubles?.map((b) => ({
                     label: b.nom,
                     value: b.nom,
                   })) || [],
@@ -573,7 +569,105 @@ const TAB_CONFIG = {
                   'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
               },
             ]
-          : []), // Replace the single surface filter with min and max
+          : []),
+        // === COMPOSITION FILTERS (12 filters) ===
+        {
+          key: 'nbre_chambres',
+          label: 'Chambres',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_salons',
+          label: 'Salons',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_sdb',
+          label: 'Salles de bain',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_cuisines',
+          label: 'Cuisines',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_halls',
+          label: 'Halls',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_kitchenette',
+          label: 'Kitchenettes',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_terasses',
+          label: 'Terrasses',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_balcons',
+          label: 'Balcons',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_placards',
+          label: 'Placards',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_receptions',
+          label: 'Réceptions',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_sejour',
+          label: 'Séjours',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        {
+          key: 'nbre_buanderies',
+          label: 'Buanderies',
+          type: 'number',
+          placeholder: 'Min...',
+          className:
+            'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
+        },
+        // === END COMPOSITION FILTERS ===
         {
           key: 'surface_min',
           label: 'Surface min',
@@ -590,7 +684,6 @@ const TAB_CONFIG = {
           className:
             'h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full',
         },
-        // Prix min and max
         {
           key: 'price_min',
           label: 'Prix min',
@@ -631,9 +724,8 @@ const TAB_CONFIG = {
         key: 'status',
         label: 'Statut',
         render: (row) => {
-          let color = 'bg-gray-500'; // Default color
+          let color = 'bg-gray-500';
 
-          // Add conditions based on the status value
           if (row.status === 'Disponible') {
             color = 'bg-green-500';
           } else if (row.status === 'Pré-réservé') {
@@ -695,7 +787,6 @@ const TAB_CONFIG = {
 
     exportConfig: (items, nbre_tranches, nbre_blocs, nbre_immeubles) => {
       const baseExportData = items.map((item) => ({
-        // Colonnes principales (sans id et type_id)
         Nom: item.name || '',
         Nom_projet: item.nom_projet,
         Numero: item.numero || '',
@@ -707,18 +798,19 @@ const TAB_CONFIG = {
         Prix: item.price || 0,
         Statut: item.status || '',
         Orientation: item.orientation || '',
-        Niveau: item.etage || '', // Utilise la valeur formatée (RDC, 1er étage, etc.)
+        Niveau: item.etage || '',
         Typologie: item.typologie || '',
         Vue: item.vue || '',
         Conventionné: item.conventionne || 0,
         'Prix parking': item.prix_parking || 0,
         'Prix unitaire': item.prix_unitaire || 0,
-        'Numero parking': item.num_parking || '',
-        'Numero box': item.num_box || '',
+        'Nombre parking': item.nb_parking || '',
+        'Nombre box': item.nb_box || '',
         'Prix box': item.prix_box || 0,
         'Avance minimale': item.avance_minimale || 0,
-        'Superficie architecte': item.superficie_architecte || 0,
         'Superficie habitable': item.superficie_habitable || 0,
+        'Superficie architecte': item.superficie_architecte || 0,
+        'Superficie vendable': item.superficie_vendable || 0,
         'Nombre façades': item.nbre_facades || 0,
         'Superficie parking': item.superficie_parking || 0,
         'Superficie box': item.superficie_box || 0,
@@ -730,8 +822,6 @@ const TAB_CONFIG = {
         'Superficie jardin calculée': item.superficie_jardin_calculer || 0,
         'Titre foncier': item.titre_foncier || '',
         'Superficie totale': item.superficie_total || 0,
-        'Superficie vendable': item.superficie_vendable || 0,
-        // Données de la première composition seulement
         'Nombre chambres': item.nbre_chambres || 0,
         'Nombre salons': item.nbre_salons || 0,
         'Nombre salles de bain': item.nbre_sdb || 0,
@@ -760,13 +850,14 @@ const TAB_CONFIG = {
         { key: 'Vue', label: 'Vue' },
         { key: 'Conventionné', label: 'Conventionné' },
         { key: 'Prix unitaire', label: 'Prix unitaire' },
-        { key: 'Numero parking', label: 'Numero parking' },
+        { key: 'Nombre parking', label: 'Nombre parking' },
         { key: 'Prix parking', label: 'Prix parking' },
-        { key: 'Numero box', label: 'Numero box' },
+        { key: 'Nombre box', label: 'Nombre box' },
         { key: 'Prix box', label: 'Prix box' },
         { key: 'Avance minimale', label: 'Avance minimale' },
-        { key: 'Superficie architecte', label: 'Superficie architecte' },
         { key: 'Superficie habitable', label: 'Superficie habitable' },
+        { key: 'Superficie architecte', label: 'Superficie architecte' },
+        { key: 'Superficie vendable', label: 'Superficie vendable' },
         { key: 'Nombre façades', label: 'Nombre façades' },
         { key: 'Superficie parking', label: 'Superficie parking' },
         { key: 'Superficie box', label: 'Superficie box' },
@@ -788,7 +879,6 @@ const TAB_CONFIG = {
         { key: 'Titre foncier', label: 'Titre foncier' },
         { key: 'Superficie totale', label: 'Superficie totale' },
         { key: 'Superficie vendable', label: 'Superficie vendable' },
-        // Colonnes de composition (première composition seulement)
         { key: 'Nombre chambres', label: 'Nombre chambres' },
         { key: 'Nombre salons', label: 'Nombre salons' },
         { key: 'Nombre salles de bain', label: 'Nombre salles de bain' },
@@ -808,14 +898,12 @@ const TAB_CONFIG = {
       };
     },
 
-    // Configuration spéciale pour l'export en masse
     massEditExportConfig: (
       items,
       nbre_tranches,
       nbre_blocs,
       nbre_immeubles
     ) => {
-      // Récupérer la configuration de base
       const baseConfig = TAB_CONFIG.bien.exportConfig(
         items,
         nbre_tranches,
@@ -823,11 +911,8 @@ const TAB_CONFIG = {
         nbre_immeubles
       );
 
-      // Filtrer les données
       const massEditData = items.map((item, index) => {
         const baseData = baseConfig.data_to_export[index];
-
-        // Créer un nouvel objet sans les colonnes problématiques
         const { Type, ...cleanData } = baseData;
 
         return {
@@ -839,14 +924,13 @@ const TAB_CONFIG = {
         };
       });
 
-      // Filtrer les colonnes - supprimer complètement Tranche, Bloc, Immeuble
       const massEditColumns = [
         { key: 'ID', label: 'ID' },
         { key: 'Type ID', label: 'Type' },
         { key: 'Typologie ID', label: 'Typologie' },
         { key: 'Vue ID', label: 'Vue' },
         ...baseConfig.columns_export.filter(
-        (column) => !['Type', 'Typologie', 'Vue'].includes(column.key)
+          (column) => !['Type', 'Typologie', 'Vue'].includes(column.key)
         ),
       ];
 
@@ -870,18 +954,17 @@ export const RightCard = ({
   nbre_immeubles,
   max_etages,
   tranches,
-  typologies, // Add this
-  vues, // Add this
-  typeBiens,blocs,immeubles
+  typologies,
+  vues,
+  typeBiens,
+  blocs,
+  immeubles
 }) => {
   const [showImportModal, setShowImportModal] = useState(false);
-  /* import titre en masse*/
-  const [showMassEditModal, setShowMassEditModal] = useState(false); // Nouvel état pour le modal de modification en masse
+  const [showMassEditModal, setShowMassEditModal] = useState(false);
   const [importErrors, setImportErrors] = useState([]);
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-/* import titre foncier*/
-    // 1. Ajouter un nouvel état pour le modal spécifique au titre foncier
   const [showMassEditTitreModal, setShowMassEditTitreModal] = useState(false);
   const [importTitreErrors, setImportTitreErrors] = useState([]);
   const [isImportingTitre, setIsImportingTitre] = useState(false);
@@ -896,16 +979,14 @@ export const RightCard = ({
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRows, setTotalRows] = useState(0);
 
-  // State for filters
   const [tempFilters, setTempFilters] = useState({});
   const [appliedFilters, setAppliedFilters] = useState({});
   const [showFilter, setShowFilter] = useState(false);
+  const [showCompositionFilters, setShowCompositionFilters] = useState(false);
 
-  // Initialize filters when tab changes
   useEffect(() => {
     const initialFilters = {};
     if (TAB_CONFIG[activeTab]?.filters) {
-      // Pass individual count props to the filters function
       const filterConfig = TAB_CONFIG[activeTab].filters(
         tabsData,
         projectId,
@@ -927,7 +1008,7 @@ export const RightCard = ({
     nbre_tranches,
     nbre_blocs,
     nbre_immeubles,
-  ]); // Define handleAction before it's used
+  ]);
 
   const handleDelete = (id) => {
     setSelectedId(id);
@@ -937,12 +1018,10 @@ export const RightCard = ({
   const handleDeleteSuccess = () => {
     setShowDeleteModal(false);
     if (fetchProjectData) {
-      // Now using the destructured prop
       fetchProjectData();
     }
   };
 
-  // Handle filter change
   const handleFilterChange = (key, value) => {
     setTempFilters((prev) => ({
       ...prev,
@@ -950,18 +1029,15 @@ export const RightCard = ({
     }));
   };
 
-  // Apply filters
   const applyFilters = () => {
     setAppliedFilters({ ...tempFilters });
-    setCurrentPage(1); // Reset to first page when applying filters
-    setShowFilter(false); // Hide filter after applying
+    setCurrentPage(1);
+    setShowFilter(false);
   };
 
-  // Reset filters
   const resetFilters = () => {
     const resetFilters = {};
     if (TAB_CONFIG[activeTab]?.filters) {
-      // Pass individual count props to the filters function
       const filterConfig = TAB_CONFIG[activeTab].filters(
         tabsData,
         projectId,
@@ -978,124 +1054,149 @@ export const RightCard = ({
     setCurrentPage(1);
   };
 
-  // Handle filter toggle
   const handleFilterToggle = (isVisible) => {
     setShowFilter(isVisible);
   };
 
-  // Handle page change
   const handlePageChange = useCallback((newPage) => {
     setCurrentPage(newPage);
   }, []);
 
-  // Handle rows per page change
   const handleRowsPerPageChange = useCallback((newRowsPerPage) => {
     setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1); // Reset to first page when changing rows per page
+    setCurrentPage(1);
   }, []);
+const filteredItems = useMemo(() => {
+  if (!tabsData[activeTab]?.items) return [];
 
+  let items = tabsData[activeTab].items;
 
-   // Fix the filtering logic to handle select values properly
-  const filteredItems = useMemo(() => {
-    if (!tabsData[activeTab]?.items) return [];
+  if (activeTab === 'bien' && selectedType) {
+    items = items.filter((item) => item.type === selectedType);
+  }
 
-    let items = tabsData[activeTab].items;
+  // Define ALL composition filter keys (make sure they match exactly)
+  const compositionFilterKeys = [
+    'nbre_chambres', 
+    'nbre_salons', 
+    'nbre_sdb', 
+    'nbre_cuisines',
+    'nbre_halls', 
+    'nbre_kitchenette',  // ← THIS WAS MISSING
+    'nbre_terasses', 
+    'nbre_balcons', 
+    'nbre_buanderies',
+    'nbre_placards', 
+    'nbre_receptions',
+    'nbre_sejour'  // ← THIS WAS MISSING
+  ];
 
-    // Apply type filter if activeTab is 'bien' and a type is selected
-    if (activeTab === 'bien' && selectedType) {
-      items = items.filter((item) => item.type === selectedType);
-    }
-
-    // Apply text filters
-    Object.keys(appliedFilters).forEach((key) => {
-      if (appliedFilters[key]) {
-        // Handle surface range filtering
-        if (key === 'surface_min' && appliedFilters[key]) {
-          const minValue = parseFloat(appliedFilters[key]);
+  Object.keys(appliedFilters).forEach((key) => {
+    const filterValue = appliedFilters[key];
+    if (filterValue && filterValue !== '' && filterValue !== null && filterValue !== undefined) {
+      
+      // Handle composition filters
+      if (compositionFilterKeys.includes(key)) {
+        const minValue = parseInt(filterValue);
+        if (!isNaN(minValue)) {
+          items = items.filter((item) => {
+            const compValue = item[key] || 0;
+            // Debug log to see what values are being compared
+            console.log(`Filtering ${key}: item value = ${compValue}, filter value = ${minValue}, result = ${compValue >= minValue}`);
+            return compValue >= minValue;
+          });
+        }
+      } 
+      // Handle surface range filtering
+      else if (key === 'surface_min') {
+        const minValue = parseFloat(filterValue);
+        if (!isNaN(minValue)) {
           items = items.filter((item) => {
             const itemSurface = parseFloat(item.surface);
             return !isNaN(itemSurface) && itemSurface >= minValue;
           });
-        } else if (key === 'surface_max' && appliedFilters[key]) {
-          const maxValue = parseFloat(appliedFilters[key]);
+        }
+      } else if (key === 'surface_max') {
+        const maxValue = parseFloat(filterValue);
+        if (!isNaN(maxValue)) {
           items = items.filter((item) => {
             const itemSurface = parseFloat(item.surface);
             return !isNaN(itemSurface) && itemSurface <= maxValue;
           });
         }
-        // Handle price range filtering
-        else if (key === 'price_min' && appliedFilters[key]) {
-          const minValue = parseFloat(appliedFilters[key]);
+      } 
+      // Handle price range filtering
+      else if (key === 'price_min') {
+        const minValue = parseFloat(filterValue);
+        if (!isNaN(minValue)) {
           items = items.filter((item) => {
             const itemPrice = parseFloat(item.price);
             return !isNaN(itemPrice) && itemPrice >= minValue;
           });
-        } else if (key === 'price_max' && appliedFilters[key]) {
-          const maxValue = parseFloat(appliedFilters[key]);
+        }
+      } else if (key === 'price_max') {
+        const maxValue = parseFloat(filterValue);
+        if (!isNaN(maxValue)) {
           items = items.filter((item) => {
             const itemPrice = parseFloat(item.price);
             return !isNaN(itemPrice) && itemPrice <= maxValue;
           });
         }
-        // Handle select filters (orientation, typologie, vue, etage, etc.)
-        // In the filteredItems useMemo, update the orientation handling
-        else if (
-          [
-            'orientation',
-            'typologie',
-            'vue',
-            'etage',
-            'status',
-            'type',
-            'tranche_nom',
-            'bloc_nom',
-            'immeuble_nom',
-          ].includes(key)
-        ) {
-          // For select filters, do exact matching
-          items = items.filter((item) => {
-            let itemValue = item[key]?.toString().toLowerCase();
-            const filterValue = appliedFilters[key]?.toString().toLowerCase();            
-            return itemValue === filterValue;
-          });
-        }
-        // Handle other text filters with partial matching
-        else if (
-          key !== 'surface_min' &&
-          key !== 'surface_max' &&
-          key !== 'price_min' &&
-          key !== 'price_max'
-        ) {
-          items = items.filter((item) =>
-            item[key]
-              ?.toString()
-              .toLowerCase()
-              .includes(appliedFilters[key].toString().toLowerCase())
-          );
-        }
+      } 
+      // Handle select filters
+      else if (
+        [
+          'orientation',
+          'typologie',
+          'vue',
+          'etage',
+          'status',
+          'type',
+          'tranche_nom',
+          'bloc_nom',
+          'immeuble_nom',
+        ].includes(key)
+      ) {
+        items = items.filter((item) => {
+          let itemValue = item[key]?.toString().toLowerCase() || '';
+          const filterValueLower = filterValue.toString().toLowerCase();
+          return itemValue === filterValueLower;
+        });
+      } 
+      // Handle other text filters
+      else if (
+        key !== 'surface_min' &&
+        key !== 'surface_max' &&
+        key !== 'price_min' &&
+        key !== 'price_max' &&
+        !compositionFilterKeys.includes(key)
+      ) {
+        items = items.filter((item) =>
+          item[key]
+            ?.toString()
+            .toLowerCase()
+            .includes(filterValue.toString().toLowerCase())
+        );
       }
-    });
+    }
+  });
 
-    return items;
-  }, [tabsData, activeTab, selectedType, appliedFilters]);
-  // Step 2: Calculate paginated items separately
-  const paginatedItems = useMemo(() => {
-    // Update total rows count based on filtered data
+  console.log('Filtered items count:', items.length);
+  return items;
+}, [tabsData, activeTab, selectedType, appliedFilters]);
+ const paginatedItems = useMemo(() => {
     setTotalRows(filteredItems.length);
-
-    // Apply pagination
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-
     return filteredItems.slice(startIndex, endIndex);
   }, [filteredItems, currentPage, rowsPerPage]);
+
   const currentColumns = useMemo(() => {
     if (!activeTab || !TAB_CONFIG[activeTab]) return [];
 
     const columnConfig = TAB_CONFIG[activeTab].columns;
 
     if (typeof columnConfig === 'function') {
-      // Pass the appropriate parameters based on the active tab
       switch (activeTab) {
         case 'blocs':
           return columnConfig(user, handleDelete, nbre_tranches);
@@ -1116,6 +1217,7 @@ export const RightCard = ({
 
     return columnConfig;
   }, [activeTab, user, handleDelete, nbre_tranches, nbre_blocs]);
+
   const availableTabs = useMemo(() => {
     return Object.keys(tabsData).filter((tab) => tabsData[tab]?.nbr_count > 0);
   }, [tabsData]);
@@ -1126,7 +1228,6 @@ export const RightCard = ({
       : availableTabs[0] || null;
   }, [activeTab, availableTabs]);
 
-  // Filter component for all tabs
   const filterComponent = useMemo(() => {
     if (!TAB_CONFIG[safeActiveTab]?.filters) return null;
 
@@ -1135,10 +1236,33 @@ export const RightCard = ({
       projectId,
       nbre_tranches,
       nbre_blocs,
-      nbre_immeubles, max_etages , typologies, // Pass typologies here fadwa
-      vues ,typeBiens,tranches,blocs,immeubles// Pass vues here// Add this parameter
-    
+      nbre_immeubles,
+      max_etages,
+      typologies,
+      vues,
+      typeBiens,
+      tranches,
+      blocs,
+      immeubles
     );
+
+  const compositionFilterKeys = [
+  'nbre_chambres', 
+  'nbre_salons', 
+  'nbre_sdb', 
+  'nbre_cuisines',
+  'nbre_halls', 
+  'nbre_kitchenette',
+  'nbre_terasses', 
+  'nbre_balcons', 
+  'nbre_buanderies',
+  'nbre_placards', 
+  'nbre_receptions',
+  'nbre_sejour'
+];
+
+    const regularFilters = filterConfig.filter(f => !compositionFilterKeys.includes(f.key));
+    const compositionFilters = filterConfig.filter(f => compositionFilterKeys.includes(f.key));
 
     return (
       <div className="space-y-4">
@@ -1148,17 +1272,15 @@ export const RightCard = ({
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           }}
         >
-          {filterConfig.map((filter) => {
-            // Group surface min and max in the same row
+          {regularFilters.map((filter) => {
             if (filter.key === 'surface_min' || filter.key === 'surface_max') {
-              const minFilter = filterConfig.find(
+              const minFilter = regularFilters.find(
                 (f) => f.key === 'surface_min'
               );
-              const maxFilter = filterConfig.find(
+              const maxFilter = regularFilters.find(
                 (f) => f.key === 'surface_max'
               );
 
-              // Only render once (for surface_min)
               if (filter.key === 'surface_min') {
                 return (
                   <div key="surface_range" className="flex flex-col">
@@ -1197,12 +1319,10 @@ export const RightCard = ({
               return null;
             }
 
-            // Group price min and max in the same row
             if (filter.key === 'price_min' || filter.key === 'price_max') {
-              const minFilter = filterConfig.find((f) => f.key === 'price_min');
-              const maxFilter = filterConfig.find((f) => f.key === 'price_max');
+              const minFilter = regularFilters.find((f) => f.key === 'price_min');
+              const maxFilter = regularFilters.find((f) => f.key === 'price_max');
 
-              // Only render once (for price_min)
               if (filter.key === 'price_min') {
                 return (
                   <div key="price_range" className="flex flex-col">
@@ -1241,7 +1361,6 @@ export const RightCard = ({
               return null;
             }
 
-            // Handle other filter types (select, text, number)
             if (filter.type === 'select') {
               return (
                 <div key={filter.key} className="flex flex-col">
@@ -1279,19 +1398,58 @@ export const RightCard = ({
               );
             }
           })}
+
+          {compositionFilters.length > 0 && (
+            <div className="col-span-full border-t pt-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setShowCompositionFilters(!showCompositionFilters)}
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                <span className="text-xs">
+                  {showCompositionFilters ? '▼' : '▶'}
+                </span>
+                Composition des biens
+               
+              </button>
+              {showCompositionFilters && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+                  {compositionFilters.map((filter) => (
+                    <div key={filter.key} className="flex flex-col">
+                      <label className="text-xs font-medium text-gray-700 mb-1">
+                        {filter.label}
+                      </label>
+                      <Input
+                        type="number"
+                        name={filter.key}
+                        value={tempFilters[filter.key] || ''}
+                        onChange={(e) =>
+                          handleFilterChange(filter.key, e.target.value)
+                        }
+                        placeholder={filter.placeholder || 'Min...'}
+                        className="h-7 px-1 py-1 text-xs rounded-sm border border-gray-300 w-full"
+                        min="0"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
         <div className="flex justify-end gap-3 pt-2">
           <button
             type="button"
             onClick={resetFilters}
-            className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500"
+            className="px-3 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500 transition-colors"
           >
             Réinitialiser
           </button>
           <button
             type="button"
             onClick={applyFilters}
-            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+            className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
           >
             Appliquer les filtres
           </button>
@@ -1305,12 +1463,16 @@ export const RightCard = ({
     tempFilters,
     nbre_tranches,
     nbre_blocs,
-    nbre_immeubles,,
+    nbre_immeubles,
     max_etages,
-     typologies, // Pass typologies here 
-    vues,typeBiens ,tranches,blocs,immeubles// Pass vues here
+    typologies,
+    vues,
+    typeBiens,
+    tranches,
+    blocs,
+    immeubles,
+    showCompositionFilters
   ]);
-
   // Function to update file display
   const updateFileDisplay = (file) => {
     const dropZone = document.getElementById('file-drop-zone');
