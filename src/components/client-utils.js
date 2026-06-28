@@ -8,7 +8,8 @@ export const SITUATION_FAMILIALLE = {
   Célibataire: { code: 1, label: 'Célibataire' },
   Marié: { code: 2, label: 'Marié' },
   Divorcé: { code: 3, label: 'Divorcé ' },
-  Veuf: { code: 4, label: 'Veuf' }
+  Veuf: { code: 4, label: 'Veuf' },
+  Non_renseigné: { code: 5, label: 'Non renseigné' }
 }
 
 export const TYPE_CLIENT = {
