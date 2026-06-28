@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import LoadingSpin from '@/components/LoadingSpin';
 import BreadCrumb from '@/app/(dashboard)/navigation/BreadCrumb';
-import { fetchDataByProjet_params } from '@/configs/api-utils';
+import { fetchData_Select, fetchDataByProjet_params } from '@/configs/api-utils';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import SelectInput from '@/components/SelectInput';
@@ -84,7 +84,8 @@ export default function ClientForm({ id, projetId, trancheId }) {
   // Fetch client data if editing
   useEffect(() => {
     if (partenaires.length == 0) {
-      fetchDataByProjet_params('partenaires', setPartenaires, setLoading);
+            fetchData_Select("partenaires", setPartenaires, setLoading);
+      
     }
     if (isEditing) {
       setLoading(true);
