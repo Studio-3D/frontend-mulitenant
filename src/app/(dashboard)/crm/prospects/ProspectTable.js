@@ -26,6 +26,18 @@ import Button from '@/components/Button';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
+// Origin options for the select filter
+const ORIGIN_OPTIONS = [
+  { value: '', label: 'Toutes les origines' },
+  { value: 'manuel', label: 'Manuel' },
+  { value: 'visite', label: 'Visite' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'landingPage', label: 'Landing Page' },
+  { value: 'import', label: 'Import' },
+  { value: 'appel', label: 'Appel' },
+];
+
 // Custom Checkbox Component
 const CustomCheckbox = ({
   checked,
@@ -113,25 +125,22 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
   const [filters, setFilters] = useState({
     nom: '',
     prenom: '',
-    cin: '',
+    // cin: '', // REMOVED - CIN filter is hidden
     telephone: '',
     email: '',
     statut: '',
+    origin: '', // ADDED - Origin filter
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
   const { user, token } = useAuth();
   const { selectedProjet } = useProjet();
   const accesstoken = token || localStorage.getItem('accessToken');
-    const router = useRouter();
+  const router = useRouter();
   // Check if user is commercial to disable assignment features
   const isCommercialUser = isCommercial(user?.role);
 
- // Dans ProspectTable.js, modifiez le useEffect
-
-// Dans ProspectTable.js - Modifiez le useEffect
-
- // 🔥 MODIFIER le useEffect pour gérer la pagination
+  // useEffect for fetching data
   useEffect(() => {
     const action = searchParams?.get('action');
     if (action === 'add' || action === 'edit') {
@@ -140,24 +149,23 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
 
     let params_url = { ...filters };
 
-    // 🔥 Si on est en mode "Mes prospects", ajouter commercial_id
+    // If in "Mes prospects" mode, add commercial_id
     if (showOnlyAssigned && isCommercialUser && user?.id) {
       params_url.commercial_id = user.id;
     }
 
-    // Nettoyer les paramètres vides
+    // Clean empty parameters
     Object.keys(params_url).forEach(key => {
       if (params_url[key] === '' || params_url[key] === null || params_url[key] === undefined) {
         delete params_url[key];
       }
     });
 
-
     fetchData_table_by_projet(
       {
         API_URL: 'prospects',
         dataKey: 'prospects',
-        searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
+        searchFields: ['nom', 'prenom', 'email', 'telephone'], // Removed 'cin' from search fields
       },
       params_url,
       searchTerm,
@@ -167,10 +175,9 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
       setLoading,
       setError,
       setProspects,
-      // 🔥 MODIFIER : Utiliser une fonction personnalisée pour setTotalRows
       (total) => {
         setTotalRows(total);
-        setFilteredTotalRows(total); // Stocker le total filtré
+        setFilteredTotalRows(total);
       }
     );
   }, [
@@ -191,50 +198,6 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  /*useEffect(() => {
-    // Only set up interval if we're NOT in form mode
-    const action = searchParams?.get('action');
-    if (action === 'add' || action === 'edit') {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      if (localStorage.getItem('load_data_prospect') == 1) {
-        fetchData_table_by_projet(
-          {
-            API_URL: 'prospects',
-            dataKey: 'prospects',
-            searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
-          },
-          filters,
-          searchTerm,
-          currentPage,
-          rowsPerPage,
-          accesstoken,
-          setLoading,
-          setError,
-          setProspects,
-          setTotalRows
-        );
-        localStorage.removeItem('load_data_prospect');
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [
-    searchParams, // Add searchParams to dependencies
-    accesstoken,
-    currentPage,
-    rowsPerPage,
-    searchTerm,
-    filters,
-    selectedProjet,
-  ]);*/
-
-  useEffect(() => {
-    const timer = setTimeout(() => {}, 1200);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
   // --- Format Data with Frontend Filtering ---
   const formatData = () => {
     let filteredProspects = prospects;
@@ -242,46 +205,17 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     // Apply frontend filtering for "Mes prospects" when user is commercial
     if (showOnlyAssigned && isCommercialUser && user?.id) {
       filteredProspects = prospects.filter((pro) => {
-        // Check if prospect has a commercial assigned and if it matches current user
-        // The user.id from frontend corresponds to user_id_origin in backend
-        return (
-          pro.commercial_affecte &&
-          pro.commercial_affecte.user_id_origin === user.id
-        );
-      });
-    }
-    /* if (showOnlyAssigned && isCommercialUser && user?.id) {
-    filteredProspects = prospects.filter((pro) => {
-      // 1️⃣ PRIORITÉ : Vérifier si un commercial est affecté
-      if (pro.commercial_affecte && pro.commercial_affecte.user_id_origin === user.id) {
-        return true;
-      }
-      
-      // 2️⃣ FALLBACK : Vérifier si l'utilisateur est le créateur (user_id_add)
-      if (pro.user_id_add && pro.user_id_add === user.id) {
-        return true;
-      }
-      
-      // 3️⃣ Ni affecté ni créé par l'utilisateur
-      return false;
-    });
-  }*/
-    if (showOnlyAssigned && isCommercialUser && user?.id) {
-      filteredProspects = prospects.filter((pro) => {
         // 1️⃣ PRIORITÉ : Vérifier si un commercial est affecté
         if (pro.commercial_affecte && pro.commercial_affecte.user_id_origin === user.id) {
           return true;
         }
-    
-    // 2️⃣ FALLBACK : Vérifier si l'utilisateur est le créateur (user_id_add)
-    if (pro.user_id_add && pro.user_id_add === user.id) {
-      return true;
+        // 2️⃣ FALLBACK : Vérifier si l'utilisateur est le créateur (user_id_add)
+        if (pro.user_id_add && pro.user_id_add === user.id) {
+          return true;
+        }
+        return false;
+      });
     }
-    
-    // 3️⃣ Ni affecté ni créé par l'utilisateur
-    return false;
-  });
-}
 
     return filteredProspects.map((pro) => ({
       id: pro.id,
@@ -316,37 +250,23 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     }));
   };
 
-  /*Calculate filtered total rows for pagination
+  // Get filtered total rows for pagination
   const getFilteredTotalRows = () => {
     if (showOnlyAssigned && isCommercialUser && user?.id) {
-      const filteredCount = prospects.filter(
-        (pro) =>
-          pro.commercial_affecte &&
-          pro.commercial_affecte.user_id_origin === user.id
-      ).length;
-      return filteredCount;
-    }
-    return totalRows;
-  };*/
-
-
-  // 🔥 MODIFIER getFilteredTotalRows pour utiliser le total filtré
-  const getFilteredTotalRows = () => {
-    // Si on est en mode "Mes prospects", utiliser le total filtré
-    if (showOnlyAssigned && isCommercialUser && user?.id) {
-      return filteredTotalRows; // Utiliser le total retourné par l'API
+      return filteredTotalRows;
     }
     return totalRows;
   };
-    // 🔥 AJOUT : Réinitialiser la page à 1 quand on change de vue
+
+  // Reset page when view changes
   useEffect(() => {
     setCurrentPage(1);
   }, [showOnlyAssigned]);
+
   // --- Export with filtered data ---
   const data_to_export = () => {
     let filteredProspects = prospects;
 
-    // Apply same filtering for export
     if (showOnlyAssigned && isCommercialUser && user?.id) {
       filteredProspects = prospects.filter(
         (pro) =>
@@ -391,11 +311,9 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     {
       key: '__checkbox__',
       label: (() => {
-        // For commercial users, only show prospects that can be assigned AND are not already assigned to them
         const assignableProspects = formatData().filter((row) => {
           const canBeAssigned = canProspectBeAssigned(row.prospect);
           if (isCommercialUser && user?.id) {
-            // For commercial users, only show prospects that are not already assigned to them
             const isAssignedToMe =
               row.commercial_affecte &&
               row.commercial_affecte.user_id_origin === user.id;
@@ -429,7 +347,6 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
       render: (row) => {
         const canBeAssigned = canProspectBeAssigned(row.prospect);
 
-        // For commercial users, disable checkbox if prospect is already assigned to them
         let disabled = !canBeAssigned;
         let title = !canBeAssigned
           ? 'Ce prospect ne peut pas être assigné (statut final)'
@@ -627,10 +544,11 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     const reset = {
       nom: '',
       prenom: '',
-      cin: '',
+      // cin: '', // REMOVED
       telephone: '',
       email: '',
       statut: '',
+      origin: '', // ADDED
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -641,11 +559,9 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     );
   const handleCheckAll = (checked) => {
     if (checked) {
-      // Only select prospects that can be assigned
       const assignableProspects = formatData().filter((row) => {
         const canBeAssigned = canProspectBeAssigned(row.prospect);
         if (isCommercialUser && user?.id) {
-          // For commercial users, exclude prospects already assigned to them
           const isAssignedToMe =
             row.commercial_affecte &&
             row.commercial_affecte.user_id_origin === user.id;
@@ -665,15 +581,13 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
   };
   const handleAffecterSubmit = async () => {
     if (!selectedCommercial) return;
-      setAffect_lance(true);
+    setAffect_lance(true);
     try {
-      // Find the full prospect object for each checked prospect
       const selectedProspects = prospects.filter((pro) =>
         checkedProspects.includes(pro.id)
       );
       await Promise.all(
         selectedProspects.map((pro) => {
-          // Clean up fields: convert "null" string to null or empty string
           const clean = (val) =>
             val === 'null' || val === null || val === undefined ? '' : val;
           return fetch(`${APIURL.PROSPECTS}/${pro.id}`, {
@@ -701,7 +615,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
           });
         })
       );
-        setAffect_lance(false);
+      setAffect_lance(false);
       setShowAffecterModal(false);
       setSelectedCommercial('');
       setCheckedProspects([]);
@@ -709,7 +623,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
         {
           API_URL: 'prospects',
           dataKey: 'prospects',
-          searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
+          searchFields: ['nom', 'prenom', 'email', 'telephone'],
         },
         filters,
         searchTerm,
@@ -757,7 +671,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
         {
           API_URL: 'prospects',
           dataKey: 'prospects',
-          searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
+          searchFields: ['nom', 'prenom', 'email', 'telephone'],
         },
         filters,
         searchTerm,
@@ -769,11 +683,8 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
         setProspects,
         setTotalRows
       );
-
-      // Show success message
     } catch (e) {
       console.error('Auto-assignment failed:', e);
-      // Handle error - maybe show a toast notification
     }
   };
 
@@ -810,13 +721,11 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
   const handleAutoAssignToSelf = async () => {
     if (!checkedProspects.length || !user?.id) return;
     try {
-      // Find the full prospect object for each checked prospect
       const selectedProspects = prospects.filter((pro) =>
         checkedProspects.includes(pro.id)
       );
       await Promise.all(
         selectedProspects.map((pro) => {
-          // Clean up fields: convert "null" string to null or empty string
           const clean = (val) =>
             val === 'null' || val === null || val === undefined ? '' : val;
           return fetch(`${APIURL.PROSPECTS}/${pro.id}`, {
@@ -839,7 +748,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
               partenaire_id: pro.partenaire_id,
               message: clean(pro.message),
               ville: clean(pro.ville),
-              commercial_affecte: user.id, // Assign to themselves
+              commercial_affecte: user.id,
             }),
           });
         })
@@ -849,7 +758,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
         {
           API_URL: 'prospects',
           dataKey: 'prospects',
-          searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
+          searchFields: ['nom', 'prenom', 'email', 'telephone'],
         },
         filters,
         searchTerm,
@@ -861,30 +770,16 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
         setProspects,
         setTotalRows
       );
-
-      // Show success message
       console.log(`Affecté ${checkedProspects.length} prospect(s) à vous-même`);
     } catch (e) {
       console.error("Erreur lors de l'auto-affectation:", e);
-      // Handle error
     }
   };
-  
+
   // --- Render ---
   return (
     <>
       <div className="relative py-4">
-         {/* 🔥 AJOUT : Afficher le nombre de prospects pour le commercial
-        {showOnlyAssigned && isCommercialUser && user?.id && (
-          <div className="mb-2 text-sm text-gray-600">
-            <span className="font-semibold text-blue-600">{filteredTotalRows}</span>
-            {' prospects affectés à '}
-            <span className="font-semibold">{user.name} {user.prenom}</span>
-            {' / '}
-            <span className="font-semibold">{totalRows}</span>
-            {' au total'}
-          </div>
-        )} */}
         <Table
           data_to_export={data_to_export()}
           columns_export={columns_export}
@@ -907,24 +802,21 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
             user &&
             (isSuperAdmin(user.role) ||
               isAdmin(user.role) ||
-              isCommercial(user.role))||
-              isRespoCommercial(user.role)||
-              isAgentAdministratif(user.role)
+              isCommercial(user.role) ||
+              isRespoCommercial(user.role) ||
+              isAgentAdministratif(user.role))
               ? `${ENDPOINTS.PROSPECTS}?action=add`
               : undefined
           }
           extraActions={
-            // Show assign button for non-commercial users OR for commercial users with selected prospects
             (checkedProspects.length > 0 && !isCommercialUser) ||
             (checkedProspects.length > 0 && isCommercialUser) ? (
               <button
                 className="flex gap-1 items-center bg-[#009FFF] text-white font-medium rounded-lg px-3 py-1.5"
                 onClick={() => {
                   if (isCommercialUser) {
-                    // Auto-assign to themselves
                     handleAutoAssignToSelf();
                   } else {
-                    // Show assign modal for admin users
                     setShowAffecterModal(true);
                   }
                 }}
@@ -942,13 +834,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
-                <Input
-                  type="text"
-                  label="Cin"
-                  value={tempFilters.cin}
-                  onChange={(e) => handleFilterChange('cin', e.target.value)}
-                  className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
-                />
+                {/* CIN filter REMOVED */}
                 <Input
                   type="text"
                   label="Nom"
@@ -987,6 +873,14 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
                     label: data.label,
                   }))}
                   label="Choisir un Statut"
+                  className="h-10 text-sm w-full"
+                />
+                {/* NEW: Origin filter */}
+                <SelectInput
+                  value={tempFilters.origin}
+                  onChange={(value) => handleFilterChange('origin', value)}
+                  options={ORIGIN_OPTIONS}
+                  label="Origine"
                   className="h-10 text-sm w-full"
                 />
               </div>
@@ -1155,7 +1049,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
                   <Button
                     type="button"
                     onClick={handleAffecterSubmit}
-                    disabled={!selectedCommercial||affect_lance}
+                    disabled={!selectedCommercial || affect_lance}
                     className="bg-[#009FFF] text-white"
                   >
                     Affecter
@@ -1193,7 +1087,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
                 {
                   API_URL: 'prospects',
                   dataKey: 'prospects',
-                  searchFields: ['nom', 'prenom', 'email', 'telephone', 'cin'],
+                  searchFields: ['nom', 'prenom', 'email', 'telephone'],
                 },
                 {},
                 searchTerm,
