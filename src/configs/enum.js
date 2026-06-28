@@ -409,6 +409,8 @@ export const SITUATION_FAMILIALLE = {
   2: { code: 2, label: 'Marié' },
   3: { code: 3, label: 'Divorcé' },
   4: { code: 4, label: 'Veuf' },
+  5: { value: 5, label: 'Non renseigné' }, // or 5 if you use the second approach
+
 };
 
 // Standardized status colors for all components
