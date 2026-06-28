@@ -18,7 +18,6 @@ import {
   Check,
 } from 'lucide-react';
 
-// Modify the BienDescriptionGenerator to accept initialMediaUrl and initialMediaType props
 export default function BienDescriptionGenerator({
   bien,
   onDescriptionSaved,
@@ -28,6 +27,11 @@ export default function BienDescriptionGenerator({
   isOpen = false,
   onClose,
 }) {
+  // Instagram warning state
+  const [instagramWarning, setInstagramWarning] = useState('');
+  const [showInstagramWarning, setShowInstagramWarning] = useState(false);
+  // Track if user has attempted to share to Instagram
+  const [instagramAttempted, setInstagramAttempted] = useState(false);
   
   const [isModalOpen, setIsModalOpen] = useState(isOpen);
   const [description, setDescription] = useState(bien?.description || '');
@@ -41,7 +45,6 @@ export default function BienDescriptionGenerator({
   const [userFeedback, setUserFeedback] = useState('');
   const [hasGeneratedOnce, setHasGeneratedOnce] = useState(false);
 
-  // Add states for configuration checks
   const [socialConfigurations, setSocialConfigurations] = useState({
     facebook: false,
     instagram: false,
@@ -50,7 +53,6 @@ export default function BienDescriptionGenerator({
   });
   const [configurationsLoading, setConfigurationsLoading] = useState(true);
 
-  // Media states with additional server-related states
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [mediaPreview, setMediaPreview] = useState(null);
   const [mediaType, setMediaType] = useState(null);
@@ -63,25 +65,24 @@ export default function BienDescriptionGenerator({
     if (initialMediaUrl && initialMediaType) {
       setUploadedMediaUrl(initialMediaUrl);
       setMediaType(initialMediaType);
-      // Create a preview for pre-selected media
       if (initialMediaUrl && !mediaPreview) {
         setMediaPreview(initialMediaUrl);
       }
     }
   }, [initialMediaUrl, initialMediaType, mediaPreview]);
 
-  // Handle external modal open/close state
   useEffect(() => {
     setIsModalOpen(isOpen);
   }, [isOpen]);
 
-  // Update external state when modal closes
   const handleModalClose = () => {
     setIsModalOpen(false);
+    setShowInstagramWarning(false);
+    setInstagramWarning('');
+    setInstagramAttempted(false);
     if (onClose) onClose();
   };
 
-  // Check if configurations exist for this project
   const checkProjectConfigurations = async () => {
     if (!bien?.projet_id) {
       setConfigurationsLoading(false);
@@ -98,7 +99,6 @@ export default function BienDescriptionGenerator({
     };
 
     try {
-      // Check Facebook configuration
       try {
         const facebookResponse = await axios.get(
           `${APIURL.ROOTV1}/facebook-configurations`,
@@ -114,7 +114,6 @@ export default function BienDescriptionGenerator({
         console.log('No Facebook configuration found for this project');
       }
 
-      // Check Instagram configuration
       try {
         const instagramResponse = await axios.get(
           `${APIURL.ROOTV1}/instagram-configurations`,
@@ -130,7 +129,6 @@ export default function BienDescriptionGenerator({
         console.log('No Instagram configuration found for this project');
       }
 
-      // Check LinkedIn configuration
       try {
         const linkedinResponse = await axios.get(
           `${APIURL.LINKEDIN_CONFIG}/project/${bien.projet_id}`,
@@ -141,7 +139,6 @@ export default function BienDescriptionGenerator({
         console.log('No LinkedIn configuration found for this project');
       }
 
-      // Check TikTok configuration
       try {
         const tiktokResponse = await axios.get(`${APIURL.TIKTOK_CONFIG}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -157,12 +154,6 @@ export default function BienDescriptionGenerator({
       }
 
       setSocialConfigurations(configurations);
-      console.log(
-        'Social media configurations for project',
-        bien.projet_id,
-        ':',
-        configurations
-      );
     } catch (error) {
       console.error('Error checking social media configurations:', error);
     } finally {
@@ -176,7 +167,6 @@ export default function BienDescriptionGenerator({
     }
   }, [isModalOpen, bien?.projet_id]);
 
-  // Generate initial property description
   const generateDescription = async () => {
     if (!bien) {
       toast.error('Informations du bien manquantes');
@@ -187,9 +177,7 @@ export default function BienDescriptionGenerator({
     setErrorMessage('');
 
     try {
-      // Use the updated LLMService that tries multiple AI services
       const generatedText = await LLMService.generatePropertyDescription(bien);
-
       setGeneratedDescription(generatedText);
       setHasGeneratedOnce(true);
       toast.success('Description générée avec succès!');
@@ -206,7 +194,6 @@ export default function BienDescriptionGenerator({
     }
   };
 
-  // Generate refined description with user feedback
   const regenerateWithFeedback = async () => {
     if (!bien || !userFeedback) {
       toast.error(
@@ -219,7 +206,6 @@ export default function BienDescriptionGenerator({
     setErrorMessage('');
 
     try {
-      // Create feedback prompt
       const feedbackPrompt = `
 Voici une description existante d'un bien immobilier:
 
@@ -230,7 +216,6 @@ L'utilisateur souhaite modifier cette description avec les instructions suivante
 
 Veuillez générer une nouvelle description qui intègre ces commentaires.`;
 
-      // Use the updated LLMService that tries multiple AI services
       const refinedText = await LLMService.generateRefinedDescription(
         feedbackPrompt
       );
@@ -251,20 +236,17 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Copy generated text to description field
   const useGeneratedDescription = () => {
     setDescription(generatedDescription);
     toast.success('Description copiée');
   };
 
-  // Handle media file selection
   const handleMediaSelect = (e) => {
     const file = e.target.files[0];
     if (!file) {
       return;
     }
 
-    // Check file type
     const isImage = file.type.startsWith('image/');
     const isVideo = file.type.startsWith('video/');
 
@@ -275,8 +257,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       return;
     }
 
-    // Check file size (10MB limit)
-    const sizeLimit = 10 * 1024 * 1024; // 10MB in bytes
+    const sizeLimit = 10 * 1024 * 1024;
     if (file.size > sizeLimit) {
       toast.error('Le fichier est trop volumineux. Limite: 10MB');
       return;
@@ -285,15 +266,12 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     setSelectedMedia(file);
     setMediaType(isImage ? 'image' : 'video');
 
-    // Create preview URL
     const previewUrl = URL.createObjectURL(file);
     setMediaPreview(previewUrl);
 
-    // Upload the file immediately
     uploadMediaToServer(file);
   };
 
-  // Upload media to server
   const uploadMediaToServer = async (file) => {
     if (!bien?.id || !file) {
       toast.error("Impossible d'uploader le fichier: informations manquantes");
@@ -306,7 +284,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
       const formData = new FormData();
       formData.append('media', file);
 
-      // Add description if available
       if (description) {
         formData.append('description_bien', description);
       }
@@ -325,6 +302,10 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
 
       if (response.data && response.data.url) {
         setUploadedMediaUrl(response.data.url);
+        // Clear Instagram warning when media is uploaded
+        setShowInstagramWarning(false);
+        setInstagramWarning('');
+        setInstagramAttempted(false);
         toast.success('Media téléchargé avec succès');
       }
     } catch (error) {
@@ -339,7 +320,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Save description to server
   const saveDescriptionToServer = async () => {
     if (!bien?.id || !description) {
       return;
@@ -358,7 +338,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
         }
       );
 
-      // Notify parent component if needed
       if (onDescriptionSaved) {
         onDescriptionSaved(description);
       }
@@ -367,7 +346,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Clear selected media
   const clearSelectedMedia = () => {
     if (mediaPreview) {
       URL.revokeObjectURL(mediaPreview);
@@ -381,9 +359,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Format and sanitize a description for social media to remove sensitive information
   const sanitizeDescriptionForSocialMedia = (description) => {
-    // Remove potential contact information (emails, phone numbers)
     let sanitized = description
       .replace(
         /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
@@ -394,7 +370,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
         '[PHONE REMOVED]'
       );
 
-    // Remove any mentions of children or family demographics
     sanitized = sanitized.replace(
       /\b(enfants?|children|famille avec \d+ enfants?|kids)\b/gi,
       '[FAMILY INFO REMOVED]'
@@ -403,59 +378,49 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     return sanitized;
   };
 
-  // Share to Instagram with media using Instagram_FacebookController
+  // Share to Instagram - with media requirement check
   const shareToInstagram = () => {
     if (!description) {
       toast.error("Veuillez générer une description d'abord");
       return;
     }
 
-    // Vérifier qu'un média est sélectionné ou uploadé
+    // Check if media is selected - Instagram REQUIRES media
     if (!uploadedMediaUrl && !selectedMedia) {
-      toast.error(
-        'Veuillez sélectionner une image ou une vidéo avant de partager'
-      );
+      setInstagramAttempted(true);
+      setShowInstagramWarning(true);
+      setInstagramWarning('⚠️ Instagram nécessite une image ou une vidéo. Veuillez sélectionner un média avant de partager.');
+      toast.error('Instagram nécessite un média (image ou vidéo)');
       return;
     }
+
+    // Clear any previous warnings
+    setShowInstagramWarning(false);
+    setInstagramWarning('');
+    setInstagramAttempted(false);
+
     saveDescriptionToServer();
 
     setIsSharing(true);
     try {
       const propertyTitle = bien?.propriete_dite_bien || 'Propriété';
-      const propertyLocation =
-        bien?.immeuble?.nom ||
-        bien?.bloc?.nom ||
-        bien?.tranche?.nom ||
-        bien?.projet?.nom ||
-        'Emplacement';
-      const propertyPrice = bien?.prix
-        ? bien.prix.toLocaleString() + ' DH'
-        : 'Prix sur demande';
-
       const hashtags = '#immobilier #realestate #property #home #maison #vente';
-
-      const sanitizedDescription =
-        sanitizeDescriptionForSocialMedia(description);
-      // const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}\n\n${hashtags}`;
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
       const postContent = `🏡 ${sanitizedDescription}\n\n${hashtags}`;
 
       const token = localStorage.getItem('accessToken');
-
       const formData = new FormData();
       formData.append('reseaux_sociaux', '2');
       formData.append('description', postContent);
-      formData.append('projet_id', bien.projet_id); // Add project ID
+      formData.append('projet_id', bien.projet_id);
 
+      // Media is required for Instagram
       if (uploadedMediaUrl) {
-        //if media uploaded to the server i get the url
         formData.append('mode', 'existante');
         formData.append('img_existant_url', uploadedMediaUrl);
       } else if (selectedMedia) {
-        //else here if the media not uploaded then i get the image in backend i uploaded it there
         formData.append('mode', 'parcourir');
         formData.append('mediaFile', selectedMedia);
-      } else {
-        formData.append('mode', 'null');
       }
 
       const apiUrl = `${APIURL.ROOTV1}/postTo_Social_Network`;
@@ -470,13 +435,12 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
         .then((response) => {
           if (response.data && response.data.success) {
             toast.success('Publication partagée sur Instagram avec succès!');
+            setTimeout(() => {
+              handleModalClose();
+            }, 2000);
           } else {
             toast.error('Erreur lors de la publication sur Instagram.');
           }
-
-          setTimeout(() => {
-            handleModalClose();
-          }, 2000);
         })
         .catch((error) => {
           console.error('Failed to post to Instagram API:', error);
@@ -495,20 +459,13 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Share to Facebook with media using the Facebook_InstagramController
+  // Share to Facebook - media is optional
   const shareToFacebook = () => {
     if (!description) {
       toast.error("Veuillez générer une description d'abord");
       return;
     }
 
-    // Vérifier qu'un média est sélectionné ou uploadé
-    if (!uploadedMediaUrl && !selectedMedia) {
-      toast.error(
-        'Veuillez sélectionner une image ou une vidéo avant de partager'
-      );
-      return;
-    }
     setIsSharingFacebook(true);
 
     try {
@@ -523,17 +480,16 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
         ? bien.prix.toLocaleString() + ' DH'
         : 'Prix sur demande';
 
-      const sanitizedDescription =
-        sanitizeDescriptionForSocialMedia(description);
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
       const postContent = `🏡 ${propertyTitle}\n\n${sanitizedDescription}\n\n📍 ${propertyLocation}\n💰 ${propertyPrice}`;
 
       const token = localStorage.getItem('accessToken');
-
       const formData = new FormData();
       formData.append('reseaux_sociaux', '3');
       formData.append('description', postContent);
-      formData.append('projet_id', bien.projet_id); // Add project ID
+      formData.append('projet_id', bien.projet_id);
 
+      // Media is optional for Facebook
       if (uploadedMediaUrl) {
         formData.append('mode', 'existante');
         formData.append('img_existant_url', uploadedMediaUrl);
@@ -541,7 +497,9 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
         formData.append('mode', 'parcourir');
         formData.append('mediaFile', selectedMedia);
       } else {
-        formData.append('mode', 'null');
+        // No media - text-only post
+        formData.append('mode', 'sans_media');
+        formData.append('media_type', 'text');
       }
 
       const apiUrl = `${APIURL.ROOTV1}/postTo_Social_Network`;
@@ -554,8 +512,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
           },
         })
         .then((response) => {
-          //response.data && response.data.success
-          // Plusieurs façons de détecter le succès
           const isSuccess =
             (response.data && response.data.success === true) ||
             response.status === 200 ||
@@ -566,9 +522,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
 
           if (isSuccess) {
             toast.success('Publication partagée sur Facebook avec succès!');
-
             saveDescriptionToServer();
-
             setTimeout(() => {
               handleModalClose();
             }, 2000);
@@ -593,17 +547,10 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Share to TikTok with OAuth flow and media using TikTok's official API
+  // Share to TikTok - media is optional
   const shareToTikTok = async () => {
     if (!bien?.projet_id) {
       toast.error('ID du projet requis pour partager sur TikTok');
-      return;
-    }
-
-    if (!uploadedMediaUrl) {
-      toast.error(
-        "Veuillez d'abord télécharger un média avant de partager sur TikTok"
-      );
       return;
     }
 
@@ -611,22 +558,26 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     setErrorMessage('');
 
     try {
-      const sanitizedDescription =
-        sanitizeDescriptionForSocialMedia(description);
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
       const token = localStorage.getItem('accessToken');
 
-      // Try to publish directly using saved configuration
+      const payload = {
+        title: `${bien.nom || 'Bien immobilier'} - ${
+          bien.type_bien?.nom || ''
+        }`,
+        description: sanitizedDescription,
+        projet_id: bien.projet_id,
+      };
+
+      // Add media only if available
+      if (uploadedMediaUrl) {
+        payload.media_url = uploadedMediaUrl;
+        payload.media_type = mediaType === 'image' ? 'PHOTO' : 'VIDEO';
+      }
+
       const publishResponse = await axios.post(
         `${APIURL.TIKTOK_PUBLISH}`,
-        {
-          title: `${bien.nom || 'Bien immobilier'} - ${
-            bien.type_bien?.nom || ''
-          }`,
-          description: sanitizedDescription,
-          media_url: uploadedMediaUrl,
-          media_type: mediaType === 'image' ? 'PHOTO' : 'VIDEO',
-          projet_id: bien.projet_id,
-        },
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -634,7 +585,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
 
       if (publishResponse.data.success) {
         if (publishResponse.data.requires_auth) {
-          // Configuration not found, need to authenticate
           toast.error(
             "TikTok n'est pas configuré pour ce projet. Veuillez contacter l'administrateur."
           );
@@ -643,7 +593,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
 
         toast.success('Contenu publié sur TikTok avec succès!');
 
-        // Check publish status if we have a publish_id
         if (publishResponse.data.publish_id) {
           setTimeout(async () => {
             try {
@@ -667,7 +616,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
             } catch (error) {
               console.error('Error checking TikTok status:', error);
             }
-          }, 5000); // Check after 5 seconds
+          }, 5000);
         }
       } else {
         throw new Error(
@@ -697,7 +646,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Share to LinkedIn with configuration check
+  // Share to LinkedIn - media is optional
   const shareToLinkedin = async () => {
     if (!bien?.projet_id) {
       toast.error('ID du projet requis pour partager sur LinkedIn');
@@ -708,21 +657,23 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     setErrorMessage('');
 
     try {
-      const sanitizedDescription =
-        sanitizeDescriptionForSocialMedia(description);
+      const sanitizedDescription = sanitizeDescriptionForSocialMedia(description);
       const token = localStorage.getItem('accessToken');
 
-      // Try to share directly using saved configuration
+      const payload = {
+        content: sanitizedDescription,
+        visibility: 'PUBLIC',
+        projet_id: bien.projet_id,
+      };
+
+      // Add media only if available
+      if (uploadedMediaUrl) {
+        payload.mediaUrl = uploadedMediaUrl;
+      }
+
       const shareResponse = await axios.post(
         `${APIURL.LINKEDIN_SHARE}`,
-        {
-          accessToken:
-            'AQVmH2Cn2AE23OGzFHX0KY2dBeoRnnNK_VK2K4UyoqOVJoImfXYihasfXH7H05oVlOIp0bbTrC0Au-KEYhpx8EvcD0q3_Rj3maHXnp5p7eOWcZjdyVWgf8-i5_yZP_reolyZI06VogaIzST_Zn9j4mFA4Cs1Y1_k22U5zlTRY-Srd8jjwuju610a7HA-z0iYrKSoR-WuexU8jFENy53oGRNVZRV5Gg0rmOgtpSpekfeVSM-Ft1vbPQMpWC-HDc5bempHOlCUkZlMJww7dtUD1RQR_tXB0CH8lZiidFp2v17X2_eXK8NfRpkH78tEu6vVFZIr4k11GJOAas_4MD--N7Ea577O9Q',
-          content: sanitizedDescription,
-          visibility: 'PUBLIC',
-          mediaUrl: uploadedMediaUrl,
-          projet_id: bien.projet_id,
-        },
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -759,41 +710,29 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
     }
   };
 
-  // Fonction pour copier le texte dans le presse-papier
   const copyToClipboard = async (text) => {
     try {
-      // Vérifier si l'API Clipboard est disponible
       if (navigator.clipboard && window.isSecureContext) {
-        // Utiliser l'API Clipboard moderne
         await navigator.clipboard.writeText(text);
       } else {
-        // Méthode de secours pour les anciens navigateurs
         const textArea = document.createElement('textarea');
         textArea.value = text;
-
-        // Rendre invisible
         textArea.style.position = 'fixed';
         textArea.style.left = '-999999px';
         textArea.style.top = '-999999px';
         document.body.appendChild(textArea);
-
         textArea.focus();
         textArea.select();
-
-        // Copier
         document.execCommand('copy');
-
-        // Nettoyer
         document.body.removeChild(textArea);
       }
-
-      // Afficher une notification de succès
       toast.success('Description copiée dans le presse-papier!');
     } catch (error) {
       console.error('Erreur lors de la copie:', error);
       toast.error('Échec de la copie. Veuillez réessayer.');
     }
   };
+
   return (
     <>
       {!isOpen && (
@@ -820,24 +759,18 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
               Annuler
             </button>
 
-            {/* Show loading state while checking configurations */}
             {configurationsLoading ? (
               <div className="flex items-center gap-2 px-4 py-2 !text-gray-500">
                 <span className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-500 rounded-full"></span>
                 Vérification des configurations...
               </div>
             ) : (
-              <div className="flex gap-2">
-                {/* Facebook Share Button - only show if configured */}
+              <div className="flex gap-2 flex-wrap">
+                {/* Facebook Share Button */}
                 {socialConfigurations.facebook && (
                   <button
                     onClick={shareToFacebook}
-                    disabled={
-                      !description ||
-                      isSharingFacebook ||
-                      (!uploadedMediaUrl && !selectedMedia) ||
-                      isUploading  // ← Add this condition
-                    }
+                    disabled={!description || isSharingFacebook || isUploading}
                     className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-md hover:bg-[#166FE5] disabled:opacity-50"
                   >
                     {isSharingFacebook ? (
@@ -854,37 +787,62 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
                   </button>
                 )}
 
-                {/* Instagram Share Button - only show if configured */}
+                {/* Instagram Share Button - warning only shows after user clicks it without media */}
                 {socialConfigurations.instagram && (
-                  <button
-                    onClick={shareToInstagram}
-                    disabled={
-                      !description ||
-                      isSharing ||
-                      (!uploadedMediaUrl && !selectedMedia) ||
-                      isUploading  // ← Add this condition
-                    }
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md hover:opacity-90 disabled:opacity-50"
-                  >
-                    {isSharing ? (
-                      <>
-                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
-                        Partage...
-                      </>
-                    ) : (
-                      <>
-                        <Instagram size={16} />
-                        Instagram
-                      </>
+                  <div className="relative group">
+                    <button
+                      onClick={shareToInstagram}
+                      disabled={!description || isSharing || isUploading}
+                      className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md hover:opacity-90 disabled:opacity-50 transition-all ${
+                        instagramAttempted && !uploadedMediaUrl && !selectedMedia && description 
+                          ? 'ring-2 ring-red-400 ring-offset-1' 
+                          : ''
+                      }`}
+                      title={instagramAttempted && !uploadedMediaUrl && !selectedMedia ? "⚠️ Instagram nécessite un média" : "Partager sur Instagram"}
+                    >
+                      {isSharing ? (
+                        <>
+                          <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1"></span>
+                          Partage...
+                        </>
+                      ) : (
+                        <>
+                          <Instagram size={16} />
+                          Instagram
+                          {instagramAttempted && !uploadedMediaUrl && !selectedMedia && (
+                            <span className="ml-1 text-[10px] bg-red-500 text-white rounded-full px-1.5 py-0.5 animate-pulse">
+                              !
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </button>
+                    
+                    {/* Red dot indicator - only shows after user attempted to share */}
+                    {instagramAttempted && !uploadedMediaUrl && !selectedMedia && description && !isSharing && (
+                      <div className="absolute -top-2 -right-2">
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                      </div>
                     )}
-                  </button>
+                    
+                    {/* Tooltip on hover - only shows after user attempted to share */}
+                    {instagramAttempted && !uploadedMediaUrl && !selectedMedia && description && (
+                      <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                        ⚠️ Média requis pour Instagram
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></div>
+                      </div>
+                    )}
+                  </div>
                 )}
 
-                {/* LinkedIn Share Button - only show if configured */}
+                {/* LinkedIn Share Button */}
                 {socialConfigurations.linkedin && (
                   <button
                     onClick={shareToLinkedin}
-                    disabled={!description || isSharingLinkedin}
+                    disabled={!description || isSharingLinkedin || isUploading}
                     className="flex items-center gap-2 px-4 py-2 bg-[#0A66C2] text-white rounded-md hover:bg-[#004182] disabled:opacity-50"
                   >
                     {isSharingLinkedin ? (
@@ -901,11 +859,11 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
                   </button>
                 )}
 
-                {/* TikTok Share Button - only show if configured */}
+                {/* TikTok Share Button */}
                 {socialConfigurations.tiktok && (
                   <button
                     onClick={shareToTikTok}
-                    disabled={!description || isSharingTikTok}
+                    disabled={!description || isSharingTikTok || isUploading}
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-black to-[#00f2ea] text-white rounded-md hover:opacity-90 disabled:opacity-50"
                   >
                     {isSharingTikTok ? (
@@ -922,7 +880,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
                   </button>
                 )}
 
-                {/* Show message if no configurations are found */}
+                {/* No configurations message */}
                 {!configurationsLoading &&
                   !socialConfigurations.facebook &&
                   !socialConfigurations.instagram &&
@@ -949,7 +907,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
         }
       >
         <div className="space-y-6">
-          {/* Show configuration warning if no social media is configured */}
+          {/* Configuration warnings */}
           {!configurationsLoading &&
             !socialConfigurations.facebook &&
             !socialConfigurations.instagram &&
@@ -958,7 +916,6 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
               <div className="p-4 border border-orange-300 rounded-md bg-orange-50 !text-orange-800">
                 <div className="flex items-start">
                   <AlertTriangle className="w-5 h-5 mr-2 mt-0.5" />
-
                   <div>
                     <p className="font-medium">Aucune configuration trouvée</p>
                     <p className="text-sm mt-1">
@@ -972,7 +929,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
               </div>
             )}
 
-          {/* Show which platforms are configured */}
+          {/* Configured platforms list */}
           {!configurationsLoading &&
             (socialConfigurations.facebook ||
               socialConfigurations.instagram ||
@@ -997,6 +954,27 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
               </div>
             )}
 
+          {/* Instagram Warning Banner - shows only when user clicks Instagram without media */}
+          {showInstagramWarning && (
+            <div className="p-3 border border-red-300 rounded-md bg-red-50 !text-red-700 flex items-start">
+              <AlertTriangle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Média requis pour Instagram</p>
+                <p className="text-sm mt-1">{instagramWarning}</p>
+                <button 
+                  onClick={() => {
+                    setShowInstagramWarning(false);
+                    setInstagramAttempted(false);
+                  }}
+                  className="text-sm mt-1 text-red-600 hover:text-red-800 underline"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Generate Description Button */}
           <div className="flex justify-center">
             <button
               onClick={generateDescription}
@@ -1017,6 +995,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
             </button>
           </div>
 
+          {/* Error Message */}
           {errorMessage && (
             <div className="p-4 border border-red-300 rounded-md bg-red-50 !text-red-700">
               <p className="font-medium">Erreur:</p>
@@ -1024,6 +1003,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
             </div>
           )}
 
+          {/* Generated Description */}
           {generatedDescription && (
             <>
               <div className="p-4 border rounded-md bg-gray-50 relative">
@@ -1049,7 +1029,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
                 </div>
               </div>
 
-              {/* User feedback section - only appears after initial generation */}
+              {/* User Feedback Section */}
               {hasGeneratedOnce && (
                 <div className="space-y-2 border-t pt-4">
                   <label className="block text-sm font-medium !text-gray-700">
@@ -1077,6 +1057,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
             </>
           )}
 
+          {/* Final Description */}
           <div className="space-y-2">
             <label className="block text-sm font-medium !text-gray-700">
               Description finale
@@ -1090,11 +1071,17 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
             />
           </div>
 
-          {/* Media upload section with upload indicator */}
+          {/* Media Upload Section - warnings only show after user attempted Instagram */}
           <div className="space-y-2 border-t pt-4">
             <label className="flex justify-between items-center text-sm font-medium !text-gray-700">
               <span>
-                Ajouter une image ou une vidéo (obligatoire pour le partage)
+                Ajouter une image ou une vidéo 
+                {socialConfigurations.instagram && instagramAttempted && !uploadedMediaUrl && !selectedMedia && (
+                  <span className="font-normal text-red-500 ml-1">(requis pour Instagram)</span>
+                )}
+                {(!socialConfigurations.instagram || (!instagramAttempted || (uploadedMediaUrl || selectedMedia))) && (
+                  <span className="font-normal text-gray-500 ml-1">(optionnel)</span>
+                )}
               </span>
               {isUploading && (
                 <span className="text-xs !text-blue-500 flex items-center">
@@ -1103,29 +1090,56 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
                 </span>
               )}
             </label>
-            {/* Ajouter ce message d'information */}
-            {!uploadedMediaUrl && !selectedMedia && (
-              <div className="p-2 border border-orange-300 rounded-md bg-orange-50">
-                <p className="text-xs !text-orange-700">
-                  ⚠️ Un média (image ou vidéo) est requis pour pouvoir partager
-                  sur les réseaux sociaux
+            
+            {/* Conditional info message - only shows after user attempted Instagram without media */}
+            {socialConfigurations.instagram && instagramAttempted && !uploadedMediaUrl && !selectedMedia && (
+              <div className="p-2 border border-red-200 rounded-md bg-red-50">
+                <p className="text-xs !text-red-700 flex items-center">
+                  <AlertTriangle className="w-4 h-4 mr-1 flex-shrink-0" />
+                  ⚠️ Un média est <span className="font-bold mx-1">OBLIGATOIRE</span> pour Instagram
                 </p>
+              </div>
+            )}
+            
+            {(!socialConfigurations.instagram || !instagramAttempted || (uploadedMediaUrl || selectedMedia)) && !uploadedMediaUrl && !selectedMedia && (
+              <div className="p-2 border border-blue-200 rounded-md bg-blue-50">
+                <p className="text-xs !text-blue-700">
+                  💡 Vous pouvez partager uniquement la description ou ajouter une image/vidéo pour enrichir votre publication.
+                </p>
+              </div>
+            )}
+
+            {/* Helper text for Instagram requirement - only shows after user attempted Instagram */}
+            {socialConfigurations.instagram && instagramAttempted && !uploadedMediaUrl && !selectedMedia && (
+              <div className="flex items-center gap-2 text-xs !text-amber-600 bg-amber-50 p-2 rounded-md border border-amber-200">
+                <AlertTriangle size={14} className="flex-shrink-0" />
+                <span>Instagram nécessite un média (image ou vidéo) pour publier. Veuillez ajouter un média ci-dessous.</span>
               </div>
             )}
 
             <div className="flex items-center justify-center w-full">
               <label
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors ${
+                  socialConfigurations.instagram && instagramAttempted && !uploadedMediaUrl && !selectedMedia
+                    ? 'border-red-400 hover:border-red-500'
+                    : 'border-gray-300'
+                }`}
                 htmlFor="mediaUpload"
               >
                 {!selectedMedia && !mediaPreview ? (
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <UploadCloud className="w-8 h-8 mb-2 !text-gray-500" />
+                    <UploadCloud className={`w-8 h-8 mb-2 ${socialConfigurations.instagram && instagramAttempted && !uploadedMediaUrl && !selectedMedia ? '!text-red-500' : '!text-gray-500'}`} />
                     <p className="mb-2 text-sm !text-gray-500">
                       <span className="font-semibold">
                         Cliquez pour sélectionner
                       </span>{' '}
-                      ou glissez une image/vidéo
+                      ou glissez une image/vidéo 
+                      {socialConfigurations.instagram && instagramAttempted && !uploadedMediaUrl && !selectedMedia && (
+                        <span className="ml-1 text-red-500 font-medium">(requis)</span>
+                      )}
+                      {(!socialConfigurations.instagram || !instagramAttempted || (uploadedMediaUrl || selectedMedia)) && (
+                        <span className="ml-1 text-gray-400">(optionnel)</span>
+                      )}
                     </p>
                     <p className="text-xs !text-gray-500">
                       JPG, PNG, GIF, MP4 ou MOV (max. 10MB)
@@ -1161,7 +1175,7 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
                         e.preventDefault();
                         clearSelectedMedia();
                       }}
-                      className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1"
+                      className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                       title="Supprimer le média"
                     >
                       <X size={14} />
@@ -1193,6 +1207,15 @@ Veuillez générer une nouvelle description qui intègre ces commentaires.`;
                     ✓ Téléchargé sur le serveur
                   </span>
                 )}
+              </p>
+            )}
+            
+            {/* Show a message when no media is selected - only show Instagram warning after user attempted */}
+            {!selectedMedia && !uploadedMediaUrl && (
+              <p className="text-xs !text-gray-400 italic">
+                {socialConfigurations.instagram && instagramAttempted
+                  ? '⚠️ Aucun média sélectionné - requis pour Instagram' 
+                  : 'Aucun média sélectionné - vous pouvez partager uniquement la description'}
               </p>
             )}
           </div>
