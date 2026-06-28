@@ -279,50 +279,61 @@ export default function BienDetails({ id }) {
             ].filter(Boolean)}
           />
         </div>
-        <div className="bg-white rounded-lg p-6 shadow border border-gray-200">
-          <div className="flex justify-between items-center">
-            <div className="flex flex-col gap-2">
-              <h1 className="text-2xl font-bold text-gray-800">
-                {bien.propriete_dite_bien}
-              </h1>
-            </div>
+       <div className="bg-white rounded-lg p-4 sm:p-6 shadow border border-gray-200">
+  <div className="flex flex-col gap-4 sm:gap-6">
+    {/* Top row - Title and main actions */}
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+      {/* Title */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 break-words">
+          {bien.propriete_dite_bien}
+        </h1>
+      </div>
 
-            <div className="flex items-center gap-3">
-              {/* État actuel badge */}
-
-              {getStatusBadge(bien.etat)}
-              {bien.etat == 'RESERVATION' && (
-                <button
-                  title="Détail du Réservation"
-                  onClick={() => handleView_Reservation(bien?.reservation?.id)}
-                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-                >
-                  <EyeIcon className="h-5 w-5 text-gray-700" />
-                </button>
-              )}
-
-              {/* Partager button */}
-              {canEditBien && (
-                <BienDescriptionGenerator
-                  bien={bien}
-                  onDescriptionSaved={(desc) => setBienDescription(desc)}
-                  buttonText="Partager"
-                />
-              )}
-
-              {/* Modifier button */}
-              {canEditBien && (
-                <Link
-                  href={`/biens/${id}/modifier`}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  <Pencil className="w-4 h-4" />
-                  Modifier
-                </Link>
-              )}
-            </div>
-          </div>
+      {/* Action buttons - stacked on mobile, row on tablet/desktop */}
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        {/* Status Badge */}
+        <div className="flex-shrink-0">
+          {getStatusBadge(bien.etat)}
         </div>
+
+        {/* Reservation detail button */}
+        {bien.etat == 'RESERVATION' && (
+          <button
+            title="Détail du Réservation"
+            onClick={() => handleView_Reservation(bien?.reservation?.id)}
+            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors flex-shrink-0"
+          >
+            <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
+          </button>
+        )}
+
+        {/* Share button - responsive sizing */}
+        {canEditBien && (
+          <div className="flex-shrink-0">
+            <BienDescriptionGenerator
+              bien={bien}
+              onDescriptionSaved={(desc) => setBienDescription(desc)}
+              buttonText="Partager"
+            />
+          </div>
+        )}
+
+        {/* Edit button */}
+        {canEditBien && (
+          <Link
+            href={`/biens/${id}/modifier`}
+            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm sm:text-base flex-shrink-0"
+          >
+            <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden xs:inline">Modifier</span>
+            <span className="xs:hidden">Modif</span>
+          </Link>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
 
         {/* General info section */}
         <div className="bg-white shadow-sm rounded-lg">
