@@ -10,6 +10,8 @@ import { VentesChart } from "./VentesChart";
 import { VisitesChart } from "./VisitesChart";
 import { AppelsChart } from "./charts/AppelsChart";
 import { DesistementChart } from "./charts/DesistementChart";
+
+
 import {
   UsersIcon,
   AlertOctagonIcon,
@@ -20,6 +22,8 @@ import {
   ShoppingCartIcon,
   WalletIcon,
   BellRingIcon,
+   UserPlusIcon,    // Nouveau
+  EyeIcon, 
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -53,6 +57,7 @@ const CardShell = ({ title, rightLabel, children }) => (
 );
 
 export const Dashboard = () => {
+  const [hasUserCancelledSociete, setHasUserCancelledSociete] = useState(false);
   const { token, user } = useAuth();
   const accesstoken = token || localStorage.getItem("accessToken");
   const { selectedProjet, projets } = useProjet();
@@ -65,40 +70,39 @@ export const Dashboard = () => {
   const { selectedSociete, societes } = useSociete();
   const [showSocieteModal, setShowSocieteModal] = useState(false);
   const [selectedSocieteId, setSelectedSocieteId] = useState(null);
+  const [hasUserCancelledProjet, setHasUserCancelledProjet] = useState(false); // Nouvel état
 
   const userRole = decryptUserType(user?.role);
   const isSuperAdmin = userRole === User_roles.ROLE_SUPER_ADMIN;
+const showTopCommerciaux = userRole <= 2; // ROLE_SUPER_ADMIN=1, ROLE_ADMIN=2, ROLE_COMMERCIAL=3
 
+  // Check which dialogs to show on initial render
   useEffect(() => {
     if (!user) {
       router.push("/login");
       return;
     }
 
-    if (isSuperAdmin && !selectedSociete && !showSocieteModal) {
-      setShowSocieteModal(true);
-      return;
-    }
+     // Check if we need to show societe modal
+  if (isSuperAdmin && !selectedSociete && !showSocieteModal && !hasUserCancelledSociete) {
+    setShowSocieteModal(true);
+    return;
+  }
 
+    // Check if we need to show projet modal (only after societe is selected for super admin)
+    // IMPORTANT: Ne pas afficher si l'utilisateur a déjà annulé
     if (
       !selectedProjet &&
       !localStorage.getItem("selectedProjet") &&
-      !showProjetDialog
+      !showProjetDialog &&
+      !hasUserCancelledProjet // Vérifier si l'utilisateur n'a pas annulé
     ) {
+      // For super admin, only show projet dialog if societe is already selected
       if (!isSuperAdmin || (isSuperAdmin && selectedSociete)) {
         setShowProjetDialog(true);
       }
     }
-  }, [
-    user,
-    selectedSociete,
-    selectedProjet,
-    isSuperAdmin,
-    showProjetDialog,
-    showSocieteModal,
-    router,
-  ]);
-
+}, [user, selectedSociete, selectedProjet, isSuperAdmin, showSocieteModal, showProjetDialog, hasUserCancelledProjet, hasUserCancelledSociete]);
   const handleDateChange = (newStartDate, newEndDate) => {
     setStartDate(newStartDate);
     setEndDate(newEndDate);
@@ -112,11 +116,13 @@ export const Dashboard = () => {
         return;
       }
 
+      // Don't fetch data if we're showing modals
       if (showSocieteModal || showProjetDialog) {
         setLoading(false);
         return;
       }
 
+      // Don't fetch data if no projet is selected
       const hasSelectedProjet =
         selectedProjet || localStorage.getItem("selectedProjet");
       if (!hasSelectedProjet) {
@@ -137,7 +143,7 @@ export const Dashboard = () => {
           `${APIURL.ROOTV1}/dashboard/${projetId}/${start}/${end}`,
           {
             headers: { Authorization: `Bearer ${accesstoken}` },
-          },
+          }
         );
 
         setData(response.data);
@@ -149,127 +155,215 @@ export const Dashboard = () => {
     };
 
     fetchData();
-  }, [
-    selectedProjet,
-    accesstoken,
-    startDate,
-    endDate,
-    showSocieteModal,
-    showProjetDialog,
-    router,
-  ]);
+  }, [selectedProjet, accesstoken, startDate, endDate, showSocieteModal, showProjetDialog, router]);
 
   const shouldShowSocieteMessage = isSuperAdmin && !selectedSociete;
   const shouldShowProjetMessage =
-    !selectedProjet && !localStorage.getItem("selectedProjet");
+    !selectedProjet && !localStorage.getItem("selectedProjet") && !hasUserCancelledProjet;
 
   const selectedProjectName =
     selectedProjet?.nom ||
     JSON.parse(localStorage.getItem("selectedProjet") || "null")?.nom ||
-    "Projet B";
+    "Aucun projet sélectionné";
 
-  const kpis = useMemo(() => {
-    const nbClients = Number(data?.nb_clients) || 0;
-    const nbProspects = Number(data?.nb_prospects) || 0;
-    const nbVisites = Number(data?.nb_visites) || 0;
-    const nbReservations = Number(data?.nb_rsv) || 0;
-    const sumEncaissements = Number(data?.sum_encaissements) || 0;
-    const sumRemboursements = Number(data?.sum_remboursements) || 0;
-    const countDesistements = Number(data?.count_dst) || 0;
-    const objReservations = Number(data?.obj_mois_reservations) || 0;
+ const kpis = useMemo(() => {
+  // Define these variables first, before any conditional checks
+  const nbClients = Number(data?.nb_clients) || 0;
+  const nbProspects = Number(data?.nb_prospects) || 0;
+  const nbVisites = Number(data?.nb_visites) || 0;
+  const nbReservations = Number(data?.nb_rsv) || 0;
+  const sumEncaissements = Number(data?.sum_encaissements) || 0;
+  const sumRemboursements = Number(data?.sum_remboursements) || 0;
+  const countDesistements = Number(data?.count_dst) || 0;
+  const objReservations = Number(data?.obj_mois_reservations) || 0;
 
-    const appels = (data?.Appels || []).reduce(
-      (acc, item) =>
-        acc +
-        Number(item["appel entrant"] || item.appel_entrant || 0) +
-        Number(item["appel sortant"] || item.appel_sortant || 0),
-      0,
-    );
+  const appels = (data?.Appels || []).reduce(
+    (acc, item) =>
+      acc +
+      Number(item["appel entrant"] || item.appel_entrant || 0) +
+      Number(item["appel sortant"] || item.appel_sortant || 0),
+    0
+  );
 
-    const tauxConversion = nbProspects
-      ? ((nbReservations / nbProspects) * 100).toFixed(1)
-      : "0.0";
-    const panierMoyen = nbReservations
-      ? (sumEncaissements / nbReservations).toFixed(0)
-      : "0";
-    const tauxDesistement = nbReservations
-      ? ((countDesistements / nbReservations) * 100).toFixed(1)
-      : "0.0";
-    const tauxRecouvrement = sumEncaissements
-      ? (
-          ((sumEncaissements - sumRemboursements) / sumEncaissements) *
-          100
-        ).toFixed(1)
-      : "0.0";
-    const caVsObjectif = objReservations
-      ? ((nbReservations / objReservations) * 100).toFixed(1)
-      : "0.0";
-
+  // Now check if should show projet message
+  if (!data || shouldShowProjetMessage) {
     return [
       {
         title: "Chiffre d'affaires (CA)",
-        value: `${sumEncaissements.toLocaleString("fr-FR")} DH`,
+        value: "0 DH",
         icon: <TrendingUpIcon className="h-6 w-6 text-blue-500" />,
         color: "blue",
         trend: "Données réelles",
       },
       {
         title: "CA vs Objectif",
-        value: `${caVsObjectif}%`,
+        value: "0%",
         icon: <TargetIcon className="h-6 w-6 text-green-500" />,
         color: "green",
-        subtitle: `Obj. réservations: ${objReservations.toLocaleString("fr-FR")}`,
+        subtitle: "Obj. réservations: 0",
       },
       {
         title: "Taux de conversion",
-        value: `${tauxConversion}%`,
+        value: "0%",
         icon: <UsersIcon className="h-6 w-6 text-purple-500" />,
         color: "purple",
-        trend: `${nbReservations.toLocaleString("fr-FR")} réservations`,
+        trend: "0 réservations",
       },
       {
         title: "Panier moyen",
-        value: `${Number(panierMoyen).toLocaleString("fr-FR")} DH`,
+        value: "0 DH",
         icon: <ShoppingCartIcon className="h-6 w-6 text-amber-500" />,
         color: "amber",
         trend: "Encaissements / Réservations",
       },
       {
         title: "Taux de désistement",
-        value: `${tauxDesistement}%`,
+        value: "0%",
         icon: <AlertOctagonIcon className="h-6 w-6 text-red-500" />,
         color: "red",
-        trend: `${countDesistements.toLocaleString("fr-FR")} désistements`,
+        trend: "0 désistements",
       },
       {
         title: "Taux de recouvrement",
-        value: `${tauxRecouvrement}%`,
+        value: "0%",
         icon: <WalletIcon className="h-6 w-6 text-indigo-500" />,
         color: "indigo",
         trend: "Après remboursements",
       },
       {
         title: "Remboursements",
-        value: `${sumRemboursements.toLocaleString("fr-FR")} DH`,
+        value: "0 DH",
         icon: <CreditCardIcon className="h-6 w-6 text-amber-500" />,
         color: "amber",
       },
       {
         title: "Appels",
-        value: appels.toLocaleString("fr-FR"),
+        value: "0",
         icon: <PhoneIcon className="h-6 w-6 text-indigo-500" />,
         color: "indigo",
       },
+      {
+        title: "Prospects",
+        value: nbProspects.toLocaleString("fr-FR"),
+        icon: <UserPlusIcon className="h-6 w-6 text-teal-500" />,
+        color: "teal",
+        trend: `${nbProspects.toLocaleString("fr-FR")} prospects`,
+      },
+      {
+        title: "Visites",
+        value: nbVisites.toLocaleString("fr-FR"),
+        icon: <EyeIcon className="h-6 w-6 text-cyan-500" />,
+        color: "cyan",
+        trend: `${nbVisites.toLocaleString("fr-FR")} visites`,
+      },
     ];
-  }, [data]);
+  }
 
+  // Calculations for real data
+  const tauxConversion = nbProspects
+    ? ((nbReservations / nbProspects) * 100).toFixed(1)
+    : "0.0";
+  const panierMoyen = nbReservations
+    ? (sumEncaissements / nbReservations).toFixed(0)
+    : "0";
+  const tauxDesistement = nbReservations
+    ? ((countDesistements / nbReservations) * 100).toFixed(1)
+    : "0.0";
+  const tauxRecouvrement = sumEncaissements
+    ? (((sumEncaissements - sumRemboursements) / sumEncaissements) * 100).toFixed(1)
+    : "0.0";
+  const caVsObjectif = objReservations > 0
+    ? ((nbReservations / objReservations) * 100).toFixed(1)
+    : "0.0";
+
+  return [
+    {
+      title: "Chiffre d'affaires (CA)",
+      value: `${sumEncaissements.toLocaleString("fr-FR")} DH`,
+      icon: <TrendingUpIcon className="h-6 w-6 text-blue-500" />,
+      color: "blue",
+      trend: "Données réelles",
+    },
+    {
+      title: "CA vs Objectif",
+      value: `${caVsObjectif}%`,
+      icon: <TargetIcon className="h-6 w-6 text-green-500" />,
+      color: "green",
+      subtitle: `Obj. réservations: ${objReservations.toLocaleString("fr-FR")}`,
+    },
+    {
+      title: "Taux de conversion",
+      value: `${tauxConversion}%`,
+      icon: <UsersIcon className="h-6 w-6 text-purple-500" />,
+      color: "purple",
+      trend: `${nbReservations.toLocaleString("fr-FR")} réservations`,
+    },
+    {
+      title: "Panier moyen",
+      value: `${Number(panierMoyen).toLocaleString("fr-FR")} DH`,
+      icon: <ShoppingCartIcon className="h-6 w-6 text-amber-500" />,
+      color: "amber",
+      trend: "Encaissements / Réservations",
+    },
+    {
+      title: "Taux de désistement",
+      value: `${tauxDesistement}%`,
+      icon: <AlertOctagonIcon className="h-6 w-6 text-red-500" />,
+      color: "red",
+      trend: `${countDesistements.toLocaleString("fr-FR")} désistements`,
+    },
+    {
+      title: "Taux de recouvrement",
+      value: `${tauxRecouvrement}%`,
+      icon: <WalletIcon className="h-6 w-6 text-indigo-500" />,
+      color: "indigo",
+      trend: "Après remboursements",
+    },
+    {
+      title: "Remboursements",
+      value: `${sumRemboursements.toLocaleString("fr-FR")} DH`,
+      icon: <CreditCardIcon className="h-6 w-6 text-amber-500" />,
+      color: "amber",
+    },
+    {
+      title: "Appels",
+      value: appels.toLocaleString("fr-FR"),
+      icon: <PhoneIcon className="h-6 w-6 text-indigo-500" />,
+      color: "indigo",
+    },
+    {
+      title: "Prospects",
+      value: nbProspects.toLocaleString("fr-FR"),
+      icon: <UserPlusIcon className="h-6 w-6 text-teal-500" />,
+      color: "teal",
+      trend: `${nbProspects.toLocaleString("fr-FR")} prospects`,
+    },
+    {
+      title: "Visites",
+      value: nbVisites.toLocaleString("fr-FR"),
+      icon: <EyeIcon className="h-6 w-6 text-cyan-500" />,
+      color: "cyan",
+      trend: `${nbVisites.toLocaleString("fr-FR")} visites`,
+    },
+  ];
+}, [data, shouldShowProjetMessage]);
   const funnelData = useMemo(() => {
+    if (!data || shouldShowProjetMessage) {
+      return [
+        { label: "Prospects", value: 0, rate: "0%" },
+        { label: "Visites", value: 0, rate: "0%" },
+        { label: "Pré-réservations", value: 0, rate: "0%" },
+        { label: "Ventes", value: 0, rate: "0%" },
+        { label: "Livraisons", value: 0, rate: "0%" },
+      ];
+    }
+
     const prospects = Number(data?.nb_prospects) || 0;
     const visites = Number(data?.nb_visites) || 0;
     const preReservations = Number(data?.biens?.[1]) || 0;
     const ventes = (data?.array_ventes || []).reduce(
       (acc, item) => acc + Number(item?.nombre || 0),
-      0,
+      0
     );
     const livraisons = Number(data?.nb_remise_recement) || 0;
 
@@ -297,14 +391,27 @@ export const Dashboard = () => {
         rate: `${((livraisons / base) * 100).toFixed(1)}%`,
       },
     ];
-  }, [data]);
+  }, [data, shouldShowProjetMessage]);
 
   const alertsData = useMemo(() => {
+    if (!data || shouldShowProjetMessage) {
+      return [
+        { label: "Échéances à venir", amount: "0 échéances", level: "info" },
+        { label: "Désistements", amount: "0 dossiers", level: "info" },
+        { label: "Demandes SAV", amount: "0 réclamations", level: "info" },
+        { label: "Remises à venir", amount: "0 biens", level: "info" },
+        { label: "Remboursements", amount: "0 DH", level: "info" },
+        { label: "Pénalités", amount: "0 DH", level: "info" }, // AJOUTER
+
+      ];
+    }
+
     const nbEcheances = Number(data?.nb_echeances) || 0;
     const nbSav = Number(data?.nb_sav) || 0;
     const nbDes = Number(data?.count_dst) || 0;
     const nbRemiseAVenir = Number(data?.nb_remise_a_venir) || 0;
     const sumRemb = Number(data?.sum_remboursements) || 0;
+    const sumPenalites = Number(data?.sum_penalites) || 0; // AJOUTER
 
     return [
       {
@@ -317,6 +424,11 @@ export const Dashboard = () => {
         amount: `${nbDes.toLocaleString("fr-FR")} dossiers`,
         level: nbDes > 0 ? "danger" : "info",
       },
+      {
+      label: "Pénalités", // AJOUTER CETTE ALERTE
+      amount: `${sumPenalites.toLocaleString("fr-FR")} DH`,
+      level: sumPenalites > 0 ? "warning" : "info",
+       },
       {
         label: "Demandes SAV",
         amount: `${nbSav.toLocaleString("fr-FR")} réclamations`,
@@ -333,9 +445,20 @@ export const Dashboard = () => {
         level: sumRemb > 0 ? "danger" : "info",
       },
     ];
-  }, [data]);
+  }, [data, shouldShowProjetMessage]);
 
   const stockData = useMemo(() => {
+    if (!data || shouldShowProjetMessage) {
+      return {
+        disponible: 0,
+        preReservation: 0,
+        reservation: 0,
+        bloque: 0,
+        proposition: 0,
+        total: 0,
+      };
+    }
+
     const biens = Array.isArray(data?.biens) ? data.biens : [];
     return {
       disponible: Number(biens[0]) || 0,
@@ -345,9 +468,21 @@ export const Dashboard = () => {
       proposition: Number(biens[4]) || 0,
       total: Number(data?.count_biens) || 0,
     };
-  }, [data]);
+  }, [data, shouldShowProjetMessage]);
 
   const performanceData = useMemo(() => {
+    if (!data || shouldShowProjetMessage) {
+      return [
+        {
+          projet: selectedProjectName,
+          ca: "0 DH",
+          ventes: 0,
+          stock: 0,
+          taux: "0.0%",
+        },
+      ];
+    }
+
     const fromApi = Array.isArray(data?.performance_projets)
       ? data.performance_projets
       : [];
@@ -368,26 +503,42 @@ export const Dashboard = () => {
         ca: `${(Number(data?.sum_encaissements) || 0).toLocaleString("fr-FR")} DH`,
         ventes: Number(data?.nb_rsv) || 0,
         stock: Number(data?.count_biens) || 0,
-        taux: `${(Number(data?.nb_prospects) || 0) > 0 ? (((Number(data?.nb_rsv) || 0) / Number(data?.nb_prospects)) * 100).toFixed(1) : "0.0"}%`,
+        taux: `${
+          (Number(data?.nb_prospects) || 0) > 0
+            ? (
+                ((Number(data?.nb_rsv) || 0) / Number(data?.nb_prospects)) *
+                100
+              ).toFixed(1)
+            : "0.0"
+        }%`,
       },
     ];
-  }, [data, selectedProjectName]);
+  }, [data, shouldShowProjetMessage, selectedProjectName]);
 
-  const topCommerciauxData = useMemo(() => {
-    return [
-      {
-        name:
-          user?.name && user?.prenom
-            ? `${user.name} ${user.prenom}`
-            : "Utilisateur connecté",
-        ventes: Number(data?.nb_rsv) || 0,
-        commission: `${((Number(data?.sum_encaissements) || 0) * 0.03).toLocaleString("fr-FR")} DH`,
-        ca: `${(Number(data?.sum_encaissements) || 0).toLocaleString("fr-FR")} DH`,
-      },
-    ];
-  }, [data, user]);
+ const topCommerciauxData = useMemo(() => {
+  if (!data || shouldShowProjetMessage) {
+    return [];
+  }
 
+  // Vérifier si les données des top commerciaux existent dans la réponse
+  if (data?.top_commerciaux && Array.isArray(data.top_commerciaux) && data.top_commerciaux.length > 0) {
+    return data.top_commerciaux.map(commercial => ({
+      name: commercial.name,
+      ca: `${commercial.ca.toLocaleString("fr-FR")} DH`,
+      ventes: commercial.ventes,
+      commission: `${commercial.commission.toLocaleString("fr-FR")} DH`,
+      id: commercial.id
+    }));
+  }
+
+  // Retourner un tableau vide si pas de données
+  return [];
+}, [data, shouldShowProjetMessage]);
   const echeancesData = useMemo(() => {
+    if (!data || shouldShowProjetMessage) {
+      return [];
+    }
+
     const echeances = Array.isArray(data?.echeances) ? data.echeances : [];
     return echeances.map((item, idx) => {
       const dateObj = item?.echeance ? new Date(item.echeance) : null;
@@ -404,7 +555,7 @@ export const Dashboard = () => {
         statut: Number(item?.last_statut?.statut) === 1 ? "Validée" : "À venir",
       };
     });
-  }, [data, selectedProjectName]);
+  }, [data, shouldShowProjetMessage, selectedProjectName]);
 
   const stockChartData = useMemo(
     () => [
@@ -418,59 +569,79 @@ export const Dashboard = () => {
       { name: "Bloqué", value: stockData.bloque, color: "#F59E0B" },
       { name: "Proposition", value: stockData.proposition, color: "#EF4444" },
     ],
-    [stockData],
+    [stockData]
   );
 
   const ventesBarData = useMemo(() => {
+    if (!data || shouldShowProjetMessage) {
+      return [];
+    }
+
     const rows = Array.isArray(data?.array_ventes) ? data.array_ventes : [];
     return rows.map((r) => ({
       date: r?.date || "--",
       ventes: Number(r?.nombre) || 0,
     }));
-  }, [data]);
+  }, [data, shouldShowProjetMessage]);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64 text-slate-500">
-        Chargement du dashboard...
+        Chargement Tableau de Bord...
       </div>
     );
   }
 
+  // Show SocieteDialog first for superadmin if needed
   if (isSuperAdmin && showSocieteModal) {
     return (
       <SocieteModal
         open={showSocieteModal}
-        onClose={() => setShowSocieteModal(false)}
+        onClose={() => {
+          setShowSocieteModal(false);
+          setHasUserCancelledSociete(true); // Marquer que l'utilisateur a annulé
+
+        }}
         selectedId={selectedSocieteId}
         setSelectedId={setSelectedSocieteId}
         societes={societes}
         onConfirm={() => {
           setShowSocieteModal(false);
-          if (!selectedProjet && !localStorage.getItem("selectedProjet"))
+          setHasUserCancelledSociete(false); // Réinitialiser car une société a été sélectionnée
+          // After selecting societe, show projet dialog if needed
+          if (!selectedProjet && !localStorage.getItem("selectedProjet")) {
+            setHasUserCancelledProjet(false); // Réinitialiser l'état d'annulation
             setShowProjetDialog(true);
+          }
         }}
       />
     );
   }
 
+  // Show ProjetDialog if needed
   if (showProjetDialog) {
     return (
       <ProjetDialog
         open={showProjetDialog}
-        onClose={() => setShowProjetDialog(false)}
+        onClose={() => {
+          setShowProjetDialog(false);
+          // Marquer que l'utilisateur a annulé pour ne pas rouvrir le modal
+          setHasUserCancelledProjet(true);
+        }}
         projets={projets}
-        onSelect={() => setShowProjetDialog(false)}
+        onSelect={() => {
+          setShowProjetDialog(false);
+          // Si l'utilisateur sélectionne un projet, on ne marque pas comme annulé
+          // On peut aussi réinitialiser l'état si besoin
+        }}
       />
     );
   }
 
-  if (shouldShowSocieteMessage || shouldShowProjetMessage) {
+  if (shouldShowSocieteMessage) {
     return (
       <div className="bg-white rounded-xl border border-slate-100 p-10 text-center text-slate-500">
-        {shouldShowSocieteMessage
-          ? "Veuillez sélectionner une société pour afficher les données."
-          : "Veuillez sélectionner un projet pour afficher les données."}
+        Veuillez sélectionner une société pour afficher les données.
       </div>
     );
   }
@@ -480,7 +651,7 @@ export const Dashboard = () => {
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-slate-900">Tableau de Bord</h1>
             <p className="text-sm text-slate-500 mt-1">
               Vue d&apos;ensemble de la performance de vos projets
             </p>
@@ -496,19 +667,28 @@ export const Dashboard = () => {
               startDate={startDate}
               endDate={endDate}
               onChange={handleDateChange}
+              disabled={shouldShowSocieteMessage || shouldShowProjetMessage}
             />
-            <div className="px-4 py-2 rounded-lg border border-slate-200 bg-white min-w-[180px]">
+            {/*<div className="px-4 py-2 rounded-lg border border-slate-200 bg-white min-w-[180px]">
               <p className="text-xs text-slate-500">Comparer à</p>
               <p className="text-sm font-semibold text-slate-800">
                 Même période N-1
               </p>
-            </div>
+            </div>*/}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8 gap-4">
-        {kpis.map((item, idx) => (
+      {shouldShowProjetMessage && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+          <p className="text-amber-800">
+            ⚠️ Aucun projet sélectionné. Veuillez sélectionner un projet pour
+            voir les données réelles.
+          </p>
+        </div>
+      )}
+
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">        {kpis.map((item, idx) => (
           <MetricsCard
             key={`${item.title}-${idx}`}
             title={item.title}
@@ -521,6 +701,7 @@ export const Dashboard = () => {
         ))}
       </div>
 
+      {/* Le reste du JSX reste identique */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
         <div className="xl:col-span-3">
           <CardShell title="Funnel commercial">
@@ -541,16 +722,17 @@ export const Dashboard = () => {
                   <div key={f.label} className="w-full">
                     <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
                       <span className="font-medium">{f.label}</span>
-                      <span className="font-semibold text-slate-700">
-                        {f.value} ({f.rate})
-                      </span>
+                     
                     </div>
                     <div className="w-full flex justify-center">
                       <div
                         className={`h-9 rounded-md bg-gradient-to-r ${barColor} text-white text-xs font-semibold flex items-center justify-center shadow-sm transition-all`}
                         style={{ width: barWidth }}
                       >
-                        {f.label}
+                         <span className="font-semibold text-white-700">
+                        {f.value} ({f.rate})
+                      </span>
+                  
                       </div>
                     </div>
                   </div>
@@ -559,12 +741,13 @@ export const Dashboard = () => {
             </div>
             <div className="mt-3 p-2 rounded-md bg-slate-50 border border-slate-100 text-slate-700 text-xs font-medium text-center">
               Conversion globale : {funnelData[3]?.rate || "0.0%"}
+              {/* la conversion globale mesure le % de prospects devenus ventes*/}
             </div>
           </CardShell>
         </div>
 
         <div className="xl:col-span-6">
-          <CardShell title="Encaissements" rightLabel="Année en cours">
+          <CardShell title="Encaissements" rightLabel="">
             <EncaissementChart
               startDate={startDate}
               endDate={endDate}
@@ -574,7 +757,7 @@ export const Dashboard = () => {
         </div>
 
         <div className="xl:col-span-3">
-          <CardShell title="Alertes" rightLabel="Voir toutes">
+          <CardShell title="Alertes" rightLabel="">
             <div className="space-y-3">
               {alertsData.map((alert, idx) => (
                 <div
@@ -583,7 +766,13 @@ export const Dashboard = () => {
                 >
                   <div className="flex items-start gap-2">
                     <BellRingIcon
-                      className={`h-4 w-4 mt-0.5 ${alert.level === "danger" ? "text-red-500" : alert.level === "warning" ? "text-amber-500" : "text-blue-500"}`}
+                      className={`h-4 w-4 mt-0.5 ${
+                        alert.level === "danger"
+                          ? "text-red-500"
+                          : alert.level === "warning"
+                          ? "text-amber-500"
+                          : "text-blue-500"
+                      }`}
                     />
                     <div>
                       <p className="text-sm font-medium text-slate-800">
@@ -629,9 +818,7 @@ export const Dashboard = () => {
                     />
                     {s.name}
                   </span>
-                  <span className="font-semibold text-slate-800">
-                    {s.value}
-                  </span>
+                  <span className="font-semibold text-slate-800">{s.value}</span>
                 </div>
               ))}
             </div>
@@ -692,33 +879,47 @@ export const Dashboard = () => {
             </div>
           </CardShell>
         </div>
+{showTopCommerciaux && (
 
         <div className="xl:col-span-3">
-          <CardShell title="Top commerciaux" rightLabel="Voir tous">
+          <CardShell title="Top commerciaux" rightLabel="Classement par CA">
             <div className="space-y-3">
-              {topCommerciauxData.map((c, idx) => (
-                <div
-                  key={c.name}
-                  className="flex items-center justify-between text-sm border-b border-slate-100 pb-2 last:border-b-0"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-bold">
-                      {idx + 1}
-                    </span>
-                    <div>
-                      <p className="font-medium text-slate-800">{c.name}</p>
-                      <p className="text-xs text-slate-500">CA: {c.ca}</p>
+              {topCommerciauxData.length > 0 ? (
+                topCommerciauxData.map((c, idx) => (
+                  <div
+                    key={c.name}
+                    className="flex items-center justify-between text-sm border-b border-slate-100 pb-2 last:border-b-0 hover:bg-slate-50 p-2 rounded-lg transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`
+                        w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
+                        ${idx === 0 ? 'bg-yellow-400 text-yellow-900' : 
+                          idx === 1 ? 'bg-gray-300 text-gray-700' : 
+                          idx === 2 ? 'bg-amber-600 text-white' : 
+                          'bg-blue-100 text-blue-600'}
+                      `}>
+                        {idx + 1}
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-800">{c.name}</p>
+                        <p className="text-xs text-slate-500">CA: {c.ca}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-emerald-600">{c.ventes} ventes</p>
+                      <p className="text-xs text-slate-400">{c.commission}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-slate-800">{c.ventes}</p>
-                    <p className="text-xs text-slate-500">{c.commission}</p>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center text-slate-500 py-4">
+                  Aucune donnée commerciale disponible
                 </div>
-              ))}
+              )}
             </div>
           </CardShell>
         </div>
+)}
 
         <div className="xl:col-span-6">
           <CardShell title="Échéances à venir">
@@ -734,21 +935,29 @@ export const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {echeancesData.map((row) => (
-                    <tr key={row.key} className="border-b border-slate-50">
-                      <td className="py-2 text-slate-700">{row.client}</td>
-                      <td className="py-2 text-slate-600">{row.projet}</td>
-                      <td className="py-2 text-slate-600">{row.echeance}</td>
-                      <td className="py-2 text-slate-700 font-medium">
-                        {row.montant}
-                      </td>
-                      <td className="py-2 text-right">
-                        <span className="px-2 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold">
-                          {row.statut}
-                        </span>
+                  {echeancesData.length > 0 ? (
+                    echeancesData.map((row) => (
+                      <tr key={row.key} className="border-b border-slate-50">
+                        <td className="py-2 text-slate-700">{row.client}</td>
+                        <td className="py-2 text-slate-600">{row.projet}</td>
+                        <td className="py-2 text-slate-600">{row.echeance}</td>
+                        <td className="py-2 text-slate-700 font-medium">
+                          {row.montant}
+                        </td>
+                        <td className="py-2 text-right">
+                          <span className="px-2 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold">
+                            {row.statut}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="py-8 text-center text-slate-500">
+                        Aucune échéance à venir
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -756,23 +965,32 @@ export const Dashboard = () => {
         </div>
 
         <div className="xl:col-span-3">
-          <CardShell title="Répartition des encaissements">
+          <CardShell title="Répartition des appels">
+            <div className="h-[350px]">  {/* Hauteur fixe */}
+
             <AppelsChart
               startDate={startDate}
               endDate={endDate}
               data={data || {}}
             />
+            </div>
           </CardShell>
         </div>
+      
+       
 
         <div className="xl:col-span-3">
-          <CardShell title="Désistements par motif">
-            <DesistementChart
+          <CardShell title="Désistements par type">
+                       <div className="h-[350px]">  {/* Hauteur fixe */}
+
+           <DesistementChart
               startDate={startDate}
               endDate={endDate}
               data={data || {}}
             />
+            </div>
           </CardShell>
+          
         </div>
 
         <div className="xl:col-span-12">
