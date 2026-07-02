@@ -9,7 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useProjet } from '@/context/ProjetContext';
 import { APIURL, ENDPOINTS } from '@/configs/api';
 import { useRouter } from 'next/navigation';
-import { fetchData_table_by_projet } from '@/configs/api-utils';
+import { fetchData_Select, fetchData_table_by_projet } from '@/configs/api-utils';
 import { isAdmin, isAgentAdministratif, isCommercial, isRespoCommercial, isSuperAdmin } from '@/configs/enum';
 import Modal_Traite from './Modal_Traite';
 import {
@@ -98,7 +98,9 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
   const showOnlyAssigned = view === 'assigned';
   const [filteredTotalRows, setFilteredTotalRows] = useState(0);
   const [affect_lance, setAffect_lance] = useState(false);
-
+// Add source state
+  const [sources, setSources] = useState([]);
+  const [loading_auto, setLoading_auto] = useState(false);
   // --- State ---
   const [prospects, setProspects] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -130,6 +132,8 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     email: '',
     statut: '',
     origin: '', // ADDED - Origin filter
+    source: '', // ADD THIS
+
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
@@ -140,6 +144,9 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
   // Check if user is commercial to disable assignment features
   const isCommercialUser = isCommercial(user?.role);
 
+  useEffect(() => {
+      fetchData_Select('sources', setSources, setLoading_auto);
+    }, [selectedProjet]);
   // useEffect for fetching data
   useEffect(() => {
     const action = searchParams?.get('action');
@@ -233,6 +240,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
       visites_count: pro.visites_count,
       appels_count: pro.appels_count,
       origin: pro.origin,
+      source: pro.source?.source || '', // ADD THIS LINE
       date: pro.created_at
         ? format(new Date(pro.created_at), 'dd/MM/yyyy')
         : '',
@@ -284,6 +292,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
             ? ' / ' + pro.telephone_num2
             : '') || 'Non spécifié',
       cin: pro.cin,
+      source: pro?.source?.source, // This is already there
       type_client: pro.partenaire_id === null ? 'Particulier' : 'professionnel',
       partenaire: pro.partenaire_id ? pro.partenaire?.description : '',
       source: pro?.source?.source,
@@ -300,12 +309,34 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
     { key: 'cin', label: 'Cin' },
     { key: 'email', label: 'Email' },
     { key: 'type_client', label: 'Type Prospect' },
-    { key: 'source', label: 'Source' },
     { key: 'partenaire', label: 'Partenaire' },
     { key: 'origin', label: 'Origine' },
+    { key: 'source', label: 'Source' },
     { key: 'date', label: 'Date' },
   ];
 
+  // Source color mapping - you can customize these colors
+const getSourceColor = (sourceName) => {
+  const colorMap = {
+    'Avito': 'bg-purple-100 text-purple-800',
+    'Kekemonos': 'bg-blue-100 text-blue-800',
+    'Palissade': 'bg-green-100 text-green-800',
+    'Panneaux 4*3': 'bg-yellow-100 text-yellow-800',
+    'Flyer': 'bg-orange-100 text-orange-800',
+    'Caravane': 'bg-pink-100 text-pink-800',
+    'Bouche à Oreille': 'bg-indigo-100 text-indigo-800',
+    'Site Web': 'bg-cyan-100 text-cyan-800',
+    'Facebook': 'bg-blue-100 text-blue-800',
+    'Smsing': 'bg-teal-100 text-teal-800',
+    'Instagram': 'bg-pink-100 text-pink-800',
+    'LinkedIn': 'bg-blue-100 text-blue-800',
+    'Twitter': 'bg-sky-100 text-sky-800',
+    'YouTube': 'bg-red-100 text-red-800',
+    'Google': 'bg-green-100 text-green-800',
+  };
+  
+  return colorMap[sourceName] || 'bg-gray-100 text-gray-800';
+};
   // --- Table Columns ---
   const columns = [
     {
@@ -453,6 +484,18 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
       render: (row) => <span>{row.date || ''}</span>,
     },
     {
+    key: 'source',
+    label: 'Source',
+    render: (row) => {
+      if (!row.source) return '';
+      return (
+        <span className={`px-2 py-1 rounded text-sm font-semibold ${getSourceColor(row.source)}`}>
+          {row.source}
+        </span>
+      );
+    },
+  },
+    {
       key: 'actions',
       label: 'Actions',
       render: (row) => (
@@ -549,6 +592,7 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
       email: '',
       statut: '',
       origin: '', // ADDED
+      source: '',
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -775,6 +819,22 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
       console.error("Erreur lors de l'auto-affectation:", e);
     }
   };
+  // Add this function inside your component (before the return)
+const getSourceOptions = () => {
+  const options = [{ value: '', label: 'Toutes les sources' }];
+  
+  // If sources is an array with objects that have id and source properties
+  if (sources && sources.length > 0) {
+    sources.forEach(source => {
+      options.push({ 
+        value: source.id, 
+        label: source.source || source.nom || source.name || 'Source sans nom'
+      });
+    });
+  }
+  
+  return options;
+};
 
   // --- Render ---
   return (
@@ -883,6 +943,14 @@ const ProspectTable = ({ view = 'all', searchParams }) => {
                   label="Origine"
                   className="h-10 text-sm w-full"
                 />
+               <SelectInput
+                value={tempFilters.source}
+                onChange={(value) => handleFilterChange('source', value)}
+                options={getSourceOptions()}  // ✅ Use dynamic function
+                label="Source"
+                className="h-10 text-sm w-full"
+                disabled={loading_auto}
+              />
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button
