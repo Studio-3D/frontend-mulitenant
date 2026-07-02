@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import Table from '@/components/Table';
 import {
@@ -15,12 +17,32 @@ import { APIURL, ENDPOINTS } from '../../../../configs/api';
 import { useRouter } from 'next/navigation';
 import { formatDate } from '../../../../utils/dateUtils';
 import { isAdmin, isAgentAdministratif, isCommercial, isRespoCommercial, isSuperAdmin } from '../../../../configs/enum';
-import { fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
+import { fetchData_Select, fetchData_table_by_projet } from '../../../../../src/configs/api-utils';
 import Link from 'next/link';
 import Input from '@/components/Input';
-import { format } from 'date-fns'; // Add this import
+import SelectInput from '@/components/SelectInput';
+import { format } from 'date-fns';
 import { useProjet } from '@/context/ProjetContext';
 import { VISITE_INTERETS } from '../../../../../src/configs/enum';
+
+// Source color mapping
+const getSourceColor = (sourceName) => {
+  const colorMap = {
+    'Avito': 'bg-purple-100 text-purple-800',
+    'Kekemonos': 'bg-blue-100 text-blue-800',
+    'Palissade': 'bg-green-100 text-green-800',
+    'Panneaux 4*3': 'bg-yellow-100 text-yellow-800',
+    'Flyer': 'bg-orange-100 text-orange-800',
+    'Caravane': 'bg-pink-100 text-pink-800',
+    'Bouche à Oreille': 'bg-indigo-100 text-indigo-800',
+    'Site Web': 'bg-cyan-100 text-cyan-800',
+    'Facebook': 'bg-blue-100 text-blue-800',
+    'Smsing': 'bg-teal-100 text-teal-800',
+  };
+  
+  return colorMap[sourceName] || 'bg-gray-100 text-gray-800';
+};
+
 const AppelsTable = ({ dataClient, searchParams }) => {
   const { user, token } = useAuth();
   const accesstoken = token || localStorage.getItem('accessToken');
@@ -36,13 +58,17 @@ const AppelsTable = ({ dataClient, searchParams }) => {
   const [totalRows, setTotalRows] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  
+  const [sources, setSources] = useState([]);
+  const [loading_auto, setLoading_auto] = useState(false);
 
   const [filters, setFilters] = useState({
     date: '',
     nom: '',
     prenom: '',
     telephone: '',
-    interet: '',
+    source: '',
+    interet: '', // ✅ ADD INTERET FILTER
   });
   const [tempFilters, setTempFilters] = useState({ ...filters });
 
@@ -52,10 +78,42 @@ const AppelsTable = ({ dataClient, searchParams }) => {
     searchFields: ['date', 'nom', 'prenom', 'telephone'],
   };
 
+  // Fetch sources
+  useEffect(() => {
+    if (selectedProjet?.id) {
+      fetchData_Select('sources', setSources, setLoading_auto);
+    }
+  }, [selectedProjet]);
+
+  // Get source options
+  const getSourceOptions = () => {
+    const options = [{ value: '', label: 'Toutes les sources' }];
+    if (sources && sources.length > 0) {
+      sources.forEach(source => {
+        options.push({ 
+          value: source.id, 
+          label: source.source || source.nom || source.name || 'Source sans nom'
+        });
+      });
+    }
+    return options;
+  };
+
+  // ✅ Get interest options
+  const getInterestOptions = () => {
+    const options = [{ value: '', label: 'Tous les intérêts' }];
+    Object.values(VISITE_INTERETS).forEach((data) => {
+      options.push({
+        value: data.code,
+        label: data.label,
+      });
+    });
+    return options;
+  };
+
   useEffect(() => {
     const action = searchParams?.get('action');
     if (action === 'add' || action === 'edit') {
-      console.log('Skipping API call - in form mode');
       return;
     }
     const params_url = dataClient ? { client_id: dataClient?.id } : {};
@@ -88,9 +146,9 @@ const AppelsTable = ({ dataClient, searchParams }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 1200); // Wait for 1.2s after user stops typing before updating the debounced value
+    }, 1200);
 
-    return () => clearTimeout(timer); // Clean up the timeout on each render
+    return () => clearTimeout(timer);
   }, [searchTerm]);
 
   const handle_convert_to_visite = (prospect) => {
@@ -102,7 +160,6 @@ const AppelsTable = ({ dataClient, searchParams }) => {
     );
     router.push(`${ENDPOINTS.VISITES}?action=add`);
   };
-
 
   // Format users data for table display
   const formatData = () => {
@@ -122,7 +179,7 @@ const AppelsTable = ({ dataClient, searchParams }) => {
             ? ' / ' + data.prospect.telephone_num2
             : '') || 'Non spécifié',
       cin: data.prospect.cin,
-      // source: data.prospect.source?.source,
+      source: data.prospect.source?.source || '',
       prospect: data.prospect,
       interet: data.last_traitement_appel?.interet,
       last_traitement_id: data.last_traitement_appel?.id || null,
@@ -140,6 +197,7 @@ const AppelsTable = ({ dataClient, searchParams }) => {
       </span>
     );
   };
+
   // Table columns configuration
   const columns = [
     { key: 'date', label: 'Date' },
@@ -163,8 +221,11 @@ const AppelsTable = ({ dataClient, searchParams }) => {
       label: 'Prénom',
       render: (row) => {
         return (
-          <Link href={'/crm/prospects/' + row.prospect.id} target="_blank"             className="flex items-center gap-1 text-black-500 hover:text-black-700"
->
+          <Link
+            href={'/crm/prospects/' + row.prospect.id}
+            target="_blank"
+            className="flex items-center gap-1 text-black-500 hover:text-black-700"
+          >
             <strong style={{ fontWeight: 600 }}>{row.prenom}</strong>
           </Link>
         );
@@ -172,13 +233,24 @@ const AppelsTable = ({ dataClient, searchParams }) => {
     },
     { key: 'telephone', label: 'Téléphone' },
     {
+      key: 'source',
+      label: 'Source',
+      render: (row) => {
+        if (!row.source) return '';
+        return (
+          <span className={`px-2 py-1 rounded text-sm font-semibold ${getSourceColor(row.source)}`}>
+            {row.source}
+          </span>
+        );
+      },
+    },
+    {
       key: 'interet',
       label: 'Intéret',
       render: (row) => {
         return getInteretBadge(row.interet);
       },
     },
-
     {
       key: 'actions',
       label: 'Actions',
@@ -237,7 +309,6 @@ const AppelsTable = ({ dataClient, searchParams }) => {
   ];
 
   //EXPORT
-
   const data_to_export = () => {
     return appels.map((data) => ({
       nomComplet: `${data.prospect.nom || ''} ${
@@ -290,16 +361,19 @@ const AppelsTable = ({ dataClient, searchParams }) => {
   const handleFilterChange = (field, value) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
+  
   const applyFilters = () => {
     setFilters(tempFilters);
   };
+  
   const resetFilters = () => {
     const reset = {
       date: '',
       nom: '',
       prenom: '',
       telephone: '',
-      interet: '',
+      source: '',
+      interet: '', // ✅ Reset interest filter
     };
     setFilters(reset);
     setTempFilters(reset);
@@ -325,7 +399,7 @@ const AppelsTable = ({ dataClient, searchParams }) => {
           enableExport={formatData().length > 0}
           enableImport={false}
           showSearch={false}
-           addLink={
+          addLink={
             isSuperAdmin(user.role) ||
             isAdmin(user.role) ||
             isCommercial(user.role)||
@@ -342,8 +416,6 @@ const AppelsTable = ({ dataClient, searchParams }) => {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 }}
               >
-                {/* Champs de recherche */}
-
                 <Input
                   type="date"
                   label="Date"
@@ -365,7 +437,6 @@ const AppelsTable = ({ dataClient, searchParams }) => {
                   onChange={(e) => handleFilterChange('prenom', e.target.value)}
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-
                 <Input
                   type="number"
                   label="Téléphone"
@@ -375,16 +446,23 @@ const AppelsTable = ({ dataClient, searchParams }) => {
                   }
                   className="h-10 px-3 py-2 rounded-md border border-gray-300 w-full text-sm"
                 />
-                {/*<SelectInput
+                {/* ✅ SOURCE FILTER */}
+                <SelectInput
+                  value={tempFilters.source}
+                  onChange={(value) => handleFilterChange('source', value)}
+                  options={getSourceOptions()}
+                  label="Source"
+                  className="h-10 text-sm w-full"
+                  disabled={loading_auto}
+                />
+                {/* ✅ INTEREST FILTER */}
+                <SelectInput
                   value={tempFilters.interet}
                   onChange={(value) => handleFilterChange('interet', value)}
-                  options={Object.values(VISITE_INTERETS).map((data) => ({
-                    value: data.code,
-                    label: data.label,
-                  }))}
-                  label="Choisir un Intéret"
+                  options={getInterestOptions()}
+                  label="Intérêt"
                   className="h-10 text-sm w-full"
-                />*/}
+                />
               </div>
 
               {/* Boutons */}
@@ -436,7 +514,7 @@ const AppelsTable = ({ dataClient, searchParams }) => {
             }}
           />
         </Modal>
-      )}{' '}
+      )}
     </>
   );
 };
